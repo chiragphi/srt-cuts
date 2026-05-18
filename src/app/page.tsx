@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
 import HeroAnimation from "@/components/HeroAnimation";
@@ -50,16 +50,8 @@ const fadeUp: Variants = {
 
 export default function HomePage() {
   const [animDone, setAnimDone] = useState(false);
-  const [skipped] = useState(() =>
-    typeof window !== "undefined" && sessionStorage.getItem("srt_seen") === "1"
-  );
-
-  useEffect(() => {
-    if (skipped) setAnimDone(true);
-  }, [skipped]);
 
   function handleAnimComplete() {
-    sessionStorage.setItem("srt_seen", "1");
     setAnimDone(true);
   }
 

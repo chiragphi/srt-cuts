@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence, useMotionValue, animate } from "framer-motion";
 import Image from "next/image";
 
-const HAIR_COUNT = 110;
+const HAIR_COUNT = 180;
 
 interface Hair {
   baseX: number;
@@ -12,6 +12,22 @@ interface Hair {
   vel: number;
   phase: number;
   thickness: number;
+  lengthMul: number;
+  brightMul: number;
+  layer: number; // 0=bg 1=mid 2=fg
+  initDelay: number;
+}
+
+interface Particle {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  alpha: number;
+  size: number;
+  hue: number;
+  life: number;
+  maxLife: number;
 }
 
 export default function HeroAnimation({ onComplete }: { onComplete: () => void }) {
@@ -19,12 +35,19 @@ export default function HeroAnimation({ onComplete }: { onComplete: () => void }
   const animRef = useRef<number>(0);
   const t0 = useRef<number>(0);
   const hairsRef = useRef<Hair[]>([]);
-  const combXRef = useRef<number>(9999);
+  const particlesRef = useRef<Particle[]>([]);
+  const combXRef = useRef<number>(99999);
+  const prevCombXRef = useRef<number>(99999);
   const scaleVal = useMotionValue(1);
   const zoomStarted = useRef(false);
   const showLogoRef = useRef(false);
+  const showTextRef = useRef(false);
   const fadingRef = useRef(false);
+  const onCompleteRef = useRef(onComplete);
+  onCompleteRef.current = onComplete;
+
   const [showLogo, setShowLogo] = useState(false);
+  const [showText, setShowText] = useState(false);
   const [fading, setFading] = useState(false);
 
   useEffect(() => {
@@ -35,123 +58,219 @@ export default function HeroAnimation({ onComplete }: { onComplete: () => void }
     function init() {
       canvas!.width = window.innerWidth;
       canvas!.height = window.innerHeight;
-      hairsRef.current = Array.from({ length: HAIR_COUNT }, (_, i) => ({
-        baseX: (i / (HAIR_COUNT - 1)) * canvas!.width,
-        x: (i / (HAIR_COUNT - 1)) * canvas!.width,
-        vel: 0,
-        phase: Math.random() * Math.PI * 2,
-        thickness: 0.7 + Math.random() * 1.3,
-      }));
+      hairsRef.current = Array.from({ length: HAIR_COUNT }, (_, i) => {
+        const layer = i % 3;
+        return {
+          baseX: (i / (HAIR_COUNT - 1)) * canvas!.width,
+          x: (i / (HAIR_COUNT - 1)) * canvas!.width,
+          vel: 0,
+          phase: Math.random() * Math.PI * 2,
+          thickness:
+            layer === 0 ? 0.4 + Math.random() * 0.5
+            : layer === 1 ? 0.7 + Math.random() * 0.7
+            : 1.1 + Math.random() * 1.1,
+          lengthMul: 0.88 + Math.random() * 0.28,
+          brightMul:
+            layer === 0 ? 0.45 + Math.random() * 0.3
+            : layer === 1 ? 0.8 + Math.random() * 0.4
+            : 1.0 + Math.random() * 0.5,
+          layer,
+          initDelay: Math.random() * 550,
+        };
+      });
     }
     init();
     window.addEventListener("resize", init);
 
-    function drawBg() {
+    // ── Particles ────────────────────────────────────────────────────────────
+    function spawnParticles(cx: number, canvasH: number, count: number) {
+      for (let i = 0; i < count; i++) {
+        particlesRef.current.push({
+          x: cx + (Math.random() - 0.5) * 30,
+          y: canvasH * (0.1 + Math.random() * 0.8),
+          vx: (Math.random() - 0.5) * 1.8,
+          vy: -0.4 - Math.random() * 2.2,
+          alpha: 0.55 + Math.random() * 0.45,
+          size: 0.8 + Math.random() * 2.8,
+          hue: Math.random() > 0.5 ? 265 : 212,
+          life: 0,
+          maxLife: 55 + Math.random() * 90,
+        });
+      }
+      if (particlesRef.current.length > 140) {
+        particlesRef.current = particlesRef.current.slice(-140);
+      }
+    }
+
+    function tickParticles(combPhase: number) {
+      ctx.save();
+      particlesRef.current = particlesRef.current.filter((p) => {
+        p.life++;
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy *= 0.985;
+        p.vx *= 0.972;
+        const ratio = p.life / p.maxLife;
+        if (ratio >= 1) return false;
+        const a = p.alpha * (1 - ratio) * Math.min(1, combPhase * 2.5);
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size * (1 - ratio * 0.4), 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${p.hue},88%,72%,${a.toFixed(2)})`;
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = `hsla(${p.hue},80%,65%,${(a * 0.55).toFixed(2)})`;
+        ctx.fill();
+        return true;
+      });
+      ctx.shadowBlur = 0;
+      ctx.restore();
+    }
+
+    // ── Light rays ────────────────────────────────────────────────────────────
+    function drawLightRays(elapsed: number) {
       const W = canvas!.width, H = canvas!.height;
-      const g = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, W * 0.85);
-      g.addColorStop(0, "#0E0022");
-      g.addColorStop(0.55, "#080014");
-      g.addColorStop(1, "#030009");
+      const cx = W / 2, cy = H / 2;
+      const p = Math.max(0, Math.min(1, (elapsed - 4200) / 2200));
+      if (p <= 0) return;
+      const numRays = 20;
+      const maxLen = Math.hypot(W, H) * 0.6;
+      ctx.save();
+      ctx.globalCompositeOperation = "screen";
+      for (let i = 0; i < numRays; i++) {
+        const angle = (i / numRays) * Math.PI * 2 + p * 0.08;
+        const len = maxLen * Math.min(1, p * 2.5);
+        const alpha = Math.max(0, 0.16 * (1 - p * 0.75));
+        const x2 = cx + Math.cos(angle) * len;
+        const y2 = cy + Math.sin(angle) * len;
+        const hue = 260 + (i % 3) * 20;
+        const g = ctx.createLinearGradient(cx, cy, x2, y2);
+        g.addColorStop(0, `hsla(${hue},90%,68%,${alpha})`);
+        g.addColorStop(0.35, `hsla(${hue + 10},80%,55%,${(alpha * 0.45).toFixed(2)})`);
+        g.addColorStop(1, "hsla(240,60%,35%,0)");
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(x2, y2);
+        ctx.strokeStyle = g;
+        ctx.lineWidth = 2 + Math.abs(Math.sin(i * 1.3)) * 2.5;
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    // ── Background ────────────────────────────────────────────────────────────
+    function drawBg(elapsed: number) {
+      const W = canvas!.width, H = canvas!.height;
+      const brighten = Math.min(0.18, (elapsed - 1800) / 8000);
+      const r = Math.round(12 + brighten * 22);
+      const g2 = Math.round(2 + brighten * 4);
+      const b = Math.round(28 + brighten * 22);
+      const bg = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, W * 0.9);
+      bg.addColorStop(0, `rgb(${r},${g2},${b})`);
+      bg.addColorStop(0.5, "#0A0014");
+      bg.addColorStop(1, "#030008");
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, W, H);
+    }
+
+    // ── Center glow ───────────────────────────────────────────────────────────
+    function drawCenterGlow(elapsed: number) {
+      const W = canvas!.width, H = canvas!.height;
+      const p = Math.max(0, Math.min(1, (elapsed - 1400) / 2200));
+      if (p <= 0) return;
+      const g = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, W * 0.32);
+      g.addColorStop(0, `rgba(85,20,160,${(p * 0.3).toFixed(2)})`);
+      g.addColorStop(0.45, `rgba(48,10,105,${(p * 0.16).toFixed(2)})`);
+      g.addColorStop(1, "rgba(0,0,0,0)");
       ctx.fillStyle = g;
       ctx.fillRect(0, 0, W, H);
     }
 
-    function drawHairs(elapsed: number) {
+    // ── Hair layer ────────────────────────────────────────────────────────────
+    function drawHairLayer(layer: number, elapsed: number, globalAlpha: number) {
       const W = canvas!.width, H = canvas!.height;
       const cx = combXRef.current;
       const partCx = W / 2;
-      const hairs = hairsRef.current;
 
-      hairs.forEach((h) => {
-        const distToComb = h.baseX - cx;
+      hairsRef.current.forEach((h) => {
+        if (h.layer !== layer) return;
+        const introA = Math.min(1, Math.max(0, (elapsed - h.initDelay) / 650));
+        const alpha = globalAlpha * introA;
+        if (alpha < 0.01) return;
+
+        const dToComb = h.baseX - cx;
         let target = 0;
-
-        if (distToComb > -8 && distToComb < 90) {
-          const push = 1 - Math.max(0, distToComb) / 90;
-          target = 65 * push * (distToComb <= 0 ? -1 : 1);
-        } else if (distToComb <= -8 && distToComb > -500) {
-          target = distToComb * 0.035;
+        if (dToComb > -8 && dToComb < 92) {
+          target = 72 * (1 - Math.max(0, dToComb) / 92) * (dToComb <= 0 ? -1 : 1);
+        } else if (dToComb <= -8 && dToComb > -520) {
+          target = dToComb * 0.033;
         }
-
-        const spring = (target - (h.x - h.baseX)) * 0.11;
-        h.vel = (h.vel + spring) * 0.81;
+        h.vel = (h.vel + (target - (h.x - h.baseX)) * 0.11) * 0.805;
         h.x = h.baseX + h.vel * 9;
 
         const fromCenter = h.x - partCx;
-        const glow = Math.max(0, 1 - Math.abs(fromCenter) / (W * 0.32));
-        const wave = Math.sin(elapsed * 0.0013 + h.phase) * 2.5;
+        const glowR = W * (0.27 + layer * 0.045);
+        const glow = Math.max(0, 1 - Math.abs(fromCenter) / glowR) * h.brightMul;
+        const wave = Math.sin(elapsed * 0.00125 + h.phase) * (2.2 + layer * 0.6);
         const isLeft = fromCenter < 0;
 
-        const grad = ctx.createLinearGradient(h.x, 0, h.x, H);
-        if (glow > 0.04) {
-          const hue = isLeft ? 268 : 218;
-          const s = 72 + glow * 18;
-          const l = 52 + glow * 28;
-          const a = 0.3 + glow * 0.7;
-          grad.addColorStop(0, `hsla(${hue},${s}%,${l}%,${(a * 0.85).toFixed(2)})`);
-          grad.addColorStop(0.35, `hsla(${hue + 12},${s}%,${l - 8}%,${a.toFixed(2)})`);
-          grad.addColorStop(0.72, `hsla(${hue - 8},${s - 10}%,${l - 18}%,${(a * 0.75).toFixed(2)})`);
-          grad.addColorStop(1, `hsla(${hue},45%,14%,${(a * 0.3).toFixed(2)})`);
-          ctx.shadowBlur = 14 * glow;
+        const grad = ctx.createLinearGradient(h.x, 0, h.x, H * h.lengthMul);
+
+        if (glow > 0.035) {
+          const hue = isLeft ? 264 : 214;
+          const s = 68 + glow * 22;
+          const l = 48 + glow * 32;
+          const a = alpha * (0.28 + glow * 0.72);
+          grad.addColorStop(0, `hsla(${hue},${s.toFixed(0)}%,${l.toFixed(0)}%,${(a * 0.78).toFixed(2)})`);
+          grad.addColorStop(0.28, `hsla(${hue + 14},${s.toFixed(0)}%,${(l - 9).toFixed(0)}%,${a.toFixed(2)})`);
+          grad.addColorStop(0.68, `hsla(${hue - 9},${(s - 13).toFixed(0)}%,${(l - 22).toFixed(0)}%,${(a * 0.68).toFixed(2)})`);
+          grad.addColorStop(1, `hsla(${hue},44%,12%,${(a * 0.18).toFixed(2)})`);
+          ctx.shadowBlur = (8 + layer * 6) * glow;
           ctx.shadowColor = isLeft
-            ? `rgba(147,51,234,${(glow * 0.85).toFixed(2)})`
-            : `rgba(59,130,246,${(glow * 0.75).toFixed(2)})`;
+            ? `rgba(148,50,235,${(glow * alpha * 0.82).toFixed(2)})`
+            : `rgba(58,130,248,${(glow * alpha * 0.68).toFixed(2)})`;
         } else {
-          grad.addColorStop(0, "rgba(32,12,52,0.92)");
-          grad.addColorStop(0.5, "rgba(20,8,36,0.88)");
-          grad.addColorStop(1, "rgba(10,4,20,0.8)");
+          const d = layer === 0 ? 0.45 : layer === 1 ? 0.72 : 0.92;
+          const a = alpha * d;
+          grad.addColorStop(0, `rgba(28,9,48,${(a * 0.92).toFixed(2)})`);
+          grad.addColorStop(0.5, `rgba(16,5,30,${(a * 0.86).toFixed(2)})`);
+          grad.addColorStop(1, `rgba(7,2,14,${(a * 0.78).toFixed(2)})`);
           ctx.shadowBlur = 0;
         }
 
         ctx.beginPath();
         ctx.moveTo(h.x + wave, 0);
         ctx.bezierCurveTo(
-          h.x + wave * 0.55,
-          H * 0.28,
-          h.x - wave * 0.35 + h.vel * 3,
-          H * 0.64,
-          h.x + wave * 0.25 + h.vel * 7,
-          H
+          h.x + wave * 0.58, H * 0.26,
+          h.x - wave * 0.38 + h.vel * 2.8, H * 0.62,
+          h.x + wave * 0.22 + h.vel * 7.5, H * h.lengthMul
         );
         ctx.strokeStyle = grad;
-        ctx.lineWidth = h.thickness * (1 + glow * 0.6);
+        ctx.lineWidth = h.thickness * (1 + glow * 0.75) * (layer === 0 ? 0.78 : layer === 1 ? 1 : 1.25);
         ctx.stroke();
+        ctx.shadowBlur = 0;
       });
-      ctx.shadowBlur = 0;
     }
 
-    function drawCenterGlow(elapsed: number) {
-      const W = canvas!.width, H = canvas!.height;
-      const p = Math.max(0, Math.min(1, (elapsed - 1800) / 1400));
-      if (p <= 0) return;
-      const g = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, W * 0.28);
-      g.addColorStop(0, `rgba(90,30,160,${(p * 0.22).toFixed(2)})`);
-      g.addColorStop(0.5, `rgba(50,15,110,${(p * 0.12).toFixed(2)})`);
-      g.addColorStop(1, "rgba(0,0,0,0)");
-      ctx.fillStyle = g;
-      ctx.fillRect(0, 0, W, H);
-    }
-
+    // ── Comb ──────────────────────────────────────────────────────────────────
     function drawComb(cx: number) {
       const W = canvas!.width, H = canvas!.height;
-      if (cx < -180 || cx > W + 180) return;
-      const toothN = 18;
-      const combH = H * 0.62;
-      const spW = 26;
-      const toothLen = 42;
-      const startY = H * 0.19;
+      if (cx < -220 || cx > W + 220) return;
+      const toothN = 22;
+      const combH = H * 0.66;
+      const spW = 22;
+      const toothLen = 46;
+      const startY = H * 0.17;
       const spacing = combH / toothN;
 
       ctx.save();
-      ctx.shadowBlur = 22;
-      ctx.shadowColor = "rgba(139,92,246,0.55)";
+      ctx.shadowBlur = 32;
+      ctx.shadowColor = "rgba(139,92,246,0.7)";
 
       const sg = ctx.createLinearGradient(cx, 0, cx + spW, 0);
-      sg.addColorStop(0, "rgba(72,32,128,0.82)");
-      sg.addColorStop(0.5, "rgba(110,58,190,0.88)");
-      sg.addColorStop(1, "rgba(54,24,96,0.76)");
+      sg.addColorStop(0, "rgba(55,22,105,0.88)");
+      sg.addColorStop(0.45, "rgba(105,52,188,0.94)");
+      sg.addColorStop(1, "rgba(42,16,82,0.82)");
       ctx.fillStyle = sg;
-      ctx.strokeStyle = "rgba(155,90,245,0.55)";
+      ctx.strokeStyle = "rgba(165,105,255,0.52)";
       ctx.lineWidth = 1;
       ctx.fillRect(cx, startY, spW, combH);
       ctx.strokeRect(cx, startY, spW, combH);
@@ -159,70 +278,94 @@ export default function HeroAnimation({ onComplete }: { onComplete: () => void }
       for (let i = 0; i < toothN; i++) {
         const ty = startY + i * spacing + spacing / 2;
         const tg = ctx.createLinearGradient(cx - toothLen, ty, cx, ty);
-        tg.addColorStop(0, "rgba(90,40,170,0.35)");
-        tg.addColorStop(1, "rgba(130,75,210,0.88)");
+        tg.addColorStop(0, "rgba(75,28,148,0.28)");
+        tg.addColorStop(0.55, "rgba(118,62,208,0.72)");
+        tg.addColorStop(1, "rgba(155,92,245,0.97)");
         ctx.strokeStyle = tg;
-        ctx.lineWidth = 2.2;
+        ctx.lineWidth = 1.9;
         ctx.beginPath();
         ctx.moveTo(cx, ty);
         ctx.lineTo(cx - toothLen, ty);
         ctx.stroke();
         ctx.beginPath();
-        ctx.arc(cx - toothLen, ty, 1.8, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(190,140,255,0.9)";
+        ctx.arc(cx - toothLen, ty, 2.2, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(205,160,255,0.96)";
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = "rgba(185,125,255,0.85)";
         ctx.fill();
       }
       ctx.restore();
     }
 
+    // ── Vignette ──────────────────────────────────────────────────────────────
+    function drawVignette() {
+      const W = canvas!.width, H = canvas!.height;
+      const g = ctx.createRadialGradient(W / 2, H / 2, W * 0.28, W / 2, H / 2, W * 0.78);
+      g.addColorStop(0, "rgba(0,0,0,0)");
+      g.addColorStop(1, "rgba(0,0,0,0.6)");
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, W, H);
+    }
+
+    // ── Main loop ─────────────────────────────────────────────────────────────
     function frame(ts: number) {
       if (!t0.current) t0.current = ts;
       const elapsed = ts - t0.current;
       const W = canvas!.width;
+      const H = canvas!.height;
 
-      // Comb sweeps right→left over 3 seconds
-      if (elapsed < 3000) {
-        const t = elapsed / 3000;
+      const COMB_START = 900, COMB_DUR = 2800;
+      if (elapsed >= COMB_START && elapsed < COMB_START + COMB_DUR) {
+        const t = (elapsed - COMB_START) / COMB_DUR;
         const e = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
-        combXRef.current = W + 160 - e * (W + 340);
-      } else {
-        combXRef.current = -9999;
+        combXRef.current = W + 190 - e * (W + 395);
+        if (
+          Math.abs(prevCombXRef.current - combXRef.current) > 4 &&
+          combXRef.current > -50 && combXRef.current < W + 50
+        ) {
+          spawnParticles(combXRef.current, H, 3);
+        }
+        prevCombXRef.current = combXRef.current;
+      } else if (elapsed >= COMB_START + COMB_DUR) {
+        combXRef.current = -99999;
       }
 
-      ctx.clearRect(0, 0, canvas!.width, canvas!.height);
-      drawBg();
+      const hairAlpha = Math.min(1, elapsed / 550);
+      const combPhase = Math.max(0, (elapsed - COMB_START) / 1200);
+
+      ctx.clearRect(0, 0, W, H);
+      drawBg(elapsed);
       drawCenterGlow(elapsed);
-      ctx.save();
-      drawHairs(elapsed);
-      ctx.restore();
+      ctx.save(); drawHairLayer(0, elapsed, hairAlpha); ctx.restore();
+      tickParticles(combPhase);
+      ctx.save(); drawHairLayer(1, elapsed, hairAlpha); ctx.restore();
       drawComb(combXRef.current);
+      ctx.save(); drawHairLayer(2, elapsed, hairAlpha); ctx.restore();
+      drawLightRays(elapsed);
+      drawVignette();
 
-      // Trigger zoom at 2.6s
-      if (elapsed > 2600 && !zoomStarted.current) {
+      if (elapsed > 3100 && !zoomStarted.current) {
         zoomStarted.current = true;
-        animate(scaleVal, 13, { duration: 3.2, ease: [0.16, 1, 0.3, 1] });
+        animate(scaleVal, 15, { duration: 3.8, ease: [0.1, 1, 0.18, 1] });
       }
-
-      // Show logo at 3.8s
-      if (elapsed > 3800 && !showLogoRef.current) {
+      if (elapsed > 4300 && !showLogoRef.current) {
         showLogoRef.current = true;
         setShowLogo(true);
       }
-
-      // Fade out at 6.8s
-      if (elapsed > 6800 && !fadingRef.current) {
+      if (elapsed > 5100 && !showTextRef.current) {
+        showTextRef.current = true;
+        setShowText(true);
+      }
+      if (elapsed > 7800 && !fadingRef.current) {
         fadingRef.current = true;
         setFading(true);
-        setTimeout(() => onComplete(), 1100);
+        setTimeout(() => onCompleteRef.current(), 1050);
       }
 
-      if (elapsed < 8200) {
-        animRef.current = requestAnimationFrame(frame);
-      }
+      if (elapsed < 9200) animRef.current = requestAnimationFrame(frame);
     }
 
     animRef.current = requestAnimationFrame(frame);
-
     return () => {
       cancelAnimationFrame(animRef.current);
       window.removeEventListener("resize", init);
@@ -234,9 +377,8 @@ export default function HeroAnimation({ onComplete }: { onComplete: () => void }
     <motion.div
       className="fixed inset-0 z-50 overflow-hidden bg-black"
       animate={{ opacity: fading ? 0 : 1 }}
-      transition={{ duration: 1.1, ease: [0.4, 0, 0.2, 1] }}
+      transition={{ duration: 1.05, ease: [0.4, 0, 0.2, 1] }}
     >
-      {/* Zooming canvas wrapper */}
       <motion.div
         className="absolute inset-0"
         style={{ scale: scaleVal, transformOrigin: "50% 50%" }}
@@ -244,50 +386,62 @@ export default function HeroAnimation({ onComplete }: { onComplete: () => void }
         <canvas ref={canvasRef} className="block w-full h-full" />
       </motion.div>
 
-      {/* Logo reveal — stays centered, not affected by zoom scale */}
       <AnimatePresence>
         {showLogo && (
           <motion.div
             className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"
-            initial={{ opacity: 0, scale: 0.75 }}
+            initial={{ opacity: 0, scale: 0.65 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 1.3, ease: [0.1, 1, 0.18, 1] }}
           >
-            <div
-              className="relative"
-              style={{ filter: "drop-shadow(0 0 48px rgba(139,92,246,0.95)) drop-shadow(0 0 96px rgba(99,51,234,0.55))" }}
+            <motion.div
+              animate={{
+                filter: [
+                  "drop-shadow(0 0 45px rgba(139,92,246,0.92)) drop-shadow(0 0 90px rgba(100,40,210,0.55))",
+                  "drop-shadow(0 0 75px rgba(139,92,246,1))    drop-shadow(0 0 150px rgba(100,40,210,0.78))",
+                  "drop-shadow(0 0 50px rgba(139,92,246,0.94)) drop-shadow(0 0 100px rgba(100,40,210,0.6))",
+                ],
+              }}
+              transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
             >
               <Image
                 src="/srt-logo.png"
                 alt="SRT Cats"
-                width={200}
-                height={200}
+                width={230}
+                height={230}
                 priority
                 className="object-contain"
               />
-            </div>
-            <motion.p
-              className="mt-5 text-xs tracking-[0.45em] uppercase text-purple-300 font-light"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.45, duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-            >
-              Herriman, Utah
-            </motion.p>
+            </motion.div>
+
+            <AnimatePresence>
+              {showText && (
+                <motion.p
+                  className="mt-5 text-xs tracking-[0.55em] uppercase font-light"
+                  style={{ color: "#C4B5FD" }}
+                  initial={{ opacity: 0, y: 14 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  Herriman, Utah
+                </motion.p>
+              )}
+            </AnimatePresence>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Skip button */}
       <motion.button
-        className="absolute bottom-10 right-10 text-xs tracking-widest uppercase text-white/30 hover:text-white/60 transition-colors cursor-pointer bg-transparent border-none font-sans"
+        className="absolute bottom-10 right-10 text-xs tracking-widest uppercase text-white/22 hover:text-white/55 transition-colors cursor-pointer bg-transparent border-none font-sans"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 1.2 }}
+        transition={{ delay: 1.8 }}
         onClick={() => {
-          fadingRef.current = true;
-          setFading(true);
-          setTimeout(() => onComplete(), 1100);
+          if (!fadingRef.current) {
+            fadingRef.current = true;
+            setFading(true);
+            setTimeout(() => onCompleteRef.current(), 1050);
+          }
         }}
       >
         Skip
