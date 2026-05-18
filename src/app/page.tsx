@@ -1,9 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
-import { motion, AnimatePresence, type Variants } from "framer-motion";
-import HeroAnimation from "@/components/HeroAnimation";
+import { motion, type Variants } from "framer-motion";
 import Navigation from "@/components/Navigation";
 
 const SERVICES = [
@@ -49,23 +47,13 @@ const fadeUp: Variants = {
 };
 
 export default function HomePage() {
-  const [animDone, setAnimDone] = useState(false);
-
-  function handleAnimComplete() {
-    setAnimDone(true);
-  }
-
   return (
     <>
-      <AnimatePresence>{!animDone && <HeroAnimation onComplete={handleAnimComplete} />}</AnimatePresence>
-
-      <AnimatePresence>
-        {animDone && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8 }}
-          >
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.8 }}
+      >
             <Navigation />
 
             {/* Hero */}
@@ -121,7 +109,7 @@ export default function HomePage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3, duration: 0.8 }}
                 >
-                  Precision fades. Clean edges. An experience you'll come back for.
+                  Precision fades. Clean edges. An experience you&apos;ll come back for.
                 </motion.p>
 
                 <motion.div
@@ -268,9 +256,7 @@ export default function HomePage() {
                 </Link>
               </div>
             </footer>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      </motion.div>
     </>
   );
 }
