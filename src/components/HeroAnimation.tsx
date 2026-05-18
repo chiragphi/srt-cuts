@@ -37,23 +37,33 @@ export default function HeroAnimation({ onComplete }: { onComplete: () => void }
   const hairsRef = useRef<Hair[]>([]);
   const particlesRef = useRef<Particle[]>([]);
   const combXRef = useRef<number>(99999);
-  const prevCombXRef = useRef<number>(99999);
+  const combYRef = useRef<number>(-99999);
+  const prevCombYRef = useRef<number>(-99999);
+  const combImageRef = useRef<HTMLImageElement | null>(null);
   const scaleVal = useMotionValue(1);
   const zoomStarted = useRef(false);
   const showLogoRef = useRef(false);
   const showTextRef = useRef(false);
   const fadingRef = useRef(false);
   const onCompleteRef = useRef(onComplete);
-  onCompleteRef.current = onComplete;
 
   const [showLogo, setShowLogo] = useState(false);
   const [showText, setShowText] = useState(false);
   const [fading, setFading] = useState(false);
 
   useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
+
+  useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d")!;
+    const combImage = new window.Image();
+    combImage.onload = () => {
+      combImageRef.current = combImage;
+    };
+    combImage.src = "/assets/comb.png";
 
     function init() {
       canvas!.width = window.innerWidth;
@@ -83,11 +93,11 @@ export default function HeroAnimation({ onComplete }: { onComplete: () => void }
     window.addEventListener("resize", init);
 
     // ── Particles ────────────────────────────────────────────────────────────
-    function spawnParticles(cx: number, canvasH: number, count: number) {
+    function spawnParticles(cx: number, cy: number, count: number) {
       for (let i = 0; i < count; i++) {
         particlesRef.current.push({
-          x: cx + (Math.random() - 0.5) * 30,
-          y: canvasH * (0.1 + Math.random() * 0.8),
+          x: cx + (Math.random() - 0.5) * 46,
+          y: cy + (Math.random() - 0.5) * 120,
           vx: (Math.random() - 0.5) * 1.8,
           vy: -0.4 - Math.random() * 2.2,
           alpha: 0.55 + Math.random() * 0.45,
@@ -251,49 +261,21 @@ export default function HeroAnimation({ onComplete }: { onComplete: () => void }
     }
 
     // ── Comb ──────────────────────────────────────────────────────────────────
-    function drawComb(cx: number) {
+    function drawComb(cx: number, cy: number, phase: number) {
       const W = canvas!.width, H = canvas!.height;
-      if (cx < -220 || cx > W + 220) return;
-      const toothN = 22;
-      const combH = H * 0.66;
-      const spW = 22;
-      const toothLen = 46;
-      const startY = H * 0.17;
-      const spacing = combH / toothN;
+      const combImage = combImageRef.current;
+      if (!combImage || cx < -220 || cx > W + 220 || cy < -H || cy > H * 1.7) return;
+      const aspect = combImage.width / combImage.height || 0.5;
+      const combH = Math.min(H * 0.72, W * 0.78 / aspect);
+      const combW = combH * aspect;
+      const x = cx - combW / 2;
+      const y = cy - combH / 2;
 
       ctx.save();
-      ctx.shadowBlur = 32;
-      ctx.shadowColor = "rgba(139,92,246,0.7)";
-
-      const sg = ctx.createLinearGradient(cx, 0, cx + spW, 0);
-      sg.addColorStop(0, "rgba(55,22,105,0.88)");
-      sg.addColorStop(0.45, "rgba(105,52,188,0.94)");
-      sg.addColorStop(1, "rgba(42,16,82,0.82)");
-      ctx.fillStyle = sg;
-      ctx.strokeStyle = "rgba(165,105,255,0.52)";
-      ctx.lineWidth = 1;
-      ctx.fillRect(cx, startY, spW, combH);
-      ctx.strokeRect(cx, startY, spW, combH);
-
-      for (let i = 0; i < toothN; i++) {
-        const ty = startY + i * spacing + spacing / 2;
-        const tg = ctx.createLinearGradient(cx - toothLen, ty, cx, ty);
-        tg.addColorStop(0, "rgba(75,28,148,0.28)");
-        tg.addColorStop(0.55, "rgba(118,62,208,0.72)");
-        tg.addColorStop(1, "rgba(155,92,245,0.97)");
-        ctx.strokeStyle = tg;
-        ctx.lineWidth = 1.9;
-        ctx.beginPath();
-        ctx.moveTo(cx, ty);
-        ctx.lineTo(cx - toothLen, ty);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.arc(cx - toothLen, ty, 2.2, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(205,160,255,0.96)";
-        ctx.shadowBlur = 8;
-        ctx.shadowColor = "rgba(185,125,255,0.85)";
-        ctx.fill();
-      }
+      ctx.globalAlpha = Math.min(1, phase * 3);
+      ctx.shadowBlur = 36;
+      ctx.shadowColor = "rgba(168,85,247,0.8)";
+      ctx.drawImage(combImage, x, y, combW, combH);
       ctx.restore();
     }
 
@@ -318,16 +300,19 @@ export default function HeroAnimation({ onComplete }: { onComplete: () => void }
       if (elapsed >= COMB_START && elapsed < COMB_START + COMB_DUR) {
         const t = (elapsed - COMB_START) / COMB_DUR;
         const e = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
-        combXRef.current = W + 190 - e * (W + 395);
+        const combH = Math.min(H * 0.72, W * 1.56);
+        combXRef.current = W * 0.56 + Math.sin(t * Math.PI) * W * 0.035;
+        combYRef.current = -combH * 0.58 + e * (H + combH * 1.1);
         if (
-          Math.abs(prevCombXRef.current - combXRef.current) > 4 &&
-          combXRef.current > -50 && combXRef.current < W + 50
+          Math.abs(prevCombYRef.current - combYRef.current) > 5 &&
+          combYRef.current > -80 && combYRef.current < H + 80
         ) {
-          spawnParticles(combXRef.current, H, 3);
+          spawnParticles(combXRef.current, combYRef.current, 3);
         }
-        prevCombXRef.current = combXRef.current;
+        prevCombYRef.current = combYRef.current;
       } else if (elapsed >= COMB_START + COMB_DUR) {
         combXRef.current = -99999;
+        combYRef.current = -99999;
       }
 
       const hairAlpha = Math.min(1, elapsed / 550);
@@ -339,10 +324,10 @@ export default function HeroAnimation({ onComplete }: { onComplete: () => void }
       ctx.save(); drawHairLayer(0, elapsed, hairAlpha); ctx.restore();
       tickParticles(combPhase);
       ctx.save(); drawHairLayer(1, elapsed, hairAlpha); ctx.restore();
-      drawComb(combXRef.current);
       ctx.save(); drawHairLayer(2, elapsed, hairAlpha); ctx.restore();
       drawLightRays(elapsed);
       drawVignette();
+      drawComb(combXRef.current, combYRef.current, combPhase);
 
       if (elapsed > 3100 && !zoomStarted.current) {
         zoomStarted.current = true;
