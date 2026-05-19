@@ -3,11 +3,13 @@
 :root {
   --background: #000000;
   --foreground: #F5F5F7;
-  --surface: rgba(255, 255, 255, 0.055);
-  --surface-strong: rgba(255, 255, 255, 0.085);
-  --stroke: rgba(255, 255, 255, 0.095);
+  --surface: rgba(255, 255, 255, 0.06);
+  --surface-strong: rgba(255, 255, 255, 0.1);
+  --stroke: rgba(255, 255, 255, 0.11);
   --muted: #9CA3AF;
   --accent: #8B5CF6;
+  --mint: #5EEAD4;
+  --gold: #FBBF24;
 }
 
 @theme inline {
@@ -18,8 +20,14 @@
 }
 
 * {
+  box-sizing: border-box;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
 html {
@@ -28,7 +36,8 @@ html {
 
 body {
   background:
-    radial-gradient(circle at 50% -20%, rgba(139, 92, 246, 0.16), transparent 38rem),
+    linear-gradient(180deg, rgba(94, 234, 212, 0.08), transparent 19rem),
+    linear-gradient(120deg, rgba(139, 92, 246, 0.14), transparent 34rem),
     #000;
   color: #F5F5F7;
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
@@ -77,21 +86,21 @@ textarea {
   gap: 8px;
   min-height: 50px;
   padding: 14px 22px;
-  border-radius: 16px;
+  border-radius: 10px;
   font-size: 16px;
   font-weight: 600;
   letter-spacing: 0;
   font-family: inherit;
-  background: #8B5CF6;
-  color: #fff;
-  border: none;
+  background: #F5F5F7;
+  color: #050505;
+  border: 1px solid rgba(255,255,255,0.18);
   cursor: pointer;
   transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
 }
 
 .btn-primary:hover {
-  background: #7C3AED;
-  box-shadow: 0 0 30px rgba(139, 92, 246, 0.45);
+  background: #FFFFFF;
+  box-shadow: 0 0 30px rgba(94, 234, 212, 0.18);
   transform: translateY(-1px);
 }
 
@@ -113,7 +122,7 @@ textarea {
   gap: 8px;
   min-height: 50px;
   padding: 14px 22px;
-  border-radius: 16px;
+  border-radius: 10px;
   font-size: 16px;
   font-weight: 600;
   letter-spacing: 0;
@@ -135,7 +144,7 @@ textarea {
   min-height: 54px;
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid var(--stroke);
-  border-radius: 16px;
+  border-radius: 10px;
   padding: 15px 16px;
   font-size: 16px;
   font-family: inherit;
@@ -155,7 +164,7 @@ textarea {
 }
 
 .headline-gradient {
-  background: linear-gradient(145deg, #F5F5F7 0%, #D8B4FE 48%, #A78BFA 100%);
+  background: linear-gradient(145deg, #FFFFFF 0%, #C7D2FE 46%, #5EEAD4 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -164,25 +173,26 @@ textarea {
 .app-shell {
   width: min(100%, 1120px);
   margin: 0 auto;
-  padding-left: max(16px, env(safe-area-inset-left));
-  padding-right: max(16px, env(safe-area-inset-right));
+  padding-left: max(18px, env(safe-area-inset-left));
+  padding-right: max(18px, env(safe-area-inset-right));
 }
 
 .app-section {
-  padding-top: 64px;
-  padding-bottom: 64px;
+  padding-top: 56px;
+  padding-bottom: 56px;
 }
 
 .app-card {
   background: var(--surface);
   border: 1px solid var(--stroke);
-  border-radius: 18px;
+  border-radius: 8px;
   overflow: hidden;
 }
 
 .hero-glow {
   background:
-    radial-gradient(ellipse 86% 58% at 50% 38%, rgba(139, 92, 246, 0.34) 0%, rgba(109, 40, 217, 0.16) 40%, rgba(0, 0, 0, 0.78) 68%, rgba(0, 0, 0, 0.96) 100%);
+    linear-gradient(180deg, rgba(0,0,0,0.36), rgba(0,0,0,0.84) 62%, #000 100%),
+    linear-gradient(135deg, rgba(94,234,212,0.18), rgba(139,92,246,0.15) 46%, rgba(251,191,36,0.08));
 }
 
 .service-card {
@@ -204,7 +214,7 @@ textarea {
   display: inline-flex;
   align-items: center;
   min-height: 36px;
-  border-radius: 999px;
+  border-radius: 8px;
   padding: 0 14px;
   background: rgba(255, 255, 255, 0.065);
   border: 1px solid rgba(255, 255, 255, 0.09);
@@ -218,7 +228,119 @@ textarea {
   letter-spacing: 0;
 }
 
+.mobile-only {
+  display: block;
+}
+
+.mobile-only.inline-flex {
+  display: inline-flex;
+}
+
+.desktop-only {
+  display: none;
+}
+
+.mobile-bottom-nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 45;
+  padding: 8px max(12px, env(safe-area-inset-left)) max(8px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-right));
+  background: rgba(0, 0, 0, 0.78);
+  border-top: 1px solid rgba(255,255,255,0.1);
+  backdrop-filter: blur(22px) saturate(160%);
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+}
+
+.mobile-nav-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.mobile-nav-item {
+  min-height: 48px;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  border-radius: 8px;
+  color: rgba(255,255,255,0.52);
+  font-size: 11px;
+}
+
+.mobile-nav-item[data-active="true"] {
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+}
+
+.mobile-page-pad {
+  padding-bottom: calc(84px + env(safe-area-inset-bottom));
+}
+
+.mobile-section-label {
+  color: var(--mint);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.mobile-rule {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
+}
+
+.mobile-cta {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  max-width: 22rem;
+}
+
+.mobile-cta > * {
+  width: 100%;
+}
+
+.tap-row {
+  min-height: 64px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.045);
+}
+
+.otp-input {
+  width: 44px;
+  height: 52px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.06);
+  color: #fff;
+  text-align: center;
+  font-size: 22px;
+  outline: none;
+}
+
+.otp-input:focus {
+  border-color: rgba(94, 234, 212, 0.7);
+  box-shadow: 0 0 0 3px rgba(94, 234, 212, 0.12);
+}
+
 @media (min-width: 640px) {
+  .mobile-only {
+    display: none;
+  }
+
+  .desktop-only {
+    display: block;
+  }
+
+  .mobile-page-pad {
+    padding-bottom: 0;
+  }
+
   .app-shell {
     padding-left: 24px;
     padding-right: 24px;
@@ -235,6 +357,19 @@ textarea {
 
   .hero-glow {
     background:
-      radial-gradient(ellipse 70% 55% at 50% 45%, rgba(109, 40, 217, 0.24) 0%, rgba(0, 0, 0, 0.78) 58%, rgba(0, 0, 0, 0.96) 100%);
+      linear-gradient(180deg, rgba(0,0,0,0.2), rgba(0,0,0,0.86) 70%, #000 100%),
+      linear-gradient(135deg, rgba(94,234,212,0.13), rgba(139,92,246,0.18) 46%, rgba(251,191,36,0.07));
+  }
+}
+
+@media (min-width: 640px) {
+  .mobile-cta {
+    display: flex;
+    justify-content: center;
+    max-width: none;
+  }
+
+  .mobile-cta > * {
+    width: auto;
   }
 }

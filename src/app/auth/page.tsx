@@ -99,25 +99,23 @@ function AuthForm() {
   }
 
   return (
-    <div className="min-h-screen bg-black flex flex-col">
-      {/* Back link */}
-      <div className="p-6">
-        <Link href="/" className="text-sm text-white/35 hover:text-white/70 transition-colors">
+    <div className="min-h-screen bg-black flex flex-col mobile-page-pad">
+      <div className="p-5 pt-[max(20px,env(safe-area-inset-top))]">
+        <Link href="/" className="text-sm text-white/45 hover:text-white/80 transition-colors">
           ← SRT Cuts
         </Link>
       </div>
 
-      <div className="flex-1 flex items-center justify-center px-6 py-12">
-        <div className="w-full max-w-sm">
-          {/* Logo */}
-          <div className="flex justify-center mb-10">
+      <div className="flex-1 flex items-center justify-center px-5 py-8">
+        <div className="w-full max-w-[20rem] sm:max-w-sm">
+          <div className="flex justify-center mb-8">
             <Image
               src="/srt-logo.png"
               alt="SRT"
               width={64}
               height={64}
               className="object-contain"
-              style={{ filter: "drop-shadow(0 0 16px rgba(139,92,246,0.8))" }}
+              style={{ filter: "drop-shadow(0 0 16px rgba(94,234,212,0.58))" }}
             />
           </div>
 
@@ -136,13 +134,13 @@ function AuthForm() {
                 >
                   Sign in
                 </h1>
-                <p className="text-sm text-center mb-8" style={{ color: "#86868B" }}>
+                <p className="text-sm text-center mb-8" style={{ color: "#A1A1AA" }}>
                   Enter your phone number to continue.
                 </p>
 
-                <div className="space-y-4">
+                <div className="space-y-4 app-card p-4">
                   <div>
-                    <label className="block text-xs text-white/40 mb-2 tracking-wide uppercase">
+                    <label className="block mobile-section-label mb-2">
                       Phone Number
                     </label>
                     <input
@@ -186,13 +184,13 @@ function AuthForm() {
                 >
                   Enter code
                 </h1>
-                <p className="text-sm text-center mb-8" style={{ color: "#86868B" }}>
+                <p className="text-sm text-center mb-8" style={{ color: "#A1A1AA" }}>
                   We sent a 6-digit code to{" "}
                   <span className="text-white/70">{phone}</span>
                 </p>
 
-                <div className="mb-4">
-                  <label className="block text-xs text-white/40 mb-2 tracking-wide uppercase">
+                <div className="app-card p-4 mb-4">
+                  <label className="block mobile-section-label mb-2">
                     Your Name
                   </label>
                   <input

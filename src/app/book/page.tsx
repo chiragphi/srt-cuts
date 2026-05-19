@@ -105,7 +105,7 @@ export default function BookPage() {
     return (
       <>
         <Navigation />
-        <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="min-h-screen bg-black flex items-center justify-center mobile-page-pad">
           <motion.div
             className="app-shell text-center max-w-md"
             initial={{ opacity: 0, scale: 0.9 }}
@@ -113,8 +113,8 @@ export default function BookPage() {
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           >
             <div
-              className="w-20 h-20 rounded-[22px] mx-auto mb-7 flex items-center justify-center text-3xl"
-              style={{ background: "rgba(139,92,246,0.15)", border: "1px solid rgba(139,92,246,0.25)" }}
+              className="w-20 h-20 rounded-lg mx-auto mb-7 flex items-center justify-center text-3xl"
+              style={{ background: "rgba(94,234,212,0.12)", border: "1px solid rgba(94,234,212,0.28)" }}
             >
               ✓
             </div>
@@ -149,18 +149,15 @@ export default function BookPage() {
   return (
     <>
       <Navigation />
-      <div className="min-h-screen bg-black pt-24 pb-16">
-        <div className="app-shell max-w-lg">
-          {/* Header */}
+      <div className="min-h-screen bg-black pt-24 pb-28 sm:pb-16 mobile-page-pad">
+        <div className="app-shell max-w-[22rem] sm:max-w-lg">
           <motion.div
             className="mb-7"
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <p className="app-chip mb-4">
-              Book
-            </p>
+            <p className="mobile-section-label mb-3">Book</p>
             <h1
               className="app-title font-semibold text-white mb-2"
             >
@@ -171,17 +168,21 @@ export default function BookPage() {
             </p>
           </motion.div>
 
-          {/* Progress */}
-          <div className="flex gap-1.5 mb-7">
-            {[1, 2, 3].map((s) => (
-              <div
-                key={s}
-                className="h-1 flex-1 rounded-full transition-all duration-500"
-                style={{
-                  background: s <= step ? "#8B5CF6" : "rgba(255,255,255,0.08)",
-                }}
-              />
-            ))}
+          <div className="grid grid-cols-3 gap-2 mb-7">
+            {["Cut", "Time", "Confirm"].map((label, i) => {
+              const s = i + 1;
+              return (
+                <div key={label} className="min-w-0">
+                  <div
+                    className="h-1 rounded-full transition-all duration-500"
+                    style={{
+                      background: s <= step ? "#5EEAD4" : "rgba(255,255,255,0.08)",
+                    }}
+                  />
+                  <p className="mt-2 text-[11px]" style={{ color: s <= step ? "#E5E7EB" : "#6E6E73" }}>{label}</p>
+                </div>
+              );
+            })}
           </div>
 
           <AnimatePresence mode="wait">
@@ -200,9 +201,9 @@ export default function BookPage() {
                     key={s.name}
                     className="w-full text-left app-card service-card p-4"
                     style={{
-                      background: service === s.name ? "rgba(139,92,246,0.12)" : "rgba(255,255,255,0.03)",
-                      borderColor: service === s.name ? "rgba(139,92,246,0.5)" : "rgba(255,255,255,0.07)",
-                      boxShadow: service === s.name ? "0 0 0 1px rgba(139,92,246,0.25)" : "none",
+                      background: service === s.name ? "rgba(94,234,212,0.1)" : "rgba(255,255,255,0.035)",
+                      borderColor: service === s.name ? "rgba(94,234,212,0.5)" : "rgba(255,255,255,0.07)",
+                      boxShadow: service === s.name ? "0 0 0 1px rgba(94,234,212,0.18)" : "none",
                     }}
                     onClick={() => setService(s.name)}
                   >
@@ -216,7 +217,7 @@ export default function BookPage() {
                       </div>
                       <span
                         className="text-lg font-semibold shrink-0"
-                        style={{ color: service === s.name ? "#A78BFA" : "#F5F5F7" }}
+                        style={{ color: service === s.name ? "#99F6E4" : "#F5F5F7" }}
                       >
                         {formatPrice(s.amount)}
                       </span>
@@ -224,7 +225,7 @@ export default function BookPage() {
                   </button>
                 ))}
 
-                <div className="pt-4">
+                <div className="pt-4 desktop-only">
                   <button
                     className="btn-primary w-full"
                     disabled={!canNext1}
@@ -273,11 +274,11 @@ export default function BookPage() {
                     {TIME_SLOTS.map((t) => (
                       <button
                         key={t}
-                        className="min-h-11 px-3 rounded-2xl text-sm transition-all duration-150 border"
+                        className="min-h-12 px-3 rounded-lg text-sm transition-all duration-150 border"
                         style={{
-                          background: time === t ? "rgba(139,92,246,0.14)" : "rgba(255,255,255,0.03)",
-                          borderColor: time === t ? "rgba(139,92,246,0.5)" : "rgba(255,255,255,0.07)",
-                          color: time === t ? "#C4B5FD" : "#86868B",
+                          background: time === t ? "rgba(94,234,212,0.12)" : "rgba(255,255,255,0.03)",
+                          borderColor: time === t ? "rgba(94,234,212,0.5)" : "rgba(255,255,255,0.07)",
+                          color: time === t ? "#99F6E4" : "#A1A1AA",
                         }}
                         onClick={() => setTime(t)}
                       >
@@ -290,7 +291,7 @@ export default function BookPage() {
                   </p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 pt-2">
+                <div className="hidden sm:grid grid-cols-2 gap-3 pt-2">
                   <button className="btn-ghost flex-1" onClick={() => setStep(1)}>
                     Back
                   </button>
@@ -331,7 +332,7 @@ export default function BookPage() {
                   ].map((row) => (
                     <div key={row.label} className="flex justify-between items-center gap-4">
                       <span className="text-sm" style={{ color: "#6E6E73" }}>{row.label}</span>
-                      <span className="text-sm font-medium text-white">{row.value}</span>
+                      <span className="text-sm font-medium text-white text-right">{row.value}</span>
                     </div>
                   ))}
                 </div>
@@ -362,8 +363,8 @@ export default function BookPage() {
                         key={option.id}
                         className="text-left app-card p-4 transition-all duration-200"
                         style={{
-                          background: paymentMethod === option.id ? "rgba(139,92,246,0.12)" : "rgba(255,255,255,0.03)",
-                          borderColor: paymentMethod === option.id ? "rgba(139,92,246,0.5)" : "rgba(255,255,255,0.07)",
+                          background: paymentMethod === option.id ? "rgba(94,234,212,0.1)" : "rgba(255,255,255,0.03)",
+                          borderColor: paymentMethod === option.id ? "rgba(94,234,212,0.5)" : "rgba(255,255,255,0.07)",
                         }}
                         onClick={() => setPaymentMethod(option.id as "in_store" | "online")}
                       >
@@ -382,7 +383,7 @@ export default function BookPage() {
 
                 {error && <p className="text-sm text-red-400">{error}</p>}
 
-                <div className="grid grid-cols-2 gap-3 pt-1">
+                <div className="hidden sm:grid grid-cols-2 gap-3 pt-1">
                   <button className="btn-ghost flex-1" onClick={() => setStep(2)}>
                     Back
                   </button>
@@ -401,6 +402,34 @@ export default function BookPage() {
               </motion.div>
             )}
           </AnimatePresence>
+        </div>
+      </div>
+      <div className="mobile-only fixed left-0 right-0 bottom-[72px] z-40 px-4 pb-[env(safe-area-inset-bottom)]">
+        <div className="grid grid-cols-2 gap-2 rounded-lg border border-white/10 bg-black/85 p-2 backdrop-blur-xl">
+          {step > 1 ? (
+            <button className="btn-ghost min-h-12 text-sm" onClick={() => setStep(step === 3 ? 2 : 1)}>
+              Back
+            </button>
+          ) : (
+            <Link href="/" className="btn-ghost min-h-12 text-sm">
+              Home
+            </Link>
+          )}
+          {step === 1 && (
+            <button className="btn-primary min-h-12 text-sm" disabled={!canNext1} onClick={() => setStep(2)}>
+              Continue
+            </button>
+          )}
+          {step === 2 && (
+            <button className="btn-primary min-h-12 text-sm" disabled={!canNext2} onClick={() => setStep(3)}>
+              Continue
+            </button>
+          )}
+          {step === 3 && (
+            <button className="btn-primary min-h-12 text-sm" disabled={submitting} onClick={submit}>
+              {submitting ? "Booking..." : "Confirm"}
+            </button>
+          )}
         </div>
       </div>
     </>

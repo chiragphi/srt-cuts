@@ -39,8 +39,8 @@ export default function HomePage() {
   return (
     <>
       <Navigation />
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8 }}>
-        <section className="relative min-h-[780px] sm:min-h-screen flex flex-col justify-center overflow-hidden px-0 pt-20">
+      <motion.div className="mobile-page-pad" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8 }}>
+        <section className="relative min-h-[calc(100svh-28px)] sm:min-h-screen flex flex-col justify-center overflow-hidden px-0 pt-20 pb-28 sm:pb-0">
           <div className="hero-glow absolute inset-0 pointer-events-none" />
 
           <motion.div
@@ -49,19 +49,30 @@ export default function HomePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
           >
-            <p className="app-chip mb-5">
-              Herriman, Utah
-            </p>
+            <div className="mb-7 flex items-center gap-3 sm:justify-center">
+              <Image
+                src="/srt-logo.png"
+                alt="SRT"
+                width={54}
+                height={54}
+                className="object-contain"
+                style={{ filter: "drop-shadow(0 0 18px rgba(94,234,212,0.42))" }}
+              />
+              <div>
+                <p className="mobile-section-label">Herriman, Utah</p>
+                <p className="text-sm text-white/45">Private barber booking</p>
+              </div>
+            </div>
             <h1
               className="headline-gradient font-semibold leading-none mb-5"
-              style={{ fontSize: "clamp(56px, 18vw, 118px)", letterSpacing: 0 }}
+              style={{ fontSize: "clamp(42px, 12vw, 118px)", letterSpacing: 0 }}
             >
               SRT Cuts.
             </h1>
-            <p className="text-lg sm:text-xl mb-8 max-w-xl sm:mx-auto leading-relaxed" style={{ color: "#D1D5DB" }}>
+            <p className="text-lg sm:text-xl mb-8 max-w-[21rem] sm:max-w-xl sm:mx-auto leading-relaxed" style={{ color: "#D1D5DB" }}>
               Precision fades. Clean edges. An experience you&apos;ll come back for.
             </p>
-            <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-3 sm:flex sm:justify-center">
+            <div className="mobile-cta">
               <Link href="/book" className="btn-primary">
                 Book Appointment
               </Link>
@@ -71,9 +82,9 @@ export default function HomePage() {
             </div>
           </motion.div>
 
-          <div className="app-shell absolute bottom-6 left-0 right-0 grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 text-left">
+          <div className="app-shell absolute bottom-4 sm:bottom-6 left-0 right-0 grid grid-cols-3 gap-2 sm:gap-3 text-left">
             {["No waiting around", "Text before you arrive", "Always on time"].map((item) => (
-              <div key={item} className="app-card px-4 py-3 text-sm text-white/70">
+              <div key={item} className="border-t border-white/15 pt-3 text-[11px] leading-tight text-white/65 sm:px-4 sm:py-3 sm:text-sm">
                 {item}
               </div>
             ))}
@@ -83,11 +94,11 @@ export default function HomePage() {
         <section id="services" className="app-section">
           <div className="app-shell">
             <SectionHeader eyebrow="What we offer" title="Services" />
-            <div className="flex gap-3 overflow-x-auto pb-3 snap-x sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:overflow-visible sm:pb-0">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {content.serviceConfigs.map((s, i) => (
                 <motion.div
                   key={s.name}
-                  className="app-card service-card min-w-[82vw] snap-start p-5 sm:min-w-0 sm:p-6 flex flex-col gap-4"
+                  className="app-card service-card p-4 sm:p-6 flex flex-col gap-4"
                   initial="hidden"
                   whileInView="show"
                   viewport={{ once: true }}
@@ -97,7 +108,7 @@ export default function HomePage() {
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <p className="text-xs font-medium tracking-widest uppercase" style={{ color: "#8B5CF6" }}>
+                      <p className="text-xs font-medium tracking-widest uppercase" style={{ color: "#5EEAD4" }}>
                         {s.name}
                       </p>
                       <p className="text-sm mt-2 leading-relaxed" style={{ color: "#86868B" }}>
@@ -106,7 +117,7 @@ export default function HomePage() {
                     </div>
                     <span className="text-2xl font-semibold tracking-tight text-white">{formatPrice(s.amount)}</span>
                   </div>
-                  <div className="flex flex-col gap-2 border-t border-white/5 pt-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex items-center justify-between gap-3 border-t border-white/5 pt-4">
                     <span className="text-sm text-white/45">{s.duration}</span>
                     <span className="text-sm text-white/55">{s.detail}</span>
                   </div>
@@ -120,11 +131,11 @@ export default function HomePage() {
           <section id="gallery" className="app-section border-t border-white/5">
             <div className="app-shell">
               <SectionHeader eyebrow="Proof" title="Recent Work" />
-              <div className="flex gap-3 overflow-x-auto pb-3 snap-x md:grid md:grid-cols-3 md:overflow-visible md:pb-0">
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
                 {publicGallery.map((item, i) => (
                   <motion.article
                     key={`${item.title}-${i}`}
-                    className="app-card min-w-[78vw] snap-start md:min-w-0"
+                    className="app-card"
                     initial="hidden"
                     whileInView="show"
                     viewport={{ once: true }}
@@ -147,7 +158,7 @@ export default function HomePage() {
 
         <section className="app-section border-t border-white/5">
           <div className="app-shell grid lg:grid-cols-[0.8fr_1.2fr] gap-7 sm:gap-10 items-center">
-            <div className="relative aspect-square max-w-sm mx-auto lg:mx-0 app-card">
+            <div className="relative aspect-[4/5] sm:aspect-square max-w-sm mx-auto lg:mx-0 app-card">
               <Image src={content.barberPhotoUrl || "/srt-logo.png"} alt={content.barberName} fill sizes="400px" className="object-cover" />
             </div>
             <div>
@@ -158,7 +169,7 @@ export default function HomePage() {
               <p className="text-lg leading-relaxed max-w-2xl" style={{ color: "#A1A1AA" }}>{content.barberBio}</p>
               <div className="flex flex-wrap gap-2 mt-6">
                 {content.specialties.map((s) => (
-                  <span key={s} className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-white/70">{s}</span>
+                  <span key={s} className="rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white/70">{s}</span>
                 ))}
               </div>
             </div>
@@ -167,11 +178,11 @@ export default function HomePage() {
 
         {publicTestimonials.length > 0 && (
           <section className="app-section border-t border-white/5">
-            <div className="app-shell flex gap-3 overflow-x-auto pb-3 snap-x md:grid md:grid-cols-3 md:overflow-visible md:pb-0">
+            <div className="app-shell grid gap-3 md:grid-cols-3">
               {publicTestimonials.map((t, i) => (
-                <motion.div key={`${t.name}-${i}`} className="app-card min-w-[82vw] snap-start p-6 md:min-w-0" initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp} custom={i}>
+                <motion.div key={`${t.name}-${i}`} className="app-card p-5 sm:p-6" initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp} custom={i}>
                   <p className="text-lg leading-relaxed text-white/85">&ldquo;{t.quote}&rdquo;</p>
-                  <p className="text-sm mt-5" style={{ color: "#8B5CF6" }}>{t.name}</p>
+                  <p className="text-sm mt-5" style={{ color: "#5EEAD4" }}>{t.name}</p>
                 </motion.div>
               ))}
             </div>
@@ -192,7 +203,7 @@ export default function HomePage() {
         <footer className="py-10 border-t border-white/5">
           <div className="app-shell flex flex-col sm:flex-row justify-between items-center gap-4">
             <p className="text-sm" style={{ color: "#6E6E73" }}>© {new Date().getFullYear()} SRT Cuts · Herriman, Utah</p>
-            <Link href="/book" className="text-sm hover:text-white transition-colors" style={{ color: "#8B5CF6" }}>Book an appointment →</Link>
+            <Link href="/book" className="text-sm hover:text-white transition-colors" style={{ color: "#5EEAD4" }}>Book an appointment →</Link>
           </div>
         </footer>
       </motion.div>
@@ -215,7 +226,7 @@ function InfoBlock({ title, body, detail, href, action }: { title: string; body:
       <h3 className="text-white font-semibold text-xl mb-3">{title}</h3>
       <p className="text-base leading-relaxed" style={{ color: "#A1A1AA" }}>{body}</p>
       <p className="text-sm mt-3 leading-relaxed" style={{ color: "#6E6E73" }}>{detail}</p>
-      <Link href={href} className="inline-flex mt-6 text-sm text-purple-300 hover:text-white transition-colors">
+      <Link href={href} className="inline-flex mt-6 text-sm text-teal-200 hover:text-white transition-colors">
         {action} →
       </Link>
     </div>
