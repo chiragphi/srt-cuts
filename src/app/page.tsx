@@ -32,16 +32,6 @@ export default function HomePage() {
       <Navigation />
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8 }}>
         <section className="relative min-h-screen flex flex-col items-center justify-center text-center px-6 overflow-hidden">
-          <div className="absolute inset-0 pointer-events-none">
-            <Image
-              src={content.heroImageUrl || "/srt-logo.png"}
-              alt=""
-              fill
-              sizes="100vw"
-              priority
-              className="object-cover opacity-20"
-            />
-          </div>
           <div
             className="absolute inset-0 pointer-events-none"
             style={{
@@ -196,10 +186,6 @@ export default function HomePage() {
             <Link href="/book" className="text-sm hover:text-white transition-colors" style={{ color: "#8B5CF6" }}>Book an appointment →</Link>
           </div>
         </footer>
-
-        <Link href="/book" className="fixed bottom-4 left-4 right-4 z-50 btn-primary sm:hidden">
-          Book Appointment
-        </Link>
       </motion.div>
     </>
   );
