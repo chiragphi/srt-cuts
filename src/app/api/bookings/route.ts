@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
 import { supabaseAdmin } from "@/lib/supabase";
 import { sendSMS, SMS } from "@/lib/twilio";
+import { mergeSiteContent } from "@/lib/site-content";
+import { createCheckoutSession } from "@/lib/stripe";
 
 export async function GET() {
   const user = await getSession();
@@ -20,9 +22,51 @@ export async function POST(req: NextRequest) {
   const user = await getSession();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { service, date, time, notes } = await req.json();
+  const { service, date, time, notes, paymentMethod } = await req.json();
   if (!service || !date || !time)
     return NextResponse.json({ error: "Missing fields" }, { status: 400 });
+  if (paymentMethod !== "online" && paymentMethod !== "in_store")
+    return NextResponse.json({ error: "Choose a payment method" }, { status: 400 });
+
+  const { data: siteContent } = await supabaseAdmin
+    .from("site_content")
+    .select("content")
+    .eq("id", "main")
+    .maybeSingle();
+  const content = mergeSiteContent(siteContent?.content);
+  const selectedService = content.serviceConfigs.find((item) => item.name === service);
+  if (!selectedService)
+    return NextResponse.json({ error: "Invalid service" }, { status: 400 });
+
+  if (paymentMethod === "online" && !selectedService.stripePriceId) {
+    return NextResponse.json(
+      { error: "Online payment is not ready for this service yet. Please choose pay in store." },
+      { status: 400 }
+    );
+  }
+
+  const block = content.scheduleBlocks.find((b) => b.date === date);
+  if (block) {
+    return NextResponse.json(
+      { error: `That day is unavailable: ${block.reason}` },
+      { status: 409 }
+    );
+  }
+
+  const { data: existing } = await supabaseAdmin
+    .from("bookings")
+    .select("id")
+    .eq("booking_date", date)
+    .eq("booking_time", time)
+    .eq("status", "accepted")
+    .maybeSingle();
+
+  if (existing) {
+    return NextResponse.json(
+      { error: "That time is already booked. Please choose another slot." },
+      { status: 409 }
+    );
+  }
 
   const { data: booking, error } = await supabaseAdmin
     .from("bookings")
@@ -35,6 +79,9 @@ export async function POST(req: NextRequest) {
       booking_time: time,
       notes: notes ?? "",
       status: "pending",
+      service_price_cents: selectedService.amount,
+      payment_method: paymentMethod,
+      payment_status: paymentMethod === "online" ? "unpaid" : "pay_in_store",
     })
     .select()
     .single();
@@ -65,6 +112,33 @@ export async function POST(req: NextRequest) {
         SMS.bookingCreatedAdmin(user.name, user.phone, service, displayDate, time)
       );
     } catch {}
+  }
+
+  if (paymentMethod === "online") {
+    try {
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+      const session = await createCheckoutSession({
+        priceId: selectedService.stripePriceId!,
+        bookingId: booking.id,
+        successUrl: `${siteUrl}/book?payment=success`,
+        cancelUrl: `${siteUrl}/book?payment=cancelled`,
+        customerName: user.name,
+        customerPhone: user.phone,
+      });
+
+      await supabaseAdmin
+        .from("bookings")
+        .update({ stripe_checkout_session_id: session.id })
+        .eq("id", booking.id);
+
+      return NextResponse.json({ booking, checkoutUrl: session.url }, { status: 201 });
+    } catch (error) {
+      await supabaseAdmin.from("bookings").delete().eq("id", booking.id);
+      return NextResponse.json(
+        { error: error instanceof Error ? error.message : "Could not start online payment" },
+        { status: 500 }
+      );
+    }
   }
 
   return NextResponse.json({ booking }, { status: 201 });

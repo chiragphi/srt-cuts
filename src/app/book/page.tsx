@@ -5,14 +5,8 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import Navigation from "@/components/Navigation";
-
-const SERVICES = [
-  { name: "Fade", price: "$30", desc: "Skin or taper fade" },
-  { name: "Haircut", price: "$25", desc: "Precision cut" },
-  { name: "Lineup", price: "$15", desc: "Edge up & lines" },
-  { name: "Full Service", price: "$40", desc: "Cut + lineup" },
-  { name: "Kids Cut", price: "$20", desc: "12 & under" },
-];
+import { formatPrice } from "@/lib/services";
+import { DEFAULT_SITE_CONTENT, type SiteContent } from "@/lib/site-content";
 
 const TIME_SLOTS = [
   "9:00 AM", "9:30 AM", "10:00 AM", "10:30 AM",
@@ -36,10 +30,12 @@ export default function BookPage() {
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [notes, setNotes] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<"in_store" | "online">("in_store");
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState("");
+  const [content, setContent] = useState<SiteContent>(DEFAULT_SITE_CONTENT);
 
   useEffect(() => {
     fetch("/api/auth/me")
@@ -54,13 +50,30 @@ export default function BookPage() {
       });
   }, [router]);
 
+  useEffect(() => {
+    fetch("/api/site-content")
+      .then((r) => r.json())
+      .then((d) => setContent(d.content ?? DEFAULT_SITE_CONTENT))
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (params.get("payment") === "success") setDone(true);
+    if (params.get("payment") === "cancelled") {
+      setError("Online payment was cancelled. You can try again or choose pay in store.");
+      setStep(3);
+    }
+  }, []);
+
   async function submit() {
     setSubmitting(true);
     setError("");
     const res = await fetch("/api/bookings", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ service, date, time, notes }),
+      body: JSON.stringify({ service, date, time, notes, paymentMethod }),
     });
     setSubmitting(false);
     if (!res.ok) {
@@ -68,11 +81,19 @@ export default function BookPage() {
       setError(d.error || "Something went wrong.");
       return;
     }
+    const d = await res.json();
+    if (d.checkoutUrl) {
+      window.location.href = d.checkoutUrl;
+      return;
+    }
     setDone(true);
   }
 
+  const services = content.serviceConfigs;
   const canNext1 = !!service;
-  const canNext2 = !!date && !!time;
+  const selectedBlock = content.scheduleBlocks.find((b) => b.date === date);
+  const canNext2 = !!date && !!time && !selectedBlock;
+  const selectedService = services.find((s) => s.name === service);
 
   if (loading) {
     return (
@@ -108,9 +129,9 @@ export default function BookPage() {
               Booking requested
             </h1>
             <p className="text-base font-light mb-8" style={{ color: "#86868B" }}>
-              You'll get a text confirmation once it's approved.
+              You&apos;ll get a text confirmation once it&apos;s approved.
               <br />
-              Check your phone for updates.
+              Check your phone for updates and save the appointment once confirmed.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <button
@@ -179,7 +200,7 @@ export default function BookPage() {
                 transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                 className="space-y-3"
               >
-                {SERVICES.map((s) => (
+                {services.map((s) => (
                   <button
                     key={s.name}
                     className="w-full text-left rounded-2xl p-5 transition-all duration-200 border"
@@ -194,12 +215,15 @@ export default function BookPage() {
                       <div>
                         <p className="font-medium text-white text-base">{s.name}</p>
                         <p className="text-sm mt-0.5" style={{ color: "#86868B" }}>{s.desc}</p>
+                        <p className="text-xs mt-2" style={{ color: "#6E6E73" }}>
+                          {s.duration} · {s.detail}
+                        </p>
                       </div>
                       <span
                         className="text-xl font-semibold ml-4"
-                        style={{ color: service === s.name ? "#A78BFA" : "#6E6E73" }}
+                    style={{ color: service === s.name ? "#A78BFA" : "#6E6E73" }}
                       >
-                        {s.price}
+                        {formatPrice(s.amount)}
                       </span>
                     </div>
                   </button>
@@ -239,6 +263,11 @@ export default function BookPage() {
                     className="input-field"
                     style={{ colorScheme: "dark" }}
                   />
+                  {selectedBlock && (
+                    <p className="text-sm text-red-300 mt-2">
+                      This day is blocked: {selectedBlock.reason}
+                    </p>
+                  )}
                 </div>
 
                 <div>
@@ -261,6 +290,9 @@ export default function BookPage() {
                       </button>
                     ))}
                   </div>
+                  <p className="text-xs mt-3" style={{ color: "#6E6E73" }}>
+                    Availability is previewed here. Final confirmation comes by SMS after review.
+                  </p>
                 </div>
 
                 <div className="flex gap-3 pt-2">
@@ -292,6 +324,8 @@ export default function BookPage() {
                 <div className="glass rounded-2xl p-6 space-y-4">
                   {[
                     { label: "Service", value: service },
+                    { label: "Duration", value: selectedService?.duration ?? "Appointment" },
+                    { label: "Price", value: selectedService ? formatPrice(selectedService.amount) : "TBD" },
                     {
                       label: "Date",
                       value: new Date(date + "T00:00:00").toLocaleDateString("en-US", {
@@ -320,6 +354,37 @@ export default function BookPage() {
                   />
                 </div>
 
+                <div>
+                  <label className="block text-xs text-white/40 mb-3 tracking-wide uppercase">
+                    Payment
+                  </label>
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    {[
+                      { id: "in_store", title: "Pay in store", desc: "Pay the full price at your appointment." },
+                      { id: "online", title: "Pay online", desc: "Pay the full price now with Stripe." },
+                    ].map((option) => (
+                      <button
+                        key={option.id}
+                        className="text-left rounded-2xl p-4 transition-all duration-200 border"
+                        style={{
+                          background: paymentMethod === option.id ? "rgba(139,92,246,0.12)" : "rgba(255,255,255,0.03)",
+                          borderColor: paymentMethod === option.id ? "rgba(139,92,246,0.5)" : "rgba(255,255,255,0.07)",
+                        }}
+                        onClick={() => setPaymentMethod(option.id as "in_store" | "online")}
+                      >
+                        <p className="text-white font-medium">{option.title}</p>
+                        <p className="text-sm mt-1" style={{ color: "#86868B" }}>{option.desc}</p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="glass rounded-2xl p-5 space-y-3">
+                  <p className="text-sm text-white/80">No deposits. Choose online full payment or pay the full price in store.</p>
+                  <p className="text-sm" style={{ color: "#86868B" }}>{content.cancellationPolicy}</p>
+                  <p className="text-sm" style={{ color: "#86868B" }}>{content.reminderPolicy}</p>
+                </div>
+
                 {error && <p className="text-sm text-red-400">{error}</p>}
 
                 <div className="flex gap-3 pt-1">
@@ -336,7 +401,7 @@ export default function BookPage() {
                 </div>
 
                 <p className="text-xs text-center" style={{ color: "#6E6E73" }}>
-                  You'll receive a text once confirmed.
+                  You&apos;ll receive a text once confirmed. Cancel and reschedule support is handled by text.
                 </p>
               </motion.div>
             )}
