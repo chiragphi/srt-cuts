@@ -1,17 +1,32 @@
 import twilio from "twilio";
 
 function getClient() {
-  return twilio(
-    process.env.TWILIO_ACCOUNT_SID!,
-    process.env.TWILIO_AUTH_TOKEN!
-  );
+  const accountSid = process.env.TWILIO_ACCOUNT_SID;
+  const authToken = process.env.TWILIO_AUTH_TOKEN;
+  if (!accountSid || !authToken) {
+    throw new Error("Twilio account SID or auth token is missing.");
+  }
+
+  return twilio(accountSid, authToken);
+}
+
+export function formatSmsPhone(phone: string) {
+  const digits = phone.replace(/\D/g, "").slice(-10);
+  return digits.length === 10 ? `+1${digits}` : phone;
 }
 
 export async function sendSMS(to: string, body: string) {
-  const formatted = to.startsWith("+") ? to : `+1${to.replace(/\D/g, "")}`;
+  const from = process.env.TWILIO_PHONE_NUMBER;
+  if (!from) throw new Error("Twilio phone number is missing.");
+
+  const formatted = formatSmsPhone(to);
+  if (formatted === formatSmsPhone(from)) {
+    throw new Error("Twilio cannot send an SMS from your Twilio number to that same number.");
+  }
+
   return getClient().messages.create({
     to: formatted,
-    from: process.env.TWILIO_PHONE_NUMBER!,
+    from,
     body,
   });
 }

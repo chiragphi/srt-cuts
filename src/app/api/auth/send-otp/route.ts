@@ -24,8 +24,10 @@ export async function POST(req: NextRequest) {
 
   try {
     await sendSMS(digits, SMS.otp(code));
-  } catch {
-    return NextResponse.json({ error: "Failed to send SMS" }, { status: 500 });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Failed to send SMS";
+    console.error("OTP SMS failed:", message);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 
   return NextResponse.json({ ok: true });

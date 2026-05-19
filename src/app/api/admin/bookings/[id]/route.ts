@@ -50,7 +50,9 @@ export async function PATCH(
           ? SMS.bookingAccepted(booking.user_name, booking.service, displayDate, booking.booking_time)
           : SMS.bookingDenied(booking.user_name, booking.service, displayDate, booking.booking_time);
       await sendSMS(booking.user_phone, msg);
-    } catch {}
+    } catch (error) {
+      console.error("Booking status SMS failed:", error instanceof Error ? error.message : error);
+    }
   }
 
   return NextResponse.json({ booking });

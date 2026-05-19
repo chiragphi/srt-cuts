@@ -100,7 +100,9 @@ export async function POST(req: NextRequest) {
       user.phone,
       SMS.bookingCreatedCustomer(user.name, service, displayDate, time)
     );
-  } catch {}
+  } catch (error) {
+    console.error("Customer booking SMS failed:", error instanceof Error ? error.message : error);
+  }
 
   // Notify admin
   const adminPhone = process.env.ADMIN_PHONE;
@@ -110,7 +112,9 @@ export async function POST(req: NextRequest) {
         adminPhone,
         SMS.bookingCreatedAdmin(user.name, user.phone, service, displayDate, time)
       );
-    } catch {}
+    } catch (error) {
+      console.error("Admin booking SMS failed:", error instanceof Error ? error.message : error);
+    }
   }
 
   if (paymentMethod === "online") {
