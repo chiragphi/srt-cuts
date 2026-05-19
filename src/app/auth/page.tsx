@@ -24,7 +24,6 @@ function AuthForm() {
   const [phone, setPhone] = useState("");
   const [name, setName] = useState("");
   const [code, setCode] = useState(["", "", "", "", "", ""]);
-  const [isNewUser, setIsNewUser] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const codeRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -157,21 +156,6 @@ function AuthForm() {
                     />
                   </div>
 
-                  {isNewUser && (
-                    <div>
-                      <label className="block text-xs text-white/40 mb-2 tracking-wide uppercase">
-                        Your Name
-                      </label>
-                      <input
-                        className="input-field"
-                        type="text"
-                        placeholder="First Last"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                      />
-                    </div>
-                  )}
-
                   {error && (
                     <p className="text-sm text-red-400 text-center">{error}</p>
                   )}
@@ -184,15 +168,6 @@ function AuthForm() {
                     {loading ? "Sending…" : "Send Code"}
                   </button>
 
-                  <p className="text-xs text-center mt-2" style={{ color: "#6E6E73" }}>
-                    New here?{" "}
-                    <button
-                      className="text-purple-400 hover:text-purple-300 transition-colors bg-transparent border-none cursor-pointer"
-                      onClick={() => setIsNewUser((v) => !v)}
-                    >
-                      {isNewUser ? "Sign in instead" : "Create account"}
-                    </button>
-                  </p>
                 </div>
               </motion.div>
             )}
@@ -216,20 +191,18 @@ function AuthForm() {
                   <span className="text-white/70">{phone}</span>
                 </p>
 
-                {!isNewUser && (
-                  <div className="mb-4">
-                    <label className="block text-xs text-white/40 mb-2 tracking-wide uppercase">
-                      Your Name
-                    </label>
-                    <input
-                      className="input-field"
-                      type="text"
-                      placeholder="First Last"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                    />
-                  </div>
-                )}
+                <div className="mb-4">
+                  <label className="block text-xs text-white/40 mb-2 tracking-wide uppercase">
+                    Your Name
+                  </label>
+                  <input
+                    className="input-field"
+                    type="text"
+                    placeholder="First Last"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                  />
+                </div>
 
                 {/* OTP grid */}
                 <div className="flex gap-2 justify-center mb-6">
