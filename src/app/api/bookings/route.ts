@@ -3,7 +3,6 @@ import { getSession } from "@/lib/session";
 import { supabaseAdmin } from "@/lib/supabase";
 import { sendSMS, SMS } from "@/lib/twilio";
 import { mergeSiteContent } from "@/lib/site-content";
-import { createCheckoutSession } from "@/lib/stripe";
 
 export async function GET() {
   const user = await getSession();
@@ -38,9 +37,9 @@ export async function POST(req: NextRequest) {
   if (!selectedService)
     return NextResponse.json({ error: "Invalid service" }, { status: 400 });
 
-  if (paymentMethod === "online" && !selectedService.stripePriceId) {
+  if (paymentMethod === "online" && !content.venmoUrl) {
     return NextResponse.json(
-      { error: "Online payment is not ready for this service yet. Please choose pay in store." },
+      { error: "Venmo payment is not ready yet. Please choose pay in store." },
       { status: 400 }
     );
   }
@@ -115,30 +114,7 @@ export async function POST(req: NextRequest) {
   }
 
   if (paymentMethod === "online") {
-    try {
-      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-      const session = await createCheckoutSession({
-        priceId: selectedService.stripePriceId!,
-        bookingId: booking.id,
-        successUrl: `${siteUrl}/book?payment=success`,
-        cancelUrl: `${siteUrl}/book?payment=cancelled`,
-        customerName: user.name,
-        customerPhone: user.phone,
-      });
-
-      await supabaseAdmin
-        .from("bookings")
-        .update({ stripe_checkout_session_id: session.id })
-        .eq("id", booking.id);
-
-      return NextResponse.json({ booking, checkoutUrl: session.url }, { status: 201 });
-    } catch (error) {
-      await supabaseAdmin.from("bookings").delete().eq("id", booking.id);
-      return NextResponse.json(
-        { error: error instanceof Error ? error.message : "Could not start online payment" },
-        { status: 500 }
-      );
-    }
+    return NextResponse.json({ booking, paymentUrl: content.venmoUrl }, { status: 201 });
   }
 
   return NextResponse.json({ booking }, { status: 201 });

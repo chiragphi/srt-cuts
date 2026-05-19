@@ -33,36 +33,36 @@ export default function Navigation() {
 
   return (
     <motion.nav
-      className="fixed top-0 left-0 right-0 z-40 transition-all duration-300"
+      className="fixed top-0 left-0 right-0 z-40 transition-all duration-300 pt-[env(safe-area-inset-top)]"
       style={{
-        background: scrolled ? "rgba(0,0,0,0.72)" : "transparent",
-        backdropFilter: scrolled ? "blur(20px) saturate(180%)" : "none",
-        WebkitBackdropFilter: scrolled ? "blur(20px) saturate(180%)" : "none",
-        borderBottom: scrolled ? "1px solid rgba(255,255,255,0.07)" : "1px solid transparent",
+        background: scrolled ? "rgba(0,0,0,0.64)" : "linear-gradient(to bottom, rgba(0,0,0,0.72), transparent)",
+        backdropFilter: scrolled ? "blur(18px) saturate(180%)" : "none",
+        WebkitBackdropFilter: scrolled ? "blur(18px) saturate(180%)" : "none",
+        borderBottom: scrolled ? "1px solid rgba(255,255,255,0.08)" : "1px solid transparent",
       }}
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
     >
-      <div className="max-w-6xl mx-auto px-6 flex items-center justify-between h-16">
+      <div className="app-shell flex items-center justify-between h-16">
         <Link href="/" className="flex items-center gap-2.5">
           <Image
             src="/srt-logo.png"
             alt="SRT"
-            width={32}
-            height={32}
+            width={30}
+            height={30}
             className="object-contain"
             style={{ filter: "drop-shadow(0 0 8px rgba(139,92,246,0.7))" }}
           />
-          <span className="text-sm font-semibold tracking-wider text-white/90 uppercase">
+          <span className="text-sm font-semibold tracking-wider text-white/90 uppercase hidden min-[360px]:inline">
             SRT Cuts
           </span>
         </Link>
 
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-2 sm:gap-4">
           <Link
             href="/#services"
-            className="text-sm text-white/55 hover:text-white/90 transition-colors"
+            className="hidden sm:inline text-sm text-white/55 hover:text-white/90 transition-colors"
           >
             Services
           </Link>
@@ -71,12 +71,12 @@ export default function Navigation() {
             <>
               <Link
                 href="/book"
-                className="btn-primary py-2 px-5 text-sm"
+                className="btn-primary min-h-0 py-2.5 px-4 text-sm rounded-full"
               >
                 Book
               </Link>
               <div className="relative group">
-                <button className="text-sm text-white/55 hover:text-white/90 transition-colors">
+                <button className="min-h-10 rounded-full px-3 text-sm text-white/60 hover:text-white/90 transition-colors bg-white/[0.04] border border-white/10">
                   {user.name.split(" ")[0]}
                 </button>
                 <div className="absolute right-0 top-full mt-2 w-40 glass rounded-xl py-1 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none group-hover:pointer-events-auto">
@@ -90,7 +90,7 @@ export default function Navigation() {
               </div>
             </>
           ) : (
-            <Link href="/auth" className="btn-primary py-2 px-5 text-sm">
+            <Link href="/auth" className="btn-primary min-h-0 py-2.5 px-4 text-sm rounded-full">
               Sign in
             </Link>
           )}

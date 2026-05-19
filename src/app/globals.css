@@ -3,6 +3,11 @@
 :root {
   --background: #000000;
   --foreground: #F5F5F7;
+  --surface: rgba(255, 255, 255, 0.055);
+  --surface-strong: rgba(255, 255, 255, 0.085);
+  --stroke: rgba(255, 255, 255, 0.095);
+  --muted: #9CA3AF;
+  --accent: #8B5CF6;
 }
 
 @theme inline {
@@ -22,11 +27,20 @@ html {
 }
 
 body {
-  background: #000;
+  background:
+    radial-gradient(circle at 50% -20%, rgba(139, 92, 246, 0.16), transparent 38rem),
+    #000;
   color: #F5F5F7;
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
     system-ui, "Helvetica Neue", Arial, sans-serif;
   margin: 0;
+}
+
+button,
+a,
+input,
+textarea {
+  -webkit-tap-highlight-color: transparent;
 }
 
 ::selection {
@@ -39,8 +53,8 @@ body {
 }
 
 .glass {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--surface);
+  border: 1px solid var(--stroke);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
 }
@@ -61,11 +75,12 @@ body {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 14px 28px;
-  border-radius: 980px;
-  font-size: 17px;
-  font-weight: 400;
-  letter-spacing: -0.022em;
+  min-height: 50px;
+  padding: 14px 22px;
+  border-radius: 16px;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0;
   font-family: inherit;
   background: #8B5CF6;
   color: #fff;
@@ -77,11 +92,11 @@ body {
 .btn-primary:hover {
   background: #7C3AED;
   box-shadow: 0 0 30px rgba(139, 92, 246, 0.45);
-  transform: scale(1.02);
+  transform: translateY(-1px);
 }
 
 .btn-primary:active {
-  transform: scale(0.97);
+  transform: scale(0.98);
 }
 
 .btn-primary:disabled {
@@ -96,11 +111,12 @@ body {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 14px 28px;
-  border-radius: 980px;
-  font-size: 17px;
-  font-weight: 400;
-  letter-spacing: -0.022em;
+  min-height: 50px;
+  padding: 14px 22px;
+  border-radius: 16px;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0;
   font-family: inherit;
   background: rgba(255, 255, 255, 0.07);
   color: #F5F5F7;
@@ -111,16 +127,17 @@ body {
 
 .btn-ghost:hover {
   background: rgba(255, 255, 255, 0.11);
-  transform: scale(1.02);
+  transform: translateY(-1px);
 }
 
 .input-field {
   width: 100%;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 16px 20px;
-  font-size: 17px;
+  min-height: 54px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--stroke);
+  border-radius: 16px;
+  padding: 15px 16px;
+  font-size: 16px;
   font-family: inherit;
   color: #F5F5F7;
   outline: none;
@@ -138,8 +155,86 @@ body {
 }
 
 .headline-gradient {
-  background: linear-gradient(145deg, #F5F5F7 0%, #C4B5FD 45%, #7C3AED 100%);
+  background: linear-gradient(145deg, #F5F5F7 0%, #D8B4FE 48%, #A78BFA 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+.app-shell {
+  width: min(100%, 1120px);
+  margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left));
+  padding-right: max(16px, env(safe-area-inset-right));
+}
+
+.app-section {
+  padding-top: 64px;
+  padding-bottom: 64px;
+}
+
+.app-card {
+  background: var(--surface);
+  border: 1px solid var(--stroke);
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.hero-glow {
+  background:
+    radial-gradient(ellipse 86% 58% at 50% 38%, rgba(139, 92, 246, 0.34) 0%, rgba(109, 40, 217, 0.16) 40%, rgba(0, 0, 0, 0.78) 68%, rgba(0, 0, 0, 0.96) 100%);
+}
+
+.service-card {
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.24);
+  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.service-card:hover {
+  background: var(--surface-strong);
+  border-color: rgba(255, 255, 255, 0.16);
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.32), 0 0 34px rgba(139, 92, 246, 0.12);
+}
+
+.service-card:active {
+  transform: scale(0.99);
+}
+
+.app-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  border-radius: 999px;
+  padding: 0 14px;
+  background: rgba(255, 255, 255, 0.065);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 13px;
+}
+
+.app-title {
+  font-size: 34px;
+  line-height: 1.03;
+  letter-spacing: 0;
+}
+
+@media (min-width: 640px) {
+  .app-shell {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
+  .app-section {
+    padding-top: 96px;
+    padding-bottom: 96px;
+  }
+
+  .app-title {
+    font-size: 56px;
+  }
+
+  .hero-glow {
+    background:
+      radial-gradient(ellipse 70% 55% at 50% 45%, rgba(109, 40, 217, 0.24) 0%, rgba(0, 0, 0, 0.78) 58%, rgba(0, 0, 0, 0.96) 100%);
+  }
 }

@@ -39,16 +39,12 @@ CREATE TABLE IF NOT EXISTS bookings (
   service_price_cents INTEGER NOT NULL DEFAULT 0,
   payment_method TEXT NOT NULL DEFAULT 'in_store' CHECK (payment_method IN ('in_store', 'online')),
   payment_status TEXT NOT NULL DEFAULT 'pay_in_store' CHECK (payment_status IN ('pay_in_store', 'unpaid', 'paid', 'refunded')),
-  stripe_checkout_session_id TEXT,
-  stripe_payment_intent_id TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 ALTER TABLE bookings ADD COLUMN IF NOT EXISTS service_price_cents INTEGER NOT NULL DEFAULT 0;
 ALTER TABLE bookings ADD COLUMN IF NOT EXISTS payment_method TEXT NOT NULL DEFAULT 'in_store';
 ALTER TABLE bookings ADD COLUMN IF NOT EXISTS payment_status TEXT NOT NULL DEFAULT 'pay_in_store';
-ALTER TABLE bookings ADD COLUMN IF NOT EXISTS stripe_checkout_session_id TEXT;
-ALTER TABLE bookings ADD COLUMN IF NOT EXISTS stripe_payment_intent_id TEXT;
 
 DO $$
 BEGIN

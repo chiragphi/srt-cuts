@@ -12,14 +12,25 @@ export async function PATCH(
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const { id } = await params;
-  const { status } = await req.json();
+  const { status, paymentStatus } = await req.json();
 
-  if (status !== "accepted" && status !== "denied")
-    return NextResponse.json({ error: "Invalid status" }, { status: 400 });
+  const updates: { status?: "accepted" | "denied"; payment_status?: "unpaid" | "paid" | "refunded" } = {};
+  if (status) {
+    if (status !== "accepted" && status !== "denied")
+      return NextResponse.json({ error: "Invalid status" }, { status: 400 });
+    updates.status = status;
+  }
+  if (paymentStatus) {
+    if (paymentStatus !== "unpaid" && paymentStatus !== "paid" && paymentStatus !== "refunded")
+      return NextResponse.json({ error: "Invalid payment status" }, { status: 400 });
+    updates.payment_status = paymentStatus;
+  }
+  if (!Object.keys(updates).length)
+    return NextResponse.json({ error: "Nothing to update" }, { status: 400 });
 
   const { data: booking } = await supabaseAdmin
     .from("bookings")
-    .update({ status })
+    .update(updates)
     .eq("id", id)
     .select()
     .single();
@@ -27,18 +38,20 @@ export async function PATCH(
   if (!booking)
     return NextResponse.json({ error: "Booking not found" }, { status: 404 });
 
-  const displayDate = new Date(booking.booking_date + "T00:00:00").toLocaleDateString(
-    "en-US",
-    { weekday: "long", month: "long", day: "numeric" }
-  );
+  if (status) {
+    const displayDate = new Date(booking.booking_date + "T00:00:00").toLocaleDateString(
+      "en-US",
+      { weekday: "long", month: "long", day: "numeric" }
+    );
 
-  try {
-    const msg =
-      status === "accepted"
-        ? SMS.bookingAccepted(booking.user_name, booking.service, displayDate, booking.booking_time)
-        : SMS.bookingDenied(booking.user_name, booking.service, displayDate, booking.booking_time);
-    await sendSMS(booking.user_phone, msg);
-  } catch {}
+    try {
+      const msg =
+        status === "accepted"
+          ? SMS.bookingAccepted(booking.user_name, booking.service, displayDate, booking.booking_time)
+          : SMS.bookingDenied(booking.user_name, booking.service, displayDate, booking.booking_time);
+      await sendSMS(booking.user_phone, msg);
+    } catch {}
+  }
 
   return NextResponse.json({ booking });
 }

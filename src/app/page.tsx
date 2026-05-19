@@ -6,7 +6,12 @@ import Link from "next/link";
 import { motion, type Variants } from "framer-motion";
 import Navigation from "@/components/Navigation";
 import { formatPrice } from "@/lib/services";
-import { DEFAULT_SITE_CONTENT, type SiteContent } from "@/lib/site-content";
+import {
+  DEFAULT_SITE_CONTENT,
+  isPlaceholderGalleryItem,
+  isPlaceholderTestimonial,
+  type SiteContent,
+} from "@/lib/site-content";
 
 const fadeUp: Variants = {
   hidden: { opacity: 0, y: 24 },
@@ -27,64 +32,62 @@ export default function HomePage() {
       .catch(() => {});
   }, []);
 
+  const publicGallery = content.gallery.filter((item) => !isPlaceholderGalleryItem(item));
+  const publicTestimonials = content.testimonials.filter((item) => !isPlaceholderTestimonial(item));
+  const hasSocialLinks = Boolean(content.instagramUrl || content.tiktokUrl);
+
   return (
     <>
       <Navigation />
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8 }}>
-        <section className="relative min-h-screen flex flex-col items-center justify-center text-center px-6 overflow-hidden">
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              background:
-                "radial-gradient(ellipse 70% 55% at 50% 45%, rgba(109,40,217,0.24) 0%, rgba(0,0,0,0.78) 58%, rgba(0,0,0,0.96) 100%)",
-            }}
-          />
+        <section className="relative min-h-[780px] sm:min-h-screen flex flex-col justify-center overflow-hidden px-0 pt-20">
+          <div className="hero-glow absolute inset-0 pointer-events-none" />
 
           <motion.div
-            className="relative max-w-4xl"
+            className="app-shell relative text-left sm:text-center"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
           >
-            <p className="text-xs tracking-[0.4em] uppercase mb-6 font-light" style={{ color: "#A78BFA" }}>
+            <p className="app-chip mb-5">
               Herriman, Utah
             </p>
             <h1
-              className="headline-gradient font-semibold leading-none tracking-tight mb-6"
-              style={{ fontSize: "clamp(64px, 10vw, 120px)", letterSpacing: "-0.04em" }}
+              className="headline-gradient font-semibold leading-none mb-5"
+              style={{ fontSize: "clamp(56px, 18vw, 118px)", letterSpacing: 0 }}
             >
               SRT Cuts.
             </h1>
-            <p className="text-xl mb-10 max-w-xl mx-auto font-light leading-relaxed" style={{ color: "#A1A1AA" }}>
-              Precision fades, clean edges, verified booking, text confirmations, and a cut you can actually plan around.
+            <p className="text-lg sm:text-xl mb-8 max-w-xl sm:mx-auto leading-relaxed" style={{ color: "#D1D5DB" }}>
+              Precision fades. Clean edges. An experience you&apos;ll come back for.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/book" className="btn-primary text-base px-8 py-4">
+            <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-3 sm:flex sm:justify-center">
+              <Link href="/book" className="btn-primary">
                 Book Appointment
               </Link>
-              <a href="#gallery" className="btn-ghost text-base px-8 py-4">
-                See The Work
+              <a href="#services" className="btn-ghost">
+                View Services
               </a>
             </div>
           </motion.div>
 
-          <div className="absolute bottom-8 left-6 right-6 grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-4xl mx-auto text-left">
-            {["SMS confirmations", "Admin-managed availability", "Cancellation and reschedule support"].map((item) => (
-              <div key={item} className="glass rounded-xl px-4 py-3 text-sm text-white/70">
+          <div className="app-shell absolute bottom-6 left-0 right-0 grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 text-left">
+            {["No waiting around", "Text before you arrive", "Always on time"].map((item) => (
+              <div key={item} className="app-card px-4 py-3 text-sm text-white/70">
                 {item}
               </div>
             ))}
           </div>
         </section>
 
-        <section id="services" className="py-28 px-6">
-          <div className="max-w-6xl mx-auto">
+        <section id="services" className="app-section">
+          <div className="app-shell">
             <SectionHeader eyebrow="What we offer" title="Services" />
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="flex gap-3 overflow-x-auto pb-3 snap-x sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:overflow-visible sm:pb-0">
               {content.serviceConfigs.map((s, i) => (
                 <motion.div
                   key={s.name}
-                  className="glass rounded-2xl p-7 flex flex-col gap-4"
+                  className="app-card service-card min-w-[82vw] snap-start p-5 sm:min-w-0 sm:p-6 flex flex-col gap-4"
                   initial="hidden"
                   whileInView="show"
                   viewport={{ once: true }}
@@ -103,7 +106,7 @@ export default function HomePage() {
                     </div>
                     <span className="text-2xl font-semibold tracking-tight text-white">{formatPrice(s.amount)}</span>
                   </div>
-                  <div className="flex items-center justify-between border-t border-white/5 pt-4">
+                  <div className="flex flex-col gap-2 border-t border-white/5 pt-4 sm:flex-row sm:items-center sm:justify-between">
                     <span className="text-sm text-white/45">{s.duration}</span>
                     <span className="text-sm text-white/55">{s.detail}</span>
                   </div>
@@ -113,41 +116,43 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section id="gallery" className="py-24 px-6 border-t border-white/5">
-          <div className="max-w-6xl mx-auto">
-            <SectionHeader eyebrow="Proof" title="Recent Work" />
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {content.gallery.map((item, i) => (
-                <motion.article
-                  key={`${item.title}-${i}`}
-                  className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03]"
-                  initial="hidden"
-                  whileInView="show"
-                  viewport={{ once: true }}
-                  variants={fadeUp}
-                  custom={i}
-                >
-                  <div className="relative aspect-[4/5] bg-white/[0.03]">
-                    <Image src={item.imageUrl || "/srt-logo.png"} alt={item.title} fill sizes="(min-width: 768px) 33vw, 100vw" className="object-cover" />
-                  </div>
-                  <div className="p-5">
-                    <h3 className="text-white font-medium">{item.title}</h3>
-                    <p className="text-sm mt-2 leading-relaxed" style={{ color: "#86868B" }}>{item.caption}</p>
-                  </div>
-                </motion.article>
-              ))}
+        {publicGallery.length > 0 && (
+          <section id="gallery" className="app-section border-t border-white/5">
+            <div className="app-shell">
+              <SectionHeader eyebrow="Proof" title="Recent Work" />
+              <div className="flex gap-3 overflow-x-auto pb-3 snap-x md:grid md:grid-cols-3 md:overflow-visible md:pb-0">
+                {publicGallery.map((item, i) => (
+                  <motion.article
+                    key={`${item.title}-${i}`}
+                    className="app-card min-w-[78vw] snap-start md:min-w-0"
+                    initial="hidden"
+                    whileInView="show"
+                    viewport={{ once: true }}
+                    variants={fadeUp}
+                    custom={i}
+                  >
+                    <div className="relative aspect-[4/5] bg-white/[0.03]">
+                      <Image src={item.imageUrl} alt={item.title} fill sizes="(min-width: 768px) 33vw, 100vw" className="object-cover" />
+                    </div>
+                    <div className="p-5">
+                      <h3 className="text-white font-medium">{item.title}</h3>
+                      <p className="text-sm mt-2 leading-relaxed" style={{ color: "#86868B" }}>{item.caption}</p>
+                    </div>
+                  </motion.article>
+                ))}
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
 
-        <section className="py-24 px-6 border-t border-white/5">
-          <div className="max-w-6xl mx-auto grid lg:grid-cols-[0.8fr_1.2fr] gap-10 items-center">
-            <div className="relative aspect-square max-w-sm mx-auto lg:mx-0 rounded-2xl overflow-hidden border border-white/10 bg-white/[0.03]">
+        <section className="app-section border-t border-white/5">
+          <div className="app-shell grid lg:grid-cols-[0.8fr_1.2fr] gap-7 sm:gap-10 items-center">
+            <div className="relative aspect-square max-w-sm mx-auto lg:mx-0 app-card">
               <Image src={content.barberPhotoUrl || "/srt-logo.png"} alt={content.barberName} fill sizes="400px" className="object-cover" />
             </div>
             <div>
-              <p className="text-xs tracking-[0.4em] uppercase mb-4 font-light" style={{ color: "#8B5CF6" }}>The barber</p>
-              <h2 className="font-semibold tracking-tight text-white mb-5" style={{ fontSize: "clamp(34px, 5vw, 58px)", letterSpacing: "-0.03em" }}>
+              <p className="app-chip mb-4">The barber</p>
+              <h2 className="app-title font-semibold text-white mb-5">
                 {content.barberName}
               </h2>
               <p className="text-lg leading-relaxed max-w-2xl" style={{ color: "#A1A1AA" }}>{content.barberBio}</p>
@@ -160,28 +165,32 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="py-24 px-6 border-t border-white/5">
-          <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-4">
-            {content.testimonials.map((t, i) => (
-              <motion.div key={`${t.name}-${i}`} className="glass rounded-2xl p-7" initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp} custom={i}>
-                <p className="text-lg leading-relaxed text-white/85">&ldquo;{t.quote}&rdquo;</p>
-                <p className="text-sm mt-5" style={{ color: "#8B5CF6" }}>{t.name}</p>
-              </motion.div>
-            ))}
-          </div>
-        </section>
+        {publicTestimonials.length > 0 && (
+          <section className="app-section border-t border-white/5">
+            <div className="app-shell flex gap-3 overflow-x-auto pb-3 snap-x md:grid md:grid-cols-3 md:overflow-visible md:pb-0">
+              {publicTestimonials.map((t, i) => (
+                <motion.div key={`${t.name}-${i}`} className="app-card min-w-[82vw] snap-start p-6 md:min-w-0" initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp} custom={i}>
+                  <p className="text-lg leading-relaxed text-white/85">&ldquo;{t.quote}&rdquo;</p>
+                  <p className="text-sm mt-5" style={{ color: "#8B5CF6" }}>{t.name}</p>
+                </motion.div>
+              ))}
+            </div>
+          </section>
+        )}
 
-        <section className="py-24 px-6 border-t border-white/5">
-          <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-6">
+        <section className="app-section border-t border-white/5">
+          <div className="app-shell grid md:grid-cols-2 gap-3 sm:gap-5">
             <InfoBlock title="Location" body={content.address} detail={content.parkingNote} href={content.mapUrl} action="Open map" />
             <InfoBlock title="Rewards" body={content.loyaltyOffer} detail={content.referralOffer} href="/book" action="Book now" />
-            <InfoBlock title="Booking Policy" body="No deposits. Pay the full price online or in store." detail={content.cancellationPolicy} href="/book" action="Start booking" />
-            <InfoBlock title="Stay Connected" body={content.instagramUrl ? "Follow the latest cuts and openings." : "Add Instagram and TikTok links in admin."} detail={content.tiktokUrl ? "Short-form cut videos are linked too." : content.googleCalendarNote} href={content.instagramUrl || "/admin"} action={content.instagramUrl ? "Instagram" : "Update admin"} />
+            <InfoBlock title="Booking Policy" body="No deposits. Pay the full price with Venmo or in store." detail={content.cancellationPolicy} href="/book" action="Start booking" />
+            {hasSocialLinks && (
+              <InfoBlock title="Stay Connected" body="Follow the latest cuts and openings." detail="Fresh work, schedule updates, and quick announcements." href={content.instagramUrl || content.tiktokUrl} action={content.instagramUrl ? "Instagram" : "TikTok"} />
+            )}
           </div>
         </section>
 
-        <footer className="py-12 px-6 border-t border-white/5 pb-28 sm:pb-12">
-          <div className="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+        <footer className="py-10 border-t border-white/5">
+          <div className="app-shell flex flex-col sm:flex-row justify-between items-center gap-4">
             <p className="text-sm" style={{ color: "#6E6E73" }}>© {new Date().getFullYear()} SRT Cuts · Herriman, Utah</p>
             <Link href="/book" className="text-sm hover:text-white transition-colors" style={{ color: "#8B5CF6" }}>Book an appointment →</Link>
           </div>
@@ -193,16 +202,16 @@ export default function HomePage() {
 
 function SectionHeader({ eyebrow, title }: { eyebrow: string; title: string }) {
   return (
-    <motion.div className="text-center mb-14" initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp} custom={0}>
-      <p className="text-xs tracking-[0.4em] uppercase mb-4 font-light" style={{ color: "#8B5CF6" }}>{eyebrow}</p>
-      <h2 className="font-semibold tracking-tight text-white" style={{ fontSize: "clamp(36px, 5vw, 56px)", letterSpacing: "-0.03em" }}>{title}</h2>
+    <motion.div className="mb-8 sm:mb-12" initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp} custom={0}>
+      <p className="app-chip mb-4">{eyebrow}</p>
+      <h2 className="app-title font-semibold text-white">{title}</h2>
     </motion.div>
   );
 }
 
 function InfoBlock({ title, body, detail, href, action }: { title: string; body: string; detail: string; href: string; action: string }) {
   return (
-    <div className="glass rounded-2xl p-7">
+    <div className="app-card p-6">
       <h3 className="text-white font-semibold text-xl mb-3">{title}</h3>
       <p className="text-base leading-relaxed" style={{ color: "#A1A1AA" }}>{body}</p>
       <p className="text-sm mt-3 leading-relaxed" style={{ color: "#6E6E73" }}>{detail}</p>

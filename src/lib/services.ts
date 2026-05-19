@@ -44,8 +44,6 @@ export interface ServiceConfig {
   duration: string;
   desc: string;
   detail: string;
-  stripeProductId?: string;
-  stripePriceId?: string;
 }
 
 export function formatPrice(amount: number) {
