@@ -39,15 +39,12 @@ export default function HomePage() {
   return (
     <>
       <Navigation />
-      <motion.div className="mobile-page-pad" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8 }}>
+      <div className="mobile-page-pad">
         <section className="relative min-h-[calc(100svh-28px)] sm:min-h-screen flex flex-col justify-center overflow-hidden px-0 pt-20 pb-28 sm:pb-0">
           <div className="hero-glow absolute inset-0 pointer-events-none" />
 
           <motion.div
             className="app-shell relative text-left sm:text-center"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
           >
             <div className="mb-7 flex items-center gap-3 sm:justify-center">
               <Image
@@ -56,7 +53,6 @@ export default function HomePage() {
                 width={54}
                 height={54}
                 className="object-contain"
-                style={{ filter: "drop-shadow(0 0 18px rgba(94,234,212,0.42))" }}
               />
               <div>
                 <p className="mobile-section-label">Herriman, Utah</p>
@@ -108,7 +104,7 @@ export default function HomePage() {
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <p className="text-xs font-medium tracking-widest uppercase" style={{ color: "#5EEAD4" }}>
+                      <p className="text-xs font-medium tracking-widest uppercase" style={{ color: "#D1D5DB" }}>
                         {s.name}
                       </p>
                       <p className="text-sm mt-2 leading-relaxed" style={{ color: "#86868B" }}>
@@ -182,7 +178,7 @@ export default function HomePage() {
               {publicTestimonials.map((t, i) => (
                 <motion.div key={`${t.name}-${i}`} className="app-card p-5 sm:p-6" initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp} custom={i}>
                   <p className="text-lg leading-relaxed text-white/85">&ldquo;{t.quote}&rdquo;</p>
-                  <p className="text-sm mt-5" style={{ color: "#5EEAD4" }}>{t.name}</p>
+                  <p className="text-sm mt-5" style={{ color: "#D1D5DB" }}>{t.name}</p>
                 </motion.div>
               ))}
             </div>
@@ -203,10 +199,10 @@ export default function HomePage() {
         <footer className="py-10 border-t border-white/5">
           <div className="app-shell flex flex-col sm:flex-row justify-between items-center gap-4">
             <p className="text-sm" style={{ color: "#6E6E73" }}>© {new Date().getFullYear()} SRT Cuts · Herriman, Utah</p>
-            <Link href="/book" className="text-sm hover:text-white transition-colors" style={{ color: "#5EEAD4" }}>Book an appointment →</Link>
+            <Link href="/book" className="text-sm text-white/70 hover:text-white transition-colors">Book an appointment →</Link>
           </div>
         </footer>
-      </motion.div>
+      </div>
     </>
   );
 }
@@ -226,7 +222,7 @@ function InfoBlock({ title, body, detail, href, action }: { title: string; body:
       <h3 className="text-white font-semibold text-xl mb-3">{title}</h3>
       <p className="text-base leading-relaxed" style={{ color: "#A1A1AA" }}>{body}</p>
       <p className="text-sm mt-3 leading-relaxed" style={{ color: "#6E6E73" }}>{detail}</p>
-      <Link href={href} className="inline-flex mt-6 text-sm text-teal-200 hover:text-white transition-colors">
+      <Link href={href} className="inline-flex mt-6 text-sm text-white/70 hover:text-white transition-colors">
         {action} →
       </Link>
     </div>

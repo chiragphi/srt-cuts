@@ -115,7 +115,6 @@ function AuthForm() {
               width={64}
               height={64}
               className="object-contain"
-              style={{ filter: "drop-shadow(0 0 16px rgba(94,234,212,0.58))" }}
             />
           </div>
 

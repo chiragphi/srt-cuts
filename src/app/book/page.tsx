@@ -95,7 +95,7 @@ export default function BookPage() {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div
-          className="w-6 h-6 rounded-full border-2 border-purple-500 border-t-transparent animate-spin"
+          className="w-6 h-6 rounded-full border-2 border-white/50 border-t-transparent animate-spin"
         />
       </div>
     );
@@ -114,7 +114,7 @@ export default function BookPage() {
           >
             <div
               className="w-20 h-20 rounded-lg mx-auto mb-7 flex items-center justify-center text-3xl"
-              style={{ background: "rgba(94,234,212,0.12)", border: "1px solid rgba(94,234,212,0.28)" }}
+              style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.16)" }}
             >
               ✓
             </div>
@@ -176,7 +176,7 @@ export default function BookPage() {
                   <div
                     className="h-1 rounded-full transition-all duration-500"
                     style={{
-                      background: s <= step ? "#5EEAD4" : "rgba(255,255,255,0.08)",
+                      background: s <= step ? "#F5F5F7" : "rgba(255,255,255,0.08)",
                     }}
                   />
                   <p className="mt-2 text-[11px]" style={{ color: s <= step ? "#E5E7EB" : "#6E6E73" }}>{label}</p>
@@ -201,9 +201,9 @@ export default function BookPage() {
                     key={s.name}
                     className="w-full text-left app-card service-card p-4"
                     style={{
-                      background: service === s.name ? "rgba(94,234,212,0.1)" : "rgba(255,255,255,0.035)",
-                      borderColor: service === s.name ? "rgba(94,234,212,0.5)" : "rgba(255,255,255,0.07)",
-                      boxShadow: service === s.name ? "0 0 0 1px rgba(94,234,212,0.18)" : "none",
+                      background: service === s.name ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.035)",
+                      borderColor: service === s.name ? "rgba(255,255,255,0.28)" : "rgba(255,255,255,0.07)",
+                      boxShadow: service === s.name ? "0 0 0 1px rgba(255,255,255,0.08)" : "none",
                     }}
                     onClick={() => setService(s.name)}
                   >
@@ -217,7 +217,7 @@ export default function BookPage() {
                       </div>
                       <span
                         className="text-lg font-semibold shrink-0"
-                        style={{ color: service === s.name ? "#99F6E4" : "#F5F5F7" }}
+                        style={{ color: "#F5F5F7" }}
                       >
                         {formatPrice(s.amount)}
                       </span>
@@ -276,9 +276,9 @@ export default function BookPage() {
                         key={t}
                         className="min-h-12 px-3 rounded-lg text-sm transition-all duration-150 border"
                         style={{
-                          background: time === t ? "rgba(94,234,212,0.12)" : "rgba(255,255,255,0.03)",
-                          borderColor: time === t ? "rgba(94,234,212,0.5)" : "rgba(255,255,255,0.07)",
-                          color: time === t ? "#99F6E4" : "#A1A1AA",
+                          background: time === t ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.03)",
+                          borderColor: time === t ? "rgba(255,255,255,0.28)" : "rgba(255,255,255,0.07)",
+                          color: time === t ? "#F5F5F7" : "#A1A1AA",
                         }}
                         onClick={() => setTime(t)}
                       >
@@ -363,8 +363,8 @@ export default function BookPage() {
                         key={option.id}
                         className="text-left app-card p-4 transition-all duration-200"
                         style={{
-                          background: paymentMethod === option.id ? "rgba(94,234,212,0.1)" : "rgba(255,255,255,0.03)",
-                          borderColor: paymentMethod === option.id ? "rgba(94,234,212,0.5)" : "rgba(255,255,255,0.07)",
+                          background: paymentMethod === option.id ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.03)",
+                          borderColor: paymentMethod === option.id ? "rgba(255,255,255,0.28)" : "rgba(255,255,255,0.07)",
                         }}
                         onClick={() => setPaymentMethod(option.id as "in_store" | "online")}
                       >

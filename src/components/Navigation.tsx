@@ -4,12 +4,10 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
-import { motion } from "framer-motion";
 import { CalendarDays, Home, LogOut, Scissors, UserRound } from "lucide-react";
 
 export default function Navigation() {
   const [user, setUser] = useState<{ name: string; phone: string } | null>(null);
-  const [scrolled, setScrolled] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -20,12 +18,6 @@ export default function Navigation() {
       .catch(() => {});
   }, [pathname]);
 
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
     setUser(null);
@@ -34,18 +26,7 @@ export default function Navigation() {
 
   return (
     <>
-      <motion.nav
-        className="fixed top-0 left-0 right-0 z-40 transition-all duration-300 pt-[env(safe-area-inset-top)]"
-        style={{
-          background: scrolled ? "rgba(0,0,0,0.72)" : "linear-gradient(to bottom, rgba(0,0,0,0.82), transparent)",
-          backdropFilter: scrolled ? "blur(18px) saturate(180%)" : "none",
-          WebkitBackdropFilter: scrolled ? "blur(18px) saturate(180%)" : "none",
-          borderBottom: scrolled ? "1px solid rgba(255,255,255,0.08)" : "1px solid transparent",
-        }}
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-      >
+      <nav className="fixed top-0 left-0 right-0 z-40 border-b border-white/[0.08] bg-black/72 pt-[env(safe-area-inset-top)] backdrop-blur-2xl">
         <div className="app-shell flex items-center justify-between h-16">
           <Link href="/" className="flex items-center gap-2.5">
             <Image
@@ -54,7 +35,6 @@ export default function Navigation() {
               width={30}
               height={30}
               className="object-contain"
-              style={{ filter: "drop-shadow(0 0 8px rgba(94,234,212,0.5))" }}
             />
             <span className="text-sm font-semibold tracking-wider text-white/90 uppercase hidden min-[360px]:inline">
               SRT Cuts
@@ -119,7 +99,7 @@ export default function Navigation() {
             )}
           </div>
         </div>
-      </motion.nav>
+      </nav>
 
       <div className="mobile-only mobile-bottom-nav">
         <div className="mobile-nav-grid">

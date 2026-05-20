@@ -7,9 +7,9 @@
   --surface-strong: rgba(255, 255, 255, 0.1);
   --stroke: rgba(255, 255, 255, 0.11);
   --muted: #9CA3AF;
-  --accent: #8B5CF6;
-  --mint: #5EEAD4;
-  --gold: #FBBF24;
+  --accent: #F5F5F7;
+  --mint: #D1D5DB;
+  --gold: #D4D4D8;
 }
 
 @theme inline {
@@ -36,8 +36,7 @@ html {
 
 body {
   background:
-    linear-gradient(180deg, rgba(94, 234, 212, 0.08), transparent 19rem),
-    linear-gradient(120deg, rgba(139, 92, 246, 0.14), transparent 34rem),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), transparent 18rem),
     #000;
   color: #F5F5F7;
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
@@ -53,7 +52,7 @@ textarea {
 }
 
 ::selection {
-  background: rgba(139, 92, 246, 0.35);
+  background: rgba(255, 255, 255, 0.24);
   color: #fff;
 }
 
@@ -76,7 +75,7 @@ textarea {
 }
 
 .text-glow {
-  text-shadow: 0 0 40px rgba(139, 92, 246, 0.6), 0 0 80px rgba(139, 92, 246, 0.3);
+  text-shadow: none;
 }
 
 .btn-primary {
@@ -100,7 +99,7 @@ textarea {
 
 .btn-primary:hover {
   background: #FFFFFF;
-  box-shadow: 0 0 30px rgba(94, 234, 212, 0.18);
+  box-shadow: 0 10px 30px rgba(255, 255, 255, 0.08);
   transform: translateY(-1px);
 }
 
@@ -159,12 +158,12 @@ textarea {
 }
 
 .input-field:focus {
-  border-color: rgba(139, 92, 246, 0.6);
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+  border-color: rgba(255, 255, 255, 0.32);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.08);
 }
 
 .headline-gradient {
-  background: linear-gradient(145deg, #FFFFFF 0%, #C7D2FE 46%, #5EEAD4 100%);
+  background: linear-gradient(145deg, #FFFFFF 0%, #F5F5F7 52%, #A1A1AA 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -191,8 +190,8 @@ textarea {
 
 .hero-glow {
   background:
-    linear-gradient(180deg, rgba(0,0,0,0.36), rgba(0,0,0,0.84) 62%, #000 100%),
-    linear-gradient(135deg, rgba(94,234,212,0.18), rgba(139,92,246,0.15) 46%, rgba(251,191,36,0.08));
+    linear-gradient(180deg, rgba(255,255,255,0.035), rgba(0,0,0,0.56) 42%, #000 100%),
+    radial-gradient(ellipse 90% 55% at 50% 34%, rgba(255,255,255,0.08), transparent 62%);
 }
 
 .service-card {
@@ -203,7 +202,7 @@ textarea {
 .service-card:hover {
   background: var(--surface-strong);
   border-color: rgba(255, 255, 255, 0.16);
-  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.32), 0 0 34px rgba(139, 92, 246, 0.12);
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.32);
 }
 
 .service-card:active {
@@ -324,8 +323,8 @@ textarea {
 }
 
 .otp-input:focus {
-  border-color: rgba(94, 234, 212, 0.7);
-  box-shadow: 0 0 0 3px rgba(94, 234, 212, 0.12);
+  border-color: rgba(255, 255, 255, 0.34);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.08);
 }
 
 @media (min-width: 640px) {
@@ -357,8 +356,8 @@ textarea {
 
   .hero-glow {
     background:
-      linear-gradient(180deg, rgba(0,0,0,0.2), rgba(0,0,0,0.86) 70%, #000 100%),
-      linear-gradient(135deg, rgba(94,234,212,0.13), rgba(139,92,246,0.18) 46%, rgba(251,191,36,0.07));
+      linear-gradient(180deg, rgba(255,255,255,0.03), rgba(0,0,0,0.72) 64%, #000 100%),
+      radial-gradient(ellipse 72% 48% at 50% 42%, rgba(255,255,255,0.07), transparent 68%);
   }
 }
 
