@@ -1,6 +1,8 @@
 import { createSession, setSessionCookie } from "@/lib/session";
 import { supabaseAdmin } from "@/lib/supabase";
 
+const CUSTOMER_BYPASS_PHONE = "8010004096";
+
 export function normalizeDigits(value: string) {
   return value.replace(/\D/g, "");
 }
@@ -21,7 +23,7 @@ export function getAuthBypass(rawPhone: string) {
   }
 
   if (customerCode && digits === normalizeDigits(customerCode)) {
-    return { phone: "0000000000", name: "Customer", redirect: "/book" };
+    return { phone: CUSTOMER_BYPASS_PHONE, name: "Customer", redirect: "/book" };
   }
 
   return null;
@@ -35,14 +37,14 @@ export async function createBypassSession(userInfo: { phone: string; name: strin
     .maybeSingle();
 
   if (userLookupError) {
-    throw new Error("Failed to load bypass account");
+    console.error("Bypass account lookup failed:", userLookupError.message);
   }
 
   let sessionUser = user;
   if (!sessionUser) {
     const { data: newUser, error: createUserError } = await supabaseAdmin
       .from("users")
-      .insert({ phone: userInfo.phone, name: userInfo.name })
+      .upsert({ phone: userInfo.phone, name: userInfo.name }, { onConflict: "phone" })
       .select()
       .single();
 
