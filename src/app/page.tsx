@@ -36,6 +36,7 @@ export default function HomePage() {
   const publicGallery = content.gallery.filter((item) => !isPlaceholderGalleryItem(item));
   const publicTestimonials = content.testimonials.filter((item) => !isPlaceholderTestimonial(item));
   const hasSocialLinks = Boolean(content.instagramUrl || content.tiktokUrl);
+  const heroImage = content.heroImageUrl || "/srt-logo.png";
 
   return (
     <>
@@ -87,11 +88,11 @@ export default function HomePage() {
                 <div className="mb-6 flex justify-center">
                   <div className="relative flex h-40 w-40 items-center justify-center rounded-[2rem] bg-white/80 shadow-[0_24px_70px_rgba(52,43,94,0.14)]">
                     <Image
-                      src="/srt-logo.png"
+                      src={heroImage}
                       alt="SRT"
-                      width={112}
-                      height={112}
-                      className="object-contain"
+                      fill
+                      sizes="160px"
+                      className="rounded-[2rem] object-cover"
                     />
                   </div>
                 </div>

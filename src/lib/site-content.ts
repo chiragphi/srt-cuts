@@ -110,12 +110,7 @@ export function mergeSiteContent(value: Partial<SiteContent> | null | undefined)
 }
 
 export function isPlaceholderGalleryItem(item: GalleryItem) {
-  return (
-    item.imageUrl === "/srt-logo.png" ||
-    item.caption.toLowerCase().includes("add real") ||
-    item.caption.toLowerCase().includes("admin panel") ||
-    DEFAULT_GALLERY.some((defaultItem) => defaultItem.title === item.title && defaultItem.caption === item.caption)
-  );
+  return !item.imageUrl || item.imageUrl === "/srt-logo.png";
 }
 
 export function isPlaceholderTestimonial(item: Testimonial) {

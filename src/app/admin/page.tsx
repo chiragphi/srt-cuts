@@ -259,10 +259,24 @@ export default function AdminPage() {
                   </div>
                 </Panel>
 
+                <Panel title="Homepage Image Links">
+                  <ImageField
+                    label="Hero image direct link"
+                    value={content.heroImageUrl}
+                    onChange={(heroImageUrl) => setContent({ ...content, heroImageUrl })}
+                  />
+                  <ImageField
+                    label="Barber photo direct link"
+                    value={content.barberPhotoUrl}
+                    onChange={(barberPhotoUrl) => setContent({ ...content, barberPhotoUrl })}
+                  />
+                  <div className="rounded-xl border border-purple-400/20 bg-purple-400/10 p-4 text-sm text-purple-100">
+                    Paste direct image URLs here. They can be uploaded image links, Supabase Storage links, or public links ending in an image file.
+                  </div>
+                </Panel>
+
                 <Panel title="Homepage Essentials">
-                  <Field label="Hero image URL" value={content.heroImageUrl} onChange={(heroImageUrl) => setContent({ ...content, heroImageUrl })} />
                   <Field label="Barber name" value={content.barberName} onChange={(barberName) => setContent({ ...content, barberName })} />
-                  <Field label="Barber photo URL" value={content.barberPhotoUrl} onChange={(barberPhotoUrl) => setContent({ ...content, barberPhotoUrl })} />
                   <Area label="Barber bio" value={content.barberBio} onChange={(barberBio) => setContent({ ...content, barberBio })} />
                   <Field label="Specialties, comma separated" value={content.specialties.join(", ")} onChange={(v) => setContent({ ...content, specialties: splitList(v) })} />
                 </Panel>
@@ -275,7 +289,7 @@ export default function AdminPage() {
                     render={(item, update) => (
                       <>
                         <Field label="Title" value={item.title} onChange={(title) => update({ ...item, title })} />
-                        <Field label="Image URL" value={item.imageUrl} onChange={(imageUrl) => update({ ...item, imageUrl })} />
+                        <ImageField label="Gallery image direct link" value={item.imageUrl} onChange={(imageUrl) => update({ ...item, imageUrl })} />
                         <Area label="Caption" value={item.caption} onChange={(caption) => update({ ...item, caption })} />
                       </>
                     )}
@@ -571,6 +585,27 @@ function Area({ label, value, onChange }: { label: string; value: string; onChan
       <span className="block text-xs text-white/40 mb-2 tracking-wide uppercase">{label}</span>
       <textarea className="input-field resize-none" rows={3} value={value} onChange={(e) => onChange(e.target.value)} />
     </label>
+  );
+}
+
+function ImageField({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
+  const src = value.trim();
+
+  return (
+    <div className="grid gap-3 sm:grid-cols-[1fr_140px] sm:items-end">
+      <Field label={label} value={value} onChange={onChange} />
+      <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03]">
+        <div className="relative aspect-[4/3]">
+          {src ? (
+            <Image src={src} alt={label} fill sizes="140px" className="object-cover" />
+          ) : (
+            <div className="flex h-full items-center justify-center px-4 text-center text-xs text-white/40">
+              No image link
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
 
