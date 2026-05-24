@@ -119,9 +119,12 @@ export default function HomePage() {
             </div>
           </motion.div>
 
-          <div className="app-shell relative mt-16 grid grid-cols-3 gap-2 text-left sm:mt-24 sm:gap-4 lg:mt-32">
+        </section>
+
+        <section className="app-shell py-12 sm:py-16 lg:py-20">
+          <div className="grid grid-cols-1 gap-3 text-left sm:grid-cols-3 sm:gap-4">
             {["No waiting around", "Text before you arrive", "Always on time"].map((item) => (
-              <div key={item} className="rounded-2xl border border-black/5 bg-white/62 px-3 py-3 text-[11px] font-semibold leading-tight text-[#6f6a7c] shadow-[0_10px_24px_rgba(52,43,94,0.06)] sm:px-4 sm:text-sm">
+              <div key={item} className="rounded-2xl border border-black/5 bg-white/62 px-4 py-4 text-sm font-semibold leading-tight text-[#6f6a7c] shadow-[0_10px_24px_rgba(52,43,94,0.06)]">
                 {item}
               </div>
             ))}
