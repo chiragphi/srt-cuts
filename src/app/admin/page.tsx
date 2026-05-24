@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { DEFAULT_SITE_CONTENT, type SiteContent } from "@/lib/site-content";
 import { formatPrice, parseDollarAmount, type ServiceConfig } from "@/lib/services";
+import AdminAgent from "@/components/AdminAgent";
 
 interface Booking {
   id: string;
@@ -202,6 +203,8 @@ export default function AdminPage() {
             {counts.Pending} pending · {counts.Accepted} accepted · {customers.length} customers
           </p>
         </div>
+
+        <AdminAgent onRefresh={load} />
 
         <div className="flex gap-1 mb-6 sm:mb-8 p-1 rounded-2xl overflow-x-auto bg-white/[0.04] border border-white/10">
           {ADMIN_TABS.map((t) => (
