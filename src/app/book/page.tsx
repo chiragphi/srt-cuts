@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import Navigation from "@/components/Navigation";
+import CalendarPicker from "@/components/CalendarPicker";
 import { formatPrice } from "@/lib/services";
 import { DEFAULT_SITE_CONTENT, type SiteContent } from "@/lib/site-content";
 
@@ -87,8 +88,7 @@ export default function BookPage() {
 
   const services = content.serviceConfigs;
   const canNext1 = !!service;
-  const selectedBlock = content.scheduleBlocks.find((b) => b.date === date);
-  const canNext2 = !!date && !!time && !selectedBlock;
+  const canNext2 = !!date && !!time;
   const selectedService = services.find((s) => s.name === service);
 
   if (loading) {
@@ -150,7 +150,7 @@ export default function BookPage() {
     <>
       <Navigation />
       <div className="min-h-screen pt-24 pb-28 sm:pb-16 booking-page-pad">
-        <div className="app-shell max-w-[22rem] sm:max-w-lg">
+        <div className="app-shell max-w-full sm:max-w-lg">
           <motion.div
             className="mb-7"
             initial={{ opacity: 0, y: 16 }}
@@ -248,22 +248,15 @@ export default function BookPage() {
                 className="space-y-5"
               >
                 <div>
-                  <label className="block text-xs text-[#6f6a7c] mb-2 tracking-wide uppercase font-bold">
+                  <label className="block text-xs text-[#6f6a7c] mb-3 tracking-wide uppercase font-bold">
                     Date
                   </label>
-                  <input
-                    type="date"
-                    min={getMinDate()}
+                  <CalendarPicker
                     value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                    className="input-field"
-                    style={{ colorScheme: "light" }}
+                    onChange={setDate}
+                    blockedDates={content.scheduleBlocks.map((b) => b.date)}
+                    minDate={getMinDate()}
                   />
-                  {selectedBlock && (
-                    <p className="text-sm text-red-500 mt-2">
-                      This day is blocked: {selectedBlock.reason}
-                    </p>
-                  )}
                 </div>
 
                 <div>

@@ -80,23 +80,23 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="hero-panel relative min-h-[420px] p-5 sm:p-7">
-              <div className="absolute right-6 top-6 rounded-full bg-white/72 px-4 py-2 text-sm font-semibold text-[#4d35d8] shadow-[0_10px_24px_rgba(52,43,94,0.1)]">
+            <div className="hero-panel relative p-4 sm:p-7">
+              <div className="absolute right-4 top-4 sm:right-6 sm:top-6 rounded-full bg-white/72 px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-semibold text-[#4d35d8] shadow-[0_10px_24px_rgba(52,43,94,0.1)]">
                 Today&apos;s flow
               </div>
-              <div className="relative flex h-full flex-col justify-end">
-                <div className="mb-6 flex justify-center">
-                  <div className="relative flex h-40 w-40 items-center justify-center rounded-[2rem] bg-white/80 shadow-[0_24px_70px_rgba(52,43,94,0.14)]">
+              <div className="relative flex flex-col justify-end">
+                <div className="mb-4 sm:mb-6 flex justify-center pt-8 sm:pt-0">
+                  <div className="relative flex h-24 w-24 sm:h-40 sm:w-40 items-center justify-center rounded-[1.5rem] sm:rounded-[2rem] bg-white/80 shadow-[0_24px_70px_rgba(52,43,94,0.14)]">
                     <Image
                       src={heroImage}
                       alt="SRT"
                       fill
-                      sizes="160px"
-                      className="rounded-[2rem] object-cover"
+                      sizes="(min-width: 640px) 160px, 96px"
+                      className="rounded-[1.5rem] sm:rounded-[2rem] object-cover"
                     />
                   </div>
                 </div>
-                <div className="grid gap-3">
+                <div className="grid gap-2 sm:gap-3">
                   {[
                     { icon: CalendarCheck, title: "Choose a service", text: "Fades, lineups, full service." },
                     { icon: Clock3, title: "Pick a time", text: "Clean slots with SMS confirmation." },
@@ -104,13 +104,14 @@ export default function HomePage() {
                   ].map((item) => {
                     const Icon = item.icon;
                     return (
-                      <div key={item.title} className="flex items-center gap-3 rounded-3xl border border-black/5 bg-white/76 p-4 shadow-[0_10px_28px_rgba(52,43,94,0.08)]">
-                        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#efeaff] text-[#4d35d8]">
-                          <Icon size={19} />
+                      <div key={item.title} className="flex items-center gap-3 rounded-2xl sm:rounded-3xl border border-black/5 bg-white/76 p-3 sm:p-4 shadow-[0_10px_28px_rgba(52,43,94,0.08)]">
+                        <span className="flex h-9 w-9 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl sm:rounded-2xl bg-[#efeaff] text-[#4d35d8]">
+                          <Icon size={16} className="sm:hidden" />
+                          <Icon size={19} className="hidden sm:block" />
                         </span>
                         <div>
-                          <p className="font-semibold text-[#17151f]">{item.title}</p>
-                          <p className="text-sm text-[#6f6a7c]">{item.text}</p>
+                          <p className="text-sm sm:text-base font-semibold text-[#17151f]">{item.title}</p>
+                          <p className="text-xs sm:text-sm text-[#6f6a7c]">{item.text}</p>
                         </div>
                       </div>
                     );
@@ -122,10 +123,10 @@ export default function HomePage() {
 
         </section>
 
-        <section className="app-shell py-12 sm:py-16 lg:py-20">
-          <div className="grid grid-cols-1 gap-3 text-left sm:grid-cols-3 sm:gap-4">
+        <section className="py-10 sm:py-16 lg:py-20">
+          <div className="flex gap-3 overflow-x-auto px-5 pb-1 sm:px-0 sm:overflow-visible sm:grid sm:grid-cols-3 sm:gap-4 app-shell-sm">
             {["No waiting around", "Text before you arrive", "Always on time"].map((item) => (
-              <div key={item} className="rounded-2xl border border-black/5 bg-white/62 px-4 py-4 text-sm font-semibold leading-tight text-[#6f6a7c] shadow-[0_10px_24px_rgba(52,43,94,0.06)]">
+              <div key={item} className="shrink-0 rounded-2xl border border-black/5 bg-white/62 px-4 py-4 text-sm font-semibold leading-tight text-[#6f6a7c] shadow-[0_10px_24px_rgba(52,43,94,0.06)] sm:shrink">
                 {item}
               </div>
             ))}
