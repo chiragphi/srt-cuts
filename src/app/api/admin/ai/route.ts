@@ -347,9 +347,40 @@ function buildSystemPrompt(
   pending: Booking[],
   today: string
 ): string {
+  // Pre-compute the next 18 days with their day names and current availability status
+  const upcomingDates: { iso: string; dayName: string; dow: number; status: string }[] = [];
+  for (let i = 1; i <= 18; i++) {
+    const d = new Date(today + "T00:00:00");
+    d.setDate(d.getDate() + i);
+    const iso = d.toISOString().split("T")[0];
+    const dow = d.getDay();
+    const dayName = DAYS_OF_WEEK[dow];
+    const override = content.dateAvailability[iso];
+    const weekly = content.weeklyAvailability[String(dow)] ?? [];
+    let status: string;
+    if (override !== undefined) {
+      status = override.length ? `override ${override[0]}–${override[override.length - 1]}` : "override: CLOSED";
+    } else {
+      status = weekly.length ? `weekly: ${weekly[0]}–${weekly[weekly.length - 1]}` : "weekly: CLOSED";
+    }
+    upcomingDates.push({ iso, dayName, dow, status });
+  }
+
+  // Group upcoming dates by day-of-week for easy "every Thursday" lookup
+  const byDow: Record<string, string[]> = {};
+  upcomingDates.forEach(({ iso, dow }) => {
+    const key = String(dow);
+    if (!byDow[key]) byDow[key] = [];
+    byDow[key].push(iso);
+  });
+  const dowSummaryLines = DAYS_OF_WEEK.map((name, i) => {
+    const dates = byDow[String(i)] ?? [];
+    return dates.length ? `- ${name}: ${dates.join(", ")}` : null;
+  }).filter(Boolean);
+
   const weeklyLines = DAYS_OF_WEEK.map((day, i) => {
     const slots = content.weeklyAvailability[String(i)] ?? [];
-    return `- ${day} (${i}): ${slots.length ? `${slots[0]}–${slots[slots.length - 1]} (${slots.length} slots)` : "CLOSED"}`;
+    return `- ${day} (index ${i}): ${slots.length ? `${slots[0]}–${slots[slots.length - 1]} (${slots.length} slots)` : "CLOSED"}`;
   });
 
   const dateOverrideLines = Object.entries(content.dateAvailability)
@@ -369,34 +400,40 @@ TODAY: ${today}
 
 ## HOW TO USE TOOLS
 
-OPENING slots:
-  ✓ set_weekly_availability({ days: ["1","3","5","6"], from_time: "9:00 AM", to_time: "5:00 PM" })
-  ✗ Do NOT call set_weekly_availability 4 separate times — put all days in ONE call
+OPENING slots (examples):
+  ✓ "Open Mon/Wed/Fri/Sat 9am–5pm" → set_weekly_availability({ days: ["1","3","5","6"], from_time: "9:00 AM", to_time: "5:00 PM" })
+  ✓ "Open just 3pm on specific dates" → set_date_availability({ dates: ["2026-05-29","2026-06-05"], from_time: "3:00 PM", to_time: "3:00 PM" })
+  ✓ "Open every Thursday in the schedule" → look up all Thursday dates in UPCOMING DATES section below, then call set_date_availability with ALL of them at once
+  ✗ Do NOT make multiple calls when one batch call will do
 
 CLOSING/REMOVING slots:
-  ✓ "Close all availability" / "remove all slots" / "clear schedule" → close_all_availability (no args, one call)
+  ✓ "Close all availability" / "clear everything" → close_all_availability (no args)
   ✓ "Close Monday" → set_weekly_availability({ days: ["1"], close: true })
   ✓ "Close Mon and Wed" → set_weekly_availability({ days: ["1","3"], close: true })
-  ✓ "Close this Saturday" → set_date_availability({ dates: ["YYYY-MM-DD"], close: true })
-  ✓ "Revert Thursday override to weekly default" → remove_date_overrides({ dates: ["YYYY-MM-DD"] })
-  ✗ NEVER pass from_time/to_time when closing — use close: true instead
+  ✓ "Close this specific date" → set_date_availability({ dates: ["YYYY-MM-DD"], close: true })
+  ✓ "Revert date back to weekly default" → remove_date_overrides({ dates: ["YYYY-MM-DD"] })
+  ✗ NEVER pass from_time/to_time when closing — only use close: true
 
-OTHER PATTERNS:
+A SINGLE TIME SLOT: from_time and to_time can be the SAME value.
+  ✓ "Open only 3pm" → from_time: "3:00 PM", to_time: "3:00 PM"
+
+BOOKING ACTIONS:
   ✓ "Accept all pending" → accept_all_pending (no args)
-  ✓ "Raise all prices" → call update_service once per service (N calls for N services)
-  ✓ Time values MUST exactly match the valid slots list: "9:00 AM" not "9am" or "9:00am"
+  ✓ "Raise all prices" → call update_service once per service
 
-## DAY NUMBER REFERENCE
+TIME FORMAT: Values MUST exactly match the valid slots list. "9:00 AM" not "9am".
+
+## DAY NUMBERS
 0=Sunday 1=Monday 2=Tuesday 3=Wednesday 4=Thursday 5=Friday 6=Saturday
-Shortcuts: "weekdays" = [1,2,3,4,5], "weekends" = [0,6], "every day" = [0,1,2,3,4,5,6]
+Shortcuts: weekdays=[1,2,3,4,5]  weekends=[0,6]  every day=[0,1,2,3,4,5,6]
 
-## DATE CALCULATION
-Relative to TODAY (${today}). "Tomorrow" = ${addDays(today, 1)}.
-"Next Monday" = find the next Monday strictly after today.
-Use set_weekly_availability for recurring patterns. Use set_date_availability for specific one-off dates.
-Note: blocked dates always take priority — customers can never book a blocked date.
+## UPCOMING 18 DATES — exact calendar (use these ISO dates for set_date_availability):
+${upcomingDates.map(({ iso, dayName }) => `- ${iso} (${dayName.slice(0, 3)})`).join("  ")}
 
-## PENDING BOOKINGS (${pending.length}) — use full IDs for accept/deny:
+## UPCOMING DATES GROUPED BY WEEKDAY (ready to copy into dates[] array):
+${dowSummaryLines.join("\n")}
+
+## PENDING BOOKINGS (${pending.length}) — use full IDs:
 ${pending.length ? pending.map((b) => `- ID: ${b.id} | ${b.user_name} | ${b.service} | ${b.booking_date} at ${b.booking_time}`).join("\n") : "None"}
 
 ## ALL BOOKINGS (recent):
@@ -408,13 +445,13 @@ ${content.scheduleBlocks.length ? content.scheduleBlocks.map((b) => `- ${b.date}
 ## SERVICES:
 ${content.serviceConfigs.map((s) => `- ${s.name}: $${(s.amount / 100).toFixed(2)}, ${s.duration}`).join("\n")}
 
-## WEEKLY AVAILABILITY (number in parens = day index to pass in days[]):
+## WEEKLY AVAILABILITY (recurring schedule):
 ${weeklyLines.join("\n")}
 
-## DATE-SPECIFIC OVERRIDES:
+## DATE-SPECIFIC OVERRIDES (override weekly for these dates):
 ${dateOverrideLines.length ? dateOverrideLines.join("\n") : "None"}
 
-## VALID TIME SLOTS (use these exact strings only):
+## VALID TIME SLOTS:
 ${TIME_SLOTS.join(", ")}`;
 }
 
