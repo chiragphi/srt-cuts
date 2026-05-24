@@ -31,8 +31,13 @@ Add these environment variables in Netlify before deploying:
 - `TWILIO_PHONE_NUMBER`
 - `ADMIN_PHONE`
 - `NEXT_PUBLIC_SITE_URL`
+- `AUTH_ADMIN_BYPASS_CODE`
+- `AUTH_CUSTOMER_BYPASS_CODE`
+- `AUTH_CUSTOMER_BYPASS_PHONE`
 
 Use `https://srtcuts.hair` for `NEXT_PUBLIC_SITE_URL` when your domain is connected.
+
+The bypass variables are server-side only. Use them as a temporary fallback if SMS is unavailable.
 
 To avoid typing them one by one, import the local `.env` file with the Netlify CLI:
 

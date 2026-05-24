@@ -9,7 +9,8 @@ import Image from "next/image";
 type Step = "phone" | "code";
 
 function formatPhone(raw: string) {
-  const d = raw.replace(/\D/g, "").slice(0, 10);
+  const d = raw.replace(/\D/g, "");
+  if (d.length !== 10) return d.slice(0, 12);
   if (d.length <= 3) return d;
   if (d.length <= 6) return `(${d.slice(0, 3)}) ${d.slice(3)}`;
   return `(${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6)}`;
@@ -39,8 +40,8 @@ function AuthForm() {
   async function sendCode() {
     setError("");
     const digits = phone.replace(/\D/g, "");
-    if (digits.length !== 10) {
-      setError("Please enter a valid 10-digit US phone number.");
+    if (digits.length < 5) {
+      setError("Please enter your 10-digit phone number.");
       return;
     }
     setLoading(true);
@@ -52,7 +53,12 @@ function AuthForm() {
     setLoading(false);
     if (!res.ok) {
       const d = await res.json();
-      setError(d.error || "Failed to send code.");
+      setError(d.error === "Invalid phone number" ? "Please enter a valid 10-digit US phone number." : d.error || "Failed to send code.");
+      return;
+    }
+    const d = await res.json();
+    if (d.bypass && d.redirect) {
+      router.replace(d.redirect);
       return;
     }
     setStep("code");
