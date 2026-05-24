@@ -8,6 +8,7 @@ import { CalendarDays, Home, LogOut, Scissors, UserRound } from "lucide-react";
 
 export default function Navigation() {
   const [user, setUser] = useState<{ name: string; phone: string } | null>(null);
+  const [accountOpen, setAccountOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -21,6 +22,7 @@ export default function Navigation() {
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
     setUser(null);
+    setAccountOpen(false);
     router.push("/");
   }
 
@@ -28,7 +30,7 @@ export default function Navigation() {
     <>
       <nav className="fixed top-0 left-0 right-0 z-40 border-b border-black/[0.06] bg-white/72 pt-[env(safe-area-inset-top)] backdrop-blur-2xl">
         <div className="app-shell flex items-center justify-between h-16">
-          <Link href="/" className="flex items-center gap-2.5">
+          <Link href="/" onClick={() => setAccountOpen(false)} className="flex items-center gap-2.5">
             <Image
               src="/srt-logo.png"
               alt="SRT"
@@ -44,6 +46,7 @@ export default function Navigation() {
           <div className="flex items-center gap-2 sm:gap-4">
             <Link
               href="/#services"
+              onClick={() => setAccountOpen(false)}
               className="hidden sm:inline text-sm font-medium text-[#6f6a7c] hover:text-[#17151f] transition-colors"
             >
               Services
@@ -54,16 +57,26 @@ export default function Navigation() {
                 <span className="desktop-only">
                   <Link
                     href="/book"
+                    onClick={() => setAccountOpen(false)}
                     className="btn-primary min-h-0 py-2.5 px-4 text-sm"
                   >
                     Book
                   </Link>
                 </span>
-                <div className="relative group hidden sm:block">
-                  <button className="min-h-10 rounded-full px-4 text-sm font-semibold text-[#5d566e] hover:text-[#17151f] transition-colors bg-white/70 border border-black/10">
+                <div className="relative hidden sm:block">
+                  <button
+                    type="button"
+                    aria-expanded={accountOpen}
+                    onClick={() => setAccountOpen((open) => !open)}
+                    className="min-h-10 rounded-full px-4 text-sm font-semibold text-[#5d566e] hover:text-[#17151f] transition-colors bg-white/70 border border-black/10"
+                  >
                     {user.name.split(" ")[0]}
                   </button>
-                  <div className="absolute right-0 top-full mt-2 w-40 glass rounded-lg py-1 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none group-hover:pointer-events-auto">
+                  <div
+                    className={`absolute right-0 top-full mt-2 w-40 glass rounded-lg py-1 transition-opacity ${
+                      accountOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+                    }`}
+                  >
                     <button
                       onClick={logout}
                       className="w-full text-left px-4 py-2.5 text-sm text-[#6f6a7c] hover:text-[#17151f] transition-colors"
@@ -75,7 +88,7 @@ export default function Navigation() {
               </>
             ) : (
               <span className="desktop-only">
-                <Link href="/auth" className="btn-primary min-h-0 py-2.5 px-4 text-sm">
+                <Link href="/auth" onClick={() => setAccountOpen(false)} className="btn-primary min-h-0 py-2.5 px-4 text-sm">
                   Sign in
                 </Link>
               </span>
