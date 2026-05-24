@@ -21,9 +21,7 @@ export function getAuthBypass(rawPhone: string) {
   }
 
   if (customerCode && digits === normalizeDigits(customerCode)) {
-    const phone = normalizePhone(process.env.AUTH_CUSTOMER_BYPASS_PHONE ?? "");
-    if (!phone) return null;
-    return { phone, name: "Customer", redirect: "/book" };
+    return { phone: "0000000000", name: "Customer", redirect: "/book" };
   }
 
   return null;

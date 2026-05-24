@@ -33,7 +33,6 @@ Add these environment variables in Netlify before deploying:
 - `NEXT_PUBLIC_SITE_URL`
 - `AUTH_ADMIN_BYPASS_CODE`
 - `AUTH_CUSTOMER_BYPASS_CODE`
-- `AUTH_CUSTOMER_BYPASS_PHONE`
 
 Use `https://srtcuts.hair` for `NEXT_PUBLIC_SITE_URL` when your domain is connected.
 
