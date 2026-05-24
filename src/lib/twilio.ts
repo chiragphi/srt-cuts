@@ -19,14 +19,15 @@ export async function sendSMS(to: string, body: string) {
   const from = process.env.TWILIO_PHONE_NUMBER;
   if (!from) throw new Error("Twilio phone number is missing.");
 
-  const formatted = formatSmsPhone(to);
-  if (formatted === formatSmsPhone(from)) {
+  const formattedFrom = formatSmsPhone(from);
+  const formattedTo = formatSmsPhone(to);
+  if (formattedFrom === formattedTo) {
     throw new Error("Twilio cannot send an SMS from your Twilio number to that same number.");
   }
 
   return getClient().messages.create({
-    to: formatted,
-    from,
+    to: formattedTo,
+    from: formattedFrom,
     body,
   });
 }
