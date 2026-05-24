@@ -195,6 +195,26 @@ const TOOLS = [
   {
     type: "function",
     function: {
+      name: "propose_action",
+      description:
+        "Use this ONLY when a request is genuinely ambiguous — multiple reasonable interpretations exist. " +
+        "Describe exactly what you plan to do and ask for confirmation. " +
+        "Do NOT use this for clear requests — just execute those directly.",
+      parameters: {
+        type: "object",
+        properties: {
+          interpretation: {
+            type: "string",
+            description: "Plain-English description of what you understood and what you would do. Be specific: include dates, times, day names.",
+          },
+        },
+        required: ["interpretation"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
       name: "accept_all_pending",
       description: "Accept ALL pending bookings at once and send SMS confirmation to each customer. Use this when asked to accept everything.",
       parameters: { type: "object", properties: {} },
@@ -294,6 +314,7 @@ export async function POST(req: NextRequest) {
   const actionsPerformed: string[] = [];
   let currentContent = content;
   let contentDirty = false;
+  let proposalInterpretation: string | null = null;
 
   for (const call of assistantMsg.tool_calls) {
     let args: Record<string, unknown> = {};
@@ -305,6 +326,16 @@ export async function POST(req: NextRequest) {
         role: "tool",
         tool_call_id: call.id,
         content: JSON.stringify({ success: false, result: "Could not parse tool arguments — JSON was malformed." }),
+      });
+      continue;
+    }
+
+    if (call.function.name === "propose_action") {
+      proposalInterpretation = (args.interpretation as string) ?? "I can help with that.";
+      toolResults.push({
+        role: "tool",
+        tool_call_id: call.id,
+        content: JSON.stringify({ success: true, result: "Proposal sent to admin." }),
       });
       continue;
     }
@@ -331,6 +362,16 @@ export async function POST(req: NextRequest) {
       .upsert({ id: "main", content: currentContent, updated_at: new Date().toISOString() });
   }
 
+  // If this is a proposal, skip the second LLM call — the interpretation IS the reply
+  if (proposalInterpretation !== null) {
+    return NextResponse.json({
+      reply: `Here's what I think you're trying to do: ${proposalInterpretation}\n\nIs that right?`,
+      actionsPerformed: [],
+      hasActions: false,
+      isProposal: true,
+    });
+  }
+
   // Final conversational response
   const finalMessages = [...messages, assistantMsg as unknown, ...toolResults];
   const finalRes = await groqCall(finalMessages);
@@ -338,7 +379,7 @@ export async function POST(req: NextRequest) {
     ? actionsPerformed.join("; ")
     : (finalRes.choices[0].message.content ?? actionsPerformed.join("; "));
 
-  return NextResponse.json({ reply, actionsPerformed, hasActions: actionsPerformed.length > 0 });
+  return NextResponse.json({ reply, actionsPerformed, hasActions: actionsPerformed.length > 0, isProposal: false });
 }
 
 function buildSystemPrompt(
@@ -395,8 +436,21 @@ TODAY: ${today}
 
 ## HOW TO RESPOND
 - Be warm, specific, and helpful. Never say just "Done." Summarize exactly what changed.
-- If a request is ambiguous (e.g. "make tomorrow available" — what hours?), ask ONE clarifying question BEFORE calling any tools.
 - If the current state already matches what the admin wants, say so without calling tools.
+
+## EXECUTE vs PROPOSE
+EXECUTE immediately (no confirmation) when the request is clear:
+  - Specific day(s) + specific time → just do it
+  - "Accept all pending", "close everything", "block [date]" → just do it
+  - Any request with only one reasonable interpretation → just do it
+
+CALL propose_action (ask for confirmation) when genuinely ambiguous:
+  - "open up some time this week" — which days? what hours?
+  - "open Thursdays" — recurring weekly pattern OR just the upcoming Thursday dates?
+  - Multiple valid interpretations exist
+
+When you call propose_action, describe EXACTLY what you plan to do in the interpretation field.
+After the user confirms ("yes", "yeah", "do it", "correct", etc.), execute the tools immediately.
 
 ## HOW TO USE TOOLS
 

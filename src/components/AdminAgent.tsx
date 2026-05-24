@@ -9,6 +9,7 @@ interface Message {
   content: string;
   actions?: string[];
   loading?: boolean;
+  isProposal?: boolean;
 }
 
 const SUGGESTIONS = [
@@ -76,6 +77,7 @@ export default function AdminAgent({ onRefresh }: { onRefresh: () => void }) {
           role: "assistant",
           content: data.reply || "Done.",
           actions: data.actionsPerformed,
+          isProposal: data.isProposal ?? false,
         },
       ]);
 
@@ -235,6 +237,46 @@ export default function AdminAgent({ onRefresh }: { onRefresh: () => void }) {
                               {action}
                             </div>
                           ))}
+                        </div>
+                      )}
+
+                      {msg.isProposal && !msg.loading && (
+                        <div className="flex gap-2 mt-1">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setMessages((prev) =>
+                                prev.map((m, idx) => idx === i ? { ...m, isProposal: false } : m)
+                              );
+                              send("Yes, confirmed");
+                            }}
+                            className="text-xs font-semibold px-4 py-2 rounded-xl active:scale-95 transition-all duration-150"
+                            style={{
+                              background: "linear-gradient(135deg, #8f76ff 0%, #6852f5 48%, #3d32c7 100%)",
+                              color: "#fff",
+                              boxShadow: "0 4px 12px rgba(96,72,231,0.28)",
+                            }}
+                          >
+                            Yes, do it
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setMessages((prev) =>
+                                prev.map((m, idx) =>
+                                  idx === i ? { ...m, isProposal: false, content: m.content + "\n\n*(Cancelled)*" } : m
+                                )
+                              )
+                            }
+                            className="text-xs font-semibold px-4 py-2 rounded-xl active:scale-95 transition-all duration-150"
+                            style={{
+                              background: "rgba(239,68,68,0.08)",
+                              border: "1px solid rgba(239,68,68,0.2)",
+                              color: "#dc2626",
+                            }}
+                          >
+                            Cancel
+                          </button>
                         </div>
                       )}
                     </div>
