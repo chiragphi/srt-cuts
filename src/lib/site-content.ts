@@ -45,6 +45,7 @@ export interface SiteContent {
   serviceConfigs: ServiceConfig[];
   taxExpenses: TaxExpense[];
   weeklyAvailability: Record<string, string[]>; // key "0"–"6" = Sun–Sat, value = available time strings
+  dateAvailability: Record<string, string[]>; // key "YYYY-MM-DD", overrides weekly for that specific date
 }
 
 const DEFAULT_GALLERY: GalleryItem[] = [
@@ -96,6 +97,7 @@ export const DEFAULT_SITE_CONTENT: SiteContent = {
   scheduleBlocks: [],
   taxExpenses: [],
   weeklyAvailability: { "0": [], "1": [], "2": [], "3": [], "4": [], "5": [], "6": [] },
+  dateAvailability: {},
 };
 
 export function mergeSiteContent(value: Partial<SiteContent> | null | undefined): SiteContent {
@@ -109,6 +111,7 @@ export function mergeSiteContent(value: Partial<SiteContent> | null | undefined)
     serviceConfigs: getServiceConfigs(value?.serviceConfigs),
     taxExpenses: value?.taxExpenses ?? DEFAULT_SITE_CONTENT.taxExpenses,
     weeklyAvailability: value?.weeklyAvailability ?? DEFAULT_SITE_CONTENT.weeklyAvailability,
+    dateAvailability: value?.dateAvailability ?? DEFAULT_SITE_CONTENT.dateAvailability,
   };
 }
 

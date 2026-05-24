@@ -14,9 +14,10 @@ interface Props {
   blockedDates: string[];
   minDate: string;
   weeklyAvailability?: Record<string, string[]>;
+  dateAvailability?: Record<string, string[]>;
 }
 
-export default function CalendarPicker({ value, onChange, blockedDates, minDate, weeklyAvailability }: Props) {
+export default function CalendarPicker({ value, onChange, blockedDates, minDate, weeklyAvailability, dateAvailability }: Props) {
   const base = new Date((value || minDate) + "T00:00:00");
   const [view, setView] = useState(() => new Date(base.getFullYear(), base.getMonth(), 1));
 
@@ -79,9 +80,12 @@ export default function CalendarPicker({ value, onChange, blockedDates, minDate,
           const blocked = blockedDates.includes(iso);
           const past = iso < minDate;
           const isToday = iso === todayISO;
-          const noSlots = weeklyAvailability
-            ? (weeklyAvailability[String(dow)]?.length ?? 0) === 0
-            : false;
+          const slots = dateAvailability && iso in dateAvailability
+            ? dateAvailability[iso]
+            : weeklyAvailability
+            ? (weeklyAvailability[String(dow)] ?? [])
+            : null;
+          const noSlots = slots !== null && slots.length === 0;
           const disabled = past || blocked || noSlots;
 
           return (

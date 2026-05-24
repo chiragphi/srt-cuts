@@ -326,6 +326,11 @@ export default function AdminPage() {
 
             {adminTab === "Schedule" && (
               <section className="space-y-6">
+                <DateAvailabilityEditor
+                  dateAvailability={content.dateAvailability}
+                  weeklyAvailability={content.weeklyAvailability}
+                  onChange={(dateAvailability) => setContent({ ...content, dateAvailability })}
+                />
                 <AvailabilityEditor
                   availability={content.weeklyAvailability}
                   onChange={(weeklyAvailability) => setContent({ ...content, weeklyAvailability })}
@@ -566,6 +571,148 @@ function BookingList({
         })}
       </AnimatePresence>
     </div>
+  );
+}
+
+function DateAvailabilityEditor({
+  dateAvailability,
+  weeklyAvailability,
+  onChange,
+}: {
+  dateAvailability: Record<string, string[]>;
+  weeklyAvailability: Record<string, string[]>;
+  onChange: (v: Record<string, string[]>) => void;
+}) {
+  const [expanded, setExpanded] = useState<string | null>(null);
+
+  const today = new Date();
+  const dates: string[] = [];
+  for (let i = 1; i <= 18; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() + i);
+    dates.push(d.toISOString().split("T")[0]);
+  }
+
+  function toggle(iso: string, slot: string) {
+    const current = dateAvailability[iso] ?? weeklyAvailability[String(new Date(iso + "T00:00:00").getDay())] ?? [];
+    const next = current.includes(slot)
+      ? current.filter((t) => t !== slot)
+      : [...current, slot].sort((a, b) => TIME_SLOTS.indexOf(a) - TIME_SLOTS.indexOf(b));
+    onChange({ ...dateAvailability, [iso]: next });
+  }
+
+  function setAll(iso: string) {
+    onChange({ ...dateAvailability, [iso]: [...TIME_SLOTS] });
+  }
+
+  function clearAll(iso: string) {
+    onChange({ ...dateAvailability, [iso]: [] });
+  }
+
+  function clearOverride(iso: string) {
+    const next = { ...dateAvailability };
+    delete next[iso];
+    onChange(next);
+  }
+
+  return (
+    <section className="app-card p-4 sm:p-6 space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-semibold text-white">Date-Specific Availability</h2>
+        <p className="text-xs text-white/40">Next 18 days</p>
+      </div>
+
+      <div className="rounded-xl border border-purple-400/20 bg-purple-400/10 p-4 text-sm text-purple-100">
+        Override availability for specific dates. These take priority over the weekly schedule. Dates without an override use the weekly default.
+      </div>
+
+      <div className="space-y-2">
+        {dates.map((iso) => {
+          const d = new Date(iso + "T00:00:00");
+          const dow = String(d.getDay());
+          const hasOverride = iso in dateAvailability;
+          const slots = hasOverride ? dateAvailability[iso] : (weeklyAvailability[dow] ?? []);
+          const isOpen = expanded === iso;
+          const displaySlots = hasOverride ? dateAvailability[iso] : null;
+
+          const label = d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+          const badge = hasOverride
+            ? displaySlots!.length === 0
+              ? "CLOSED (override)"
+              : `${displaySlots!.length} slots (override)`
+            : slots.length === 0
+            ? "Closed (weekly)"
+            : `${slots.length} slots (weekly)`;
+
+          return (
+            <div key={iso} className="rounded-xl border border-white/10 bg-white/[0.03] overflow-hidden">
+              <button
+                type="button"
+                className="w-full flex items-center justify-between px-4 py-3 text-left cursor-pointer border-none bg-transparent"
+                onClick={() => setExpanded(isOpen ? null : iso)}
+              >
+                <div className="flex items-center gap-3">
+                  <span className="text-sm font-semibold text-white/90">{label}</span>
+                  <span
+                    className="text-xs px-2.5 py-0.5 rounded-full font-medium"
+                    style={{
+                      background: hasOverride
+                        ? displaySlots!.length === 0
+                          ? "rgba(239,68,68,0.12)"
+                          : "rgba(139,92,246,0.18)"
+                        : "rgba(255,255,255,0.06)",
+                      color: hasOverride
+                        ? displaySlots!.length === 0
+                          ? "#F87171"
+                          : "#C4B5FD"
+                        : "#6E6E73",
+                    }}
+                  >
+                    {badge}
+                  </span>
+                </div>
+                <span className="text-white/30 text-sm">{isOpen ? "▲" : "▼"}</span>
+              </button>
+
+              {isOpen && (
+                <div className="px-4 pb-4 space-y-3 border-t border-white/10 pt-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex gap-3">
+                      <button type="button" className="text-xs text-purple-300 hover:text-purple-100 transition-colors bg-transparent border-none cursor-pointer" onClick={() => setAll(iso)}>Select all</button>
+                      <button type="button" className="text-xs text-red-300 hover:text-red-100 transition-colors bg-transparent border-none cursor-pointer" onClick={() => clearAll(iso)}>Close day</button>
+                      {hasOverride && (
+                        <button type="button" className="text-xs text-white/40 hover:text-white/70 transition-colors bg-transparent border-none cursor-pointer" onClick={() => clearOverride(iso)}>Reset to weekly</button>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {TIME_SLOTS.map((slot) => {
+                      const active = slots.includes(slot);
+                      return (
+                        <button
+                          key={slot}
+                          type="button"
+                          onClick={() => toggle(iso, slot)}
+                          className="text-xs px-3 py-1.5 rounded-full transition-all duration-150 active:scale-95 border cursor-pointer"
+                          style={{
+                            background: active ? "rgba(139,92,246,0.2)" : "rgba(255,255,255,0.04)",
+                            borderColor: active ? "rgba(139,92,246,0.45)" : "rgba(255,255,255,0.1)",
+                            color: active ? "#C4B5FD" : "#6E6E73",
+                            fontWeight: active ? 600 : 400,
+                          }}
+                        >
+                          {slot}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </section>
   );
 }
 

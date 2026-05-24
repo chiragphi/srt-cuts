@@ -82,7 +82,13 @@ export default function BookPage() {
   const services = content.serviceConfigs;
   const canNext1 = !!service;
   const selectedDow = date ? String(new Date(date + "T00:00:00").getDay()) : null;
-  const availableTimes = selectedDow ? (content.weeklyAvailability[selectedDow] ?? []) : [];
+  const availableTimes = date
+    ? date in content.dateAvailability
+      ? content.dateAvailability[date]
+      : selectedDow
+      ? (content.weeklyAvailability[selectedDow] ?? [])
+      : []
+    : [];
   const canNext2 = !!date && !!time && availableTimes.includes(time);
   const selectedService = services.find((s) => s.name === service);
 
@@ -252,6 +258,7 @@ export default function BookPage() {
                     blockedDates={content.scheduleBlocks.map((b) => b.date)}
                     minDate={getMinDate()}
                     weeklyAvailability={content.weeklyAvailability}
+                    dateAvailability={content.dateAvailability}
                   />
                 </div>
 

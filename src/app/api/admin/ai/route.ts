@@ -139,7 +139,7 @@ const TOOLS = [
     function: {
       name: "set_availability",
       description:
-        "Set the available booking time slots for a day of the week. Customers can only book times you explicitly enable here. Pass an empty array to clear all slots for that day.",
+        "Set the available booking time slots for a day of the week (recurring). Customers can only book times you explicitly enable here. Pass an empty array to clear all slots for that day.",
       parameters: {
         type: "object",
         properties: {
@@ -157,6 +157,27 @@ const TOOLS = [
           },
         },
         required: ["day", "times"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "set_date_availability",
+      description:
+        "Set available booking times for a specific calendar date, overriding the weekly schedule for that date. Pass an empty array to close that date entirely. Use this for date-specific exceptions.",
+      parameters: {
+        type: "object",
+        properties: {
+          date: { type: "string", description: "Date in YYYY-MM-DD format" },
+          times: {
+            type: "array",
+            items: { type: "string" },
+            description:
+              `Array of time strings from: ${TIME_SLOTS.join(", ")}. Pass empty array [] to close this date. Omit this tool call for a date to revert to the weekly default.`,
+          },
+        },
+        required: ["date", "times"],
       },
     },
   },
@@ -229,15 +250,24 @@ ${content.serviceConfigs
   .map((s) => `- ${s.name}: $${(s.amount / 100).toFixed(2)} (${s.duration})`)
   .join("\n")}
 
-WEEKLY AVAILABILITY (times customers can book — empty = day is closed):
+WEEKLY AVAILABILITY (recurring defaults — empty = day is closed):
 ${DAYS_OF_WEEK.map((day, i) => {
   const slots = content.weeklyAvailability[String(i)] ?? [];
   return `- ${day}: ${slots.length ? slots.join(", ") : "CLOSED"}`;
 }).join("\n")}
 
+DATE-SPECIFIC AVAILABILITY (overrides weekly for those dates):
+${(() => {
+  const entries = Object.entries(content.dateAvailability).sort(([a], [b]) => a.localeCompare(b));
+  return entries.length
+    ? entries.map(([date, times]) => `- ${date}: ${times.length ? times.join(", ") : "CLOSED"}`).join("\n")
+    : "None set";
+})()}
+
 VALID TIME SLOTS: ${TIME_SLOTS.join(", ")}
 
 When parsing dates like "tomorrow", "next Monday", "this Friday" — always calculate relative to TODAY (${today}).
+Prefer set_date_availability for specific upcoming dates; use set_availability for recurring weekly patterns.
 If you need to perform multiple actions (e.g. accept all pending bookings, or set availability for multiple days), call the tools multiple times in one response.`;
 
   const messages = [
@@ -468,6 +498,30 @@ async function executeTool(
       .upsert({ id: "main", content: { ...content, [field]: value }, updated_at: new Date().toISOString() });
 
     return { success: true, description: `Updated ${field}` };
+  }
+
+  if (name === "set_date_availability") {
+    const date = args.date as string;
+    const times = (args.times as string[]).filter((t) => TIME_SLOTS.includes(t));
+    times.sort((a, b) => TIME_SLOTS.indexOf(a) - TIME_SLOTS.indexOf(b));
+
+    const { data: row } = await supabaseAdmin
+      .from("site_content")
+      .select("content")
+      .eq("id", "main")
+      .maybeSingle();
+    const content = mergeSiteContent(row?.content);
+
+    const dateAvailability = { ...content.dateAvailability, [date]: times };
+    await supabaseAdmin
+      .from("site_content")
+      .upsert({ id: "main", content: { ...content, dateAvailability }, updated_at: new Date().toISOString() });
+
+    const d = new Date(date + "T00:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+    const desc = times.length === 0
+      ? `Closed ${d} (override)`
+      : `Set ${d}: ${times.length} slot${times.length !== 1 ? "s" : ""} (${times[0]}–${times[times.length - 1]})`;
+    return { success: true, description: desc };
   }
 
   if (name === "set_availability") {
