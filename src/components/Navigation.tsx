@@ -26,7 +26,7 @@ export default function Navigation() {
 
   return (
     <>
-      <nav className="fixed top-0 left-0 right-0 z-40 border-b border-white/[0.08] bg-black/72 pt-[env(safe-area-inset-top)] backdrop-blur-2xl">
+      <nav className="fixed top-0 left-0 right-0 z-40 border-b border-black/[0.06] bg-white/72 pt-[env(safe-area-inset-top)] backdrop-blur-2xl">
         <div className="app-shell flex items-center justify-between h-16">
           <Link href="/" className="flex items-center gap-2.5">
             <Image
@@ -36,7 +36,7 @@ export default function Navigation() {
               height={30}
               className="object-contain"
             />
-            <span className="text-sm font-semibold tracking-wider text-white/90 uppercase hidden min-[360px]:inline">
+            <span className="text-sm font-semibold tracking-wider text-[#17151f] uppercase hidden min-[360px]:inline">
               SRT Cuts
             </span>
           </Link>
@@ -44,7 +44,7 @@ export default function Navigation() {
           <div className="flex items-center gap-2 sm:gap-4">
             <Link
               href="/#services"
-              className="hidden sm:inline text-sm text-white/55 hover:text-white/90 transition-colors"
+              className="hidden sm:inline text-sm font-medium text-[#6f6a7c] hover:text-[#17151f] transition-colors"
             >
               Services
             </Link>
@@ -60,13 +60,13 @@ export default function Navigation() {
                   </Link>
                 </span>
                 <div className="relative group hidden sm:block">
-                  <button className="min-h-10 rounded-lg px-3 text-sm text-white/60 hover:text-white/90 transition-colors bg-white/[0.04] border border-white/10">
+                  <button className="min-h-10 rounded-full px-4 text-sm font-semibold text-[#5d566e] hover:text-[#17151f] transition-colors bg-white/70 border border-black/10">
                     {user.name.split(" ")[0]}
                   </button>
                   <div className="absolute right-0 top-full mt-2 w-40 glass rounded-lg py-1 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none group-hover:pointer-events-auto">
                     <button
                       onClick={logout}
-                      className="w-full text-left px-4 py-2.5 text-sm text-white/70 hover:text-white transition-colors"
+                      className="w-full text-left px-4 py-2.5 text-sm text-[#6f6a7c] hover:text-[#17151f] transition-colors"
                     >
                       Sign out
                     </button>
@@ -84,7 +84,7 @@ export default function Navigation() {
               <button
                 onClick={logout}
                 aria-label="Sign out"
-                className="mobile-only min-h-10 w-10 rounded-lg border border-white/10 bg-white/[0.05] text-white/70"
+                className="mobile-only min-h-10 w-10 rounded-full border border-black/10 bg-white/70 text-[#5d566e]"
               >
                 <LogOut size={17} className="mx-auto" />
               </button>
@@ -92,7 +92,7 @@ export default function Navigation() {
               <Link
                 href="/auth"
                 aria-label="Sign in"
-                className="mobile-only min-h-10 w-10 rounded-lg border border-white/10 bg-white/[0.05] text-white/80 inline-flex items-center justify-center"
+                className="mobile-only min-h-10 w-10 rounded-full border border-black/10 bg-white/70 text-[#5d566e] inline-flex items-center justify-center"
               >
                 <UserRound size={17} />
               </Link>

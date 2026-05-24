@@ -93,9 +93,9 @@ export default function BookPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div
-          className="w-6 h-6 rounded-full border-2 border-white/50 border-t-transparent animate-spin"
+          className="w-6 h-6 rounded-full border-2 border-[#7657ff]/30 border-t-[#7657ff] animate-spin"
         />
       </div>
     );
@@ -105,7 +105,7 @@ export default function BookPage() {
     return (
       <>
         <Navigation />
-        <div className="min-h-screen bg-black flex items-center justify-center mobile-page-pad">
+        <div className="min-h-screen flex items-center justify-center mobile-page-pad">
           <motion.div
             className="app-shell text-center max-w-md"
             initial={{ opacity: 0, scale: 0.9 }}
@@ -113,18 +113,18 @@ export default function BookPage() {
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           >
             <div
-              className="w-20 h-20 rounded-lg mx-auto mb-7 flex items-center justify-center text-3xl"
-              style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.16)" }}
+              className="w-20 h-20 rounded-[2rem] mx-auto mb-7 flex items-center justify-center text-3xl text-[#4d35d8]"
+              style={{ background: "rgba(239,234,255,0.9)", border: "1px solid rgba(118,87,255,0.16)" }}
             >
               ✓
             </div>
             <h1
-              className="font-semibold text-white mb-4"
+              className="font-semibold text-[#17151f] mb-4"
               style={{ fontSize: 36, letterSpacing: "-0.03em" }}
             >
               Booking requested
             </h1>
-            <p className="text-base font-light mb-8" style={{ color: "#86868B" }}>
+            <p className="text-base font-light mb-8" style={{ color: "#6f6a7c" }}>
               You&apos;ll get a text confirmation once it&apos;s approved.
               <br />
               Check your phone for updates and save the appointment once confirmed.
@@ -149,7 +149,7 @@ export default function BookPage() {
   return (
     <>
       <Navigation />
-      <div className="min-h-screen bg-black pt-24 pb-28 sm:pb-16 mobile-page-pad">
+      <div className="min-h-screen pt-24 pb-28 sm:pb-16 booking-page-pad">
         <div className="app-shell max-w-[22rem] sm:max-w-lg">
           <motion.div
             className="mb-7"
@@ -159,11 +159,11 @@ export default function BookPage() {
           >
             <p className="mobile-section-label mb-3">Book</p>
             <h1
-              className="app-title font-semibold text-white mb-2"
+              className="app-title font-semibold text-[#17151f] mb-2"
             >
               {step === 1 ? "Choose a service" : step === 2 ? "Pick a time" : "Confirm"}
             </h1>
-            <p className="text-sm" style={{ color: "#6E6E73" }}>
+            <p className="text-sm" style={{ color: "#6f6a7c" }}>
               Step {step} of 3{user ? ` · Hi ${user.name.split(" ")[0]}` : ""}
             </p>
           </motion.div>
@@ -176,10 +176,10 @@ export default function BookPage() {
                   <div
                     className="h-1 rounded-full transition-all duration-500"
                     style={{
-                      background: s <= step ? "#F5F5F7" : "rgba(255,255,255,0.08)",
+                      background: s <= step ? "#7657ff" : "rgba(66,56,104,0.1)",
                     }}
                   />
-                  <p className="mt-2 text-[11px]" style={{ color: s <= step ? "#E5E7EB" : "#6E6E73" }}>{label}</p>
+                  <p className="mt-2 text-[11px] font-semibold" style={{ color: s <= step ? "#4d35d8" : "#6f6a7c" }}>{label}</p>
                 </div>
               );
             })}
@@ -201,23 +201,23 @@ export default function BookPage() {
                     key={s.name}
                     className="w-full text-left app-card service-card p-4"
                     style={{
-                      background: service === s.name ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.035)",
-                      borderColor: service === s.name ? "rgba(255,255,255,0.28)" : "rgba(255,255,255,0.07)",
-                      boxShadow: service === s.name ? "0 0 0 1px rgba(255,255,255,0.08)" : "none",
+                      background: service === s.name ? "rgba(239,234,255,0.9)" : "rgba(255,255,255,0.76)",
+                      borderColor: service === s.name ? "rgba(118,87,255,0.35)" : "rgba(66,56,104,0.1)",
+                      boxShadow: service === s.name ? "0 16px 36px rgba(96,72,231,0.14)" : "0 10px 30px rgba(52,43,94,0.08)",
                     }}
                     onClick={() => setService(s.name)}
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div className="min-w-0">
-                        <p className="font-medium text-white text-base">{s.name}</p>
-                        <p className="text-sm mt-0.5" style={{ color: "#86868B" }}>{s.desc}</p>
-                        <p className="text-xs mt-2" style={{ color: "#6E6E73" }}>
+                        <p className="font-semibold text-[#17151f] text-base">{s.name}</p>
+                        <p className="text-sm mt-0.5" style={{ color: "#6f6a7c" }}>{s.desc}</p>
+                        <p className="text-xs mt-2" style={{ color: "#7c748c" }}>
                           {s.duration} · {s.detail}
                         </p>
                       </div>
                       <span
                         className="text-lg font-semibold shrink-0"
-                        style={{ color: "#F5F5F7" }}
+                        style={{ color: "#4d35d8" }}
                       >
                         {formatPrice(s.amount)}
                       </span>
@@ -248,7 +248,7 @@ export default function BookPage() {
                 className="space-y-5"
               >
                 <div>
-                  <label className="block text-xs text-white/40 mb-2 tracking-wide uppercase">
+                  <label className="block text-xs text-[#6f6a7c] mb-2 tracking-wide uppercase font-bold">
                     Date
                   </label>
                   <input
@@ -257,17 +257,17 @@ export default function BookPage() {
                     value={date}
                     onChange={(e) => setDate(e.target.value)}
                     className="input-field"
-                    style={{ colorScheme: "dark" }}
+                    style={{ colorScheme: "light" }}
                   />
                   {selectedBlock && (
-                    <p className="text-sm text-red-300 mt-2">
+                    <p className="text-sm text-red-500 mt-2">
                       This day is blocked: {selectedBlock.reason}
                     </p>
                   )}
                 </div>
 
                 <div>
-                  <label className="block text-xs text-white/40 mb-3 tracking-wide uppercase">
+                  <label className="block text-xs text-[#6f6a7c] mb-3 tracking-wide uppercase font-bold">
                     Time
                   </label>
                   <div className="grid grid-cols-2 min-[390px]:grid-cols-3 gap-2">
@@ -276,9 +276,9 @@ export default function BookPage() {
                         key={t}
                         className="min-h-12 px-3 rounded-lg text-sm transition-all duration-150 border"
                         style={{
-                          background: time === t ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.03)",
-                          borderColor: time === t ? "rgba(255,255,255,0.28)" : "rgba(255,255,255,0.07)",
-                          color: time === t ? "#F5F5F7" : "#A1A1AA",
+                          background: time === t ? "rgba(239,234,255,0.95)" : "rgba(255,255,255,0.72)",
+                          borderColor: time === t ? "rgba(118,87,255,0.36)" : "rgba(66,56,104,0.1)",
+                          color: time === t ? "#4d35d8" : "#5d566e",
                         }}
                         onClick={() => setTime(t)}
                       >
@@ -286,7 +286,7 @@ export default function BookPage() {
                       </button>
                     ))}
                   </div>
-                  <p className="text-xs mt-3" style={{ color: "#6E6E73" }}>
+                  <p className="text-xs mt-3" style={{ color: "#6f6a7c" }}>
                     Availability is previewed here. Final confirmation comes by SMS after review.
                   </p>
                 </div>
@@ -331,14 +331,14 @@ export default function BookPage() {
                     { label: "Time", value: time },
                   ].map((row) => (
                     <div key={row.label} className="flex justify-between items-center gap-4">
-                      <span className="text-sm" style={{ color: "#6E6E73" }}>{row.label}</span>
-                      <span className="text-sm font-medium text-white text-right">{row.value}</span>
+                      <span className="text-sm" style={{ color: "#6f6a7c" }}>{row.label}</span>
+                      <span className="text-sm font-semibold text-[#17151f] text-right">{row.value}</span>
                     </div>
                   ))}
                 </div>
 
                 <div>
-                  <label className="block text-xs text-white/40 mb-2 tracking-wide uppercase">
+                  <label className="block text-xs text-[#6f6a7c] mb-2 tracking-wide uppercase font-bold">
                     Notes (optional)
                   </label>
                   <textarea
@@ -351,7 +351,7 @@ export default function BookPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs text-white/40 mb-3 tracking-wide uppercase">
+                  <label className="block text-xs text-[#6f6a7c] mb-3 tracking-wide uppercase font-bold">
                     Payment
                   </label>
                   <div className="grid gap-3 sm:grid-cols-2">
@@ -363,25 +363,25 @@ export default function BookPage() {
                         key={option.id}
                         className="text-left app-card p-4 transition-all duration-200"
                         style={{
-                          background: paymentMethod === option.id ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.03)",
-                          borderColor: paymentMethod === option.id ? "rgba(255,255,255,0.28)" : "rgba(255,255,255,0.07)",
+                          background: paymentMethod === option.id ? "rgba(239,234,255,0.95)" : "rgba(255,255,255,0.72)",
+                          borderColor: paymentMethod === option.id ? "rgba(118,87,255,0.36)" : "rgba(66,56,104,0.1)",
                         }}
                         onClick={() => setPaymentMethod(option.id as "in_store" | "online")}
                       >
-                        <p className="text-white font-medium">{option.title}</p>
-                        <p className="text-sm mt-1" style={{ color: "#86868B" }}>{option.desc}</p>
+                        <p className="text-[#17151f] font-semibold">{option.title}</p>
+                        <p className="text-sm mt-1" style={{ color: "#6f6a7c" }}>{option.desc}</p>
                       </button>
                     ))}
                   </div>
                 </div>
 
                 <div className="app-card p-5 space-y-3">
-                  <p className="text-sm text-white/80">No deposits. Choose Venmo full payment or pay the full price in store.</p>
-                  <p className="text-sm" style={{ color: "#86868B" }}>{content.cancellationPolicy}</p>
-                  <p className="text-sm" style={{ color: "#86868B" }}>{content.reminderPolicy}</p>
+                  <p className="text-sm text-[#2b2638]">No deposits. Choose Venmo full payment or pay the full price in store.</p>
+                  <p className="text-sm" style={{ color: "#6f6a7c" }}>{content.cancellationPolicy}</p>
+                  <p className="text-sm" style={{ color: "#6f6a7c" }}>{content.reminderPolicy}</p>
                 </div>
 
-                {error && <p className="text-sm text-red-400">{error}</p>}
+                {error && <p className="text-sm text-red-500">{error}</p>}
 
                 <div className="hidden sm:grid grid-cols-2 gap-3 pt-1">
                   <button className="btn-ghost flex-1" onClick={() => setStep(2)}>
@@ -396,7 +396,7 @@ export default function BookPage() {
                   </button>
                 </div>
 
-                <p className="text-xs text-center" style={{ color: "#6E6E73" }}>
+                <p className="text-xs text-center" style={{ color: "#6f6a7c" }}>
                   You&apos;ll receive a text once confirmed. Cancel and reschedule support is handled by text.
                 </p>
               </motion.div>
@@ -404,8 +404,8 @@ export default function BookPage() {
           </AnimatePresence>
         </div>
       </div>
-      <div className="mobile-only fixed left-0 right-0 bottom-[72px] z-40 px-4 pb-[env(safe-area-inset-bottom)]">
-        <div className="grid grid-cols-2 gap-2 rounded-lg border border-white/10 bg-black/85 p-2 backdrop-blur-xl">
+      <div className="mobile-only mobile-booking-actions">
+        <div className="grid grid-cols-2 gap-2 rounded-[1.4rem] border p-2 backdrop-blur-xl">
           {step > 1 ? (
             <button className="btn-ghost min-h-12 text-sm" onClick={() => setStep(step === 3 ? 2 : 1)}>
               Back

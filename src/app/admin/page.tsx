@@ -174,7 +174,7 @@ export default function AdminPage() {
   const taxSummary = useMemo(() => calculateTaxSummary(bookings, content.taxExpenses), [bookings, content.taxExpenses]);
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="admin-shell min-h-screen">
       <div className="sticky top-0 z-40 bg-black/80 backdrop-blur-xl border-b border-white/10 pt-[env(safe-area-inset-top)]">
         <div className="app-shell h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">

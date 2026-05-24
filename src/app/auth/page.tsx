@@ -99,9 +99,9 @@ function AuthForm() {
   }
 
   return (
-    <div className="min-h-screen bg-black flex flex-col mobile-page-pad">
+    <div className="min-h-screen flex flex-col mobile-page-pad">
       <div className="p-5 pt-[max(20px,env(safe-area-inset-top))]">
-        <Link href="/" className="text-sm text-white/45 hover:text-white/80 transition-colors">
+        <Link href="/" className="text-sm font-semibold text-[#6f6a7c] hover:text-[#17151f] transition-colors">
           ← SRT Cuts
         </Link>
       </div>
@@ -128,12 +128,12 @@ function AuthForm() {
                 transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
               >
                 <h1
-                  className="font-semibold text-white text-center mb-2"
+                  className="font-semibold text-[#17151f] text-center mb-2"
                   style={{ fontSize: 28, letterSpacing: "-0.025em" }}
                 >
                   Sign in
                 </h1>
-                <p className="text-sm text-center mb-8" style={{ color: "#A1A1AA" }}>
+                <p className="text-sm text-center mb-8 text-[#6f6a7c]">
                   Enter your phone number to continue.
                 </p>
 
@@ -154,7 +154,7 @@ function AuthForm() {
                   </div>
 
                   {error && (
-                    <p className="text-sm text-red-400 text-center">{error}</p>
+                    <p className="text-sm text-red-500 text-center">{error}</p>
                   )}
 
                   <button
@@ -178,14 +178,14 @@ function AuthForm() {
                 transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
               >
                 <h1
-                  className="font-semibold text-white text-center mb-2"
+                  className="font-semibold text-[#17151f] text-center mb-2"
                   style={{ fontSize: 28, letterSpacing: "-0.025em" }}
                 >
                   Enter code
                 </h1>
-                <p className="text-sm text-center mb-8" style={{ color: "#A1A1AA" }}>
+                <p className="text-sm text-center mb-8 text-[#6f6a7c]">
                   We sent a 6-digit code to{" "}
-                  <span className="text-white/70">{phone}</span>
+                  <span className="font-semibold text-[#17151f]">{phone}</span>
                 </p>
 
                 <div className="app-card p-4 mb-4">
@@ -219,7 +219,7 @@ function AuthForm() {
                 </div>
 
                 {error && (
-                  <p className="text-sm text-red-400 text-center mb-4">{error}</p>
+                  <p className="text-sm text-red-500 text-center mb-4">{error}</p>
                 )}
 
                 <button
@@ -232,7 +232,7 @@ function AuthForm() {
 
                 <button
                   className="w-full text-center text-sm mt-4 bg-transparent border-none cursor-pointer transition-colors"
-                  style={{ color: "#86868B" }}
+                  style={{ color: "#6f6a7c" }}
                   onClick={() => { setStep("phone"); setCode(["","","","","",""]); setError(""); }}
                 >
                   Change number
@@ -248,7 +248,7 @@ function AuthForm() {
 
 export default function AuthPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-black" />}>
+    <Suspense fallback={<div className="min-h-screen" />}>
       <AuthForm />
     </Suspense>
   );
