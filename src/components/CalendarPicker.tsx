@@ -13,9 +13,10 @@ interface Props {
   onChange: (v: string) => void;
   blockedDates: string[];
   minDate: string;
+  weeklyAvailability?: Record<string, string[]>;
 }
 
-export default function CalendarPicker({ value, onChange, blockedDates, minDate }: Props) {
+export default function CalendarPicker({ value, onChange, blockedDates, minDate, weeklyAvailability }: Props) {
   const base = new Date((value || minDate) + "T00:00:00");
   const [view, setView] = useState(() => new Date(base.getFullYear(), base.getMonth(), 1));
 
@@ -73,11 +74,15 @@ export default function CalendarPicker({ value, onChange, blockedDates, minDate 
           if (!day) return <div key={`e${i}`} className="aspect-square" />;
 
           const iso = toISO(y, m, day);
+          const dow = new Date(iso + "T00:00:00").getDay();
           const sel = iso === value;
           const blocked = blockedDates.includes(iso);
           const past = iso < minDate;
           const isToday = iso === todayISO;
-          const disabled = past || blocked;
+          const noSlots = weeklyAvailability
+            ? (weeklyAvailability[String(dow)]?.length ?? 0) === 0
+            : false;
+          const disabled = past || blocked || noSlots;
 
           return (
             <button
@@ -96,7 +101,7 @@ export default function CalendarPicker({ value, onChange, blockedDates, minDate 
                   ? "#fff"
                   : blocked
                   ? "rgba(185,28,28,0.4)"
-                  : past
+                  : past || noSlots
                   ? "rgba(111,106,124,0.28)"
                   : "#17151f",
                 border: sel
@@ -107,7 +112,7 @@ export default function CalendarPicker({ value, onChange, blockedDates, minDate 
                   ? "1px solid rgba(239,68,68,0.1)"
                   : "1px solid rgba(66,56,104,0.06)",
                 boxShadow: sel ? "0 4px 14px rgba(96,72,231,0.3)" : "none",
-                opacity: past ? 0.32 : 1,
+                opacity: past || noSlots ? 0.32 : 1,
                 cursor: disabled ? "default" : "pointer",
               }}
             >

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { DEFAULT_SITE_CONTENT, type SiteContent } from "@/lib/site-content";
 import { formatPrice, parseDollarAmount, type ServiceConfig } from "@/lib/services";
+import { TIME_SLOTS, DAYS_OF_WEEK } from "@/lib/schedule";
 import AdminAgent from "@/components/AdminAgent";
 
 interface Booking {
@@ -325,7 +326,11 @@ export default function AdminPage() {
 
             {adminTab === "Schedule" && (
               <section className="space-y-6">
-                <Panel title="Schedule Blocks">
+                <AvailabilityEditor
+                  availability={content.weeklyAvailability}
+                  onChange={(weeklyAvailability) => setContent({ ...content, weeklyAvailability })}
+                />
+                <Panel title="Blocked Dates">
                   <Repeater
                     items={content.scheduleBlocks}
                     empty={{ date: "", reason: "" }}
@@ -561,6 +566,88 @@ function BookingList({
         })}
       </AnimatePresence>
     </div>
+  );
+}
+
+function AvailabilityEditor({
+  availability,
+  onChange,
+}: {
+  availability: Record<string, string[]>;
+  onChange: (v: Record<string, string[]>) => void;
+}) {
+  function toggle(dow: string, slot: string) {
+    const current = availability[dow] ?? [];
+    const next = current.includes(slot)
+      ? current.filter((t) => t !== slot)
+      : [...current, slot].sort((a, b) => TIME_SLOTS.indexOf(a) - TIME_SLOTS.indexOf(b));
+    onChange({ ...availability, [dow]: next });
+  }
+
+  function setAll(dow: string) {
+    onChange({ ...availability, [dow]: [...TIME_SLOTS] });
+  }
+
+  function clearAll(dow: string) {
+    onChange({ ...availability, [dow]: [] });
+  }
+
+  return (
+    <section className="app-card p-4 sm:p-6 space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-semibold text-white">Weekly Availability</h2>
+        <p className="text-xs text-white/40">Tap slots to toggle on/off</p>
+      </div>
+
+      <div className="rounded-xl border border-purple-400/20 bg-purple-400/10 p-4 text-sm text-purple-100">
+        Only the times you enable here will appear for customers to book. Days with no slots set will be grayed out in the calendar.
+      </div>
+
+      <div className="space-y-5">
+        {DAYS_OF_WEEK.map((dayName, dow) => {
+          const key = String(dow);
+          const active = availability[key] ?? [];
+          const allOn = active.length === TIME_SLOTS.length;
+          return (
+            <div key={key}>
+              <div className="flex items-center justify-between mb-2.5">
+                <p className="text-sm font-semibold text-white/80">{dayName}</p>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    className="text-xs text-purple-300 hover:text-purple-100 transition-colors bg-transparent border-none cursor-pointer"
+                    onClick={() => allOn ? clearAll(key) : setAll(key)}
+                  >
+                    {allOn ? "Clear all" : "Select all"}
+                  </button>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {TIME_SLOTS.map((slot) => {
+                  const on = active.includes(slot);
+                  return (
+                    <button
+                      key={slot}
+                      type="button"
+                      onClick={() => toggle(key, slot)}
+                      className="text-xs px-3 py-1.5 rounded-full transition-all duration-150 active:scale-95 border cursor-pointer"
+                      style={{
+                        background: on ? "rgba(139,92,246,0.2)" : "rgba(255,255,255,0.04)",
+                        borderColor: on ? "rgba(139,92,246,0.45)" : "rgba(255,255,255,0.1)",
+                        color: on ? "#C4B5FD" : "#6E6E73",
+                        fontWeight: on ? 600 : 400,
+                      }}
+                    >
+                      {slot}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
   );
 }
 

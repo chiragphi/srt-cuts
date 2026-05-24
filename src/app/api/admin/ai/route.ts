@@ -3,6 +3,7 @@ import { getSession, isAdmin } from "@/lib/session";
 import { supabaseAdmin } from "@/lib/supabase";
 import { mergeSiteContent } from "@/lib/site-content";
 import { sendSMS, SMS } from "@/lib/twilio";
+import { TIME_SLOTS, DAYS_OF_WEEK } from "@/lib/schedule";
 
 const MODEL = "llama-3.3-70b-versatile";
 
@@ -133,6 +134,32 @@ const TOOLS = [
       },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "set_availability",
+      description:
+        "Set the available booking time slots for a day of the week. Customers can only book times you explicitly enable here. Pass an empty array to clear all slots for that day.",
+      parameters: {
+        type: "object",
+        properties: {
+          day: {
+            type: "string",
+            enum: ["0", "1", "2", "3", "4", "5", "6"],
+            description:
+              "Day of week: 0=Sunday, 1=Monday, 2=Tuesday, 3=Wednesday, 4=Thursday, 5=Friday, 6=Saturday",
+          },
+          times: {
+            type: "array",
+            items: { type: "string" },
+            description:
+              `Array of time strings from the allowed set: ${TIME_SLOTS.join(", ")}. Pass empty array [] to close the day entirely.`,
+          },
+        },
+        required: ["day", "times"],
+      },
+    },
+  },
 ];
 
 export async function POST(req: NextRequest) {
@@ -202,8 +229,16 @@ ${content.serviceConfigs
   .map((s) => `- ${s.name}: $${(s.amount / 100).toFixed(2)} (${s.duration})`)
   .join("\n")}
 
+WEEKLY AVAILABILITY (times customers can book — empty = day is closed):
+${DAYS_OF_WEEK.map((day, i) => {
+  const slots = content.weeklyAvailability[String(i)] ?? [];
+  return `- ${day}: ${slots.length ? slots.join(", ") : "CLOSED"}`;
+}).join("\n")}
+
+VALID TIME SLOTS: ${TIME_SLOTS.join(", ")}
+
 When parsing dates like "tomorrow", "next Monday", "this Friday" — always calculate relative to TODAY (${today}).
-If you need to perform multiple actions (e.g. accept all pending bookings), call the tools multiple times.`;
+If you need to perform multiple actions (e.g. accept all pending bookings, or set availability for multiple days), call the tools multiple times in one response.`;
 
   const messages = [
     { role: "system", content: systemPrompt },
@@ -433,6 +468,31 @@ async function executeTool(
       .upsert({ id: "main", content: { ...content, [field]: value }, updated_at: new Date().toISOString() });
 
     return { success: true, description: `Updated ${field}` };
+  }
+
+  if (name === "set_availability") {
+    const dow = args.day as string;
+    const times = (args.times as string[]).filter((t) => TIME_SLOTS.includes(t));
+    times.sort((a, b) => TIME_SLOTS.indexOf(a) - TIME_SLOTS.indexOf(b));
+
+    const { data: row } = await supabaseAdmin
+      .from("site_content")
+      .select("content")
+      .eq("id", "main")
+      .maybeSingle();
+    const content = mergeSiteContent(row?.content);
+
+    const weeklyAvailability = { ...content.weeklyAvailability, [dow]: times };
+    await supabaseAdmin
+      .from("site_content")
+      .upsert({ id: "main", content: { ...content, weeklyAvailability }, updated_at: new Date().toISOString() });
+
+    const dayName = DAYS_OF_WEEK[parseInt(dow)];
+    const desc =
+      times.length === 0
+        ? `Cleared all slots for ${dayName}`
+        : `Set ${dayName} availability: ${times.length} slot${times.length !== 1 ? "s" : ""} (${times[0]}–${times[times.length - 1]})`;
+    return { success: true, description: desc };
   }
 
   return { success: false, description: `Unknown tool: ${name}` };

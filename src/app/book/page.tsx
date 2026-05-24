@@ -8,14 +8,7 @@ import Navigation from "@/components/Navigation";
 import CalendarPicker from "@/components/CalendarPicker";
 import { formatPrice } from "@/lib/services";
 import { DEFAULT_SITE_CONTENT, type SiteContent } from "@/lib/site-content";
-
-const TIME_SLOTS = [
-  "9:00 AM", "9:30 AM", "10:00 AM", "10:30 AM",
-  "11:00 AM", "11:30 AM", "12:00 PM", "12:30 PM",
-  "1:00 PM", "1:30 PM", "2:00 PM", "2:30 PM",
-  "3:00 PM", "3:30 PM", "4:00 PM", "4:30 PM",
-  "5:00 PM", "5:30 PM",
-];
+import { TIME_SLOTS } from "@/lib/schedule";
 
 function getMinDate() {
   const d = new Date();
@@ -88,7 +81,9 @@ export default function BookPage() {
 
   const services = content.serviceConfigs;
   const canNext1 = !!service;
-  const canNext2 = !!date && !!time;
+  const selectedDow = date ? String(new Date(date + "T00:00:00").getDay()) : null;
+  const availableTimes = selectedDow ? (content.weeklyAvailability[selectedDow] ?? []) : [];
+  const canNext2 = !!date && !!time && availableTimes.includes(time);
   const selectedService = services.find((s) => s.name === service);
 
   if (loading) {
@@ -253,9 +248,10 @@ export default function BookPage() {
                   </label>
                   <CalendarPicker
                     value={date}
-                    onChange={setDate}
+                    onChange={(d) => { setDate(d); setTime(""); }}
                     blockedDates={content.scheduleBlocks.map((b) => b.date)}
                     minDate={getMinDate()}
+                    weeklyAvailability={content.weeklyAvailability}
                   />
                 </div>
 
@@ -263,25 +259,33 @@ export default function BookPage() {
                   <label className="block text-xs text-[#6f6a7c] mb-3 tracking-wide uppercase font-bold">
                     Time
                   </label>
-                  <div className="grid grid-cols-2 min-[390px]:grid-cols-3 gap-2">
-                    {TIME_SLOTS.map((t) => (
-                      <button
-                        key={t}
-                        className="min-h-12 px-3 rounded-lg text-sm transition-all duration-150 border"
-                        style={{
-                          background: time === t ? "rgba(239,234,255,0.95)" : "rgba(255,255,255,0.72)",
-                          borderColor: time === t ? "rgba(118,87,255,0.36)" : "rgba(66,56,104,0.1)",
-                          color: time === t ? "#4d35d8" : "#5d566e",
-                        }}
-                        onClick={() => setTime(t)}
-                      >
-                        {t}
-                      </button>
-                    ))}
-                  </div>
-                  <p className="text-xs mt-3" style={{ color: "#6f6a7c" }}>
-                    Availability is previewed here. Final confirmation comes by SMS after review.
-                  </p>
+                  {!date ? (
+                    <p className="text-sm text-[#9c90b8]">Select a date above to see available times.</p>
+                  ) : availableTimes.length === 0 ? (
+                    <p className="text-sm text-[#9c90b8]">No availability set for this day. Try another date.</p>
+                  ) : (
+                    <>
+                      <div className="grid grid-cols-2 min-[390px]:grid-cols-3 gap-2">
+                        {availableTimes.map((t) => (
+                          <button
+                            key={t}
+                            className="min-h-12 px-3 rounded-lg text-sm transition-all duration-150 border"
+                            style={{
+                              background: time === t ? "rgba(239,234,255,0.95)" : "rgba(255,255,255,0.72)",
+                              borderColor: time === t ? "rgba(118,87,255,0.36)" : "rgba(66,56,104,0.1)",
+                              color: time === t ? "#4d35d8" : "#5d566e",
+                            }}
+                            onClick={() => setTime(t)}
+                          >
+                            {t}
+                          </button>
+                        ))}
+                      </div>
+                      <p className="text-xs mt-3" style={{ color: "#6f6a7c" }}>
+                        Final confirmation comes by SMS after review.
+                      </p>
+                    </>
+                  )}
                 </div>
 
                 <div className="hidden sm:grid grid-cols-2 gap-3 pt-2">

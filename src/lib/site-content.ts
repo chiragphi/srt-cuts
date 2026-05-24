@@ -44,6 +44,7 @@ export interface SiteContent {
   scheduleBlocks: ScheduleBlock[];
   serviceConfigs: ServiceConfig[];
   taxExpenses: TaxExpense[];
+  weeklyAvailability: Record<string, string[]>; // key "0"–"6" = Sun–Sat, value = available time strings
 }
 
 const DEFAULT_GALLERY: GalleryItem[] = [
@@ -94,6 +95,7 @@ export const DEFAULT_SITE_CONTENT: SiteContent = {
   googleCalendarNote: "Calendar sync is planned; confirmed bookings are managed in admin for now.",
   scheduleBlocks: [],
   taxExpenses: [],
+  weeklyAvailability: { "0": [], "1": [], "2": [], "3": [], "4": [], "5": [], "6": [] },
 };
 
 export function mergeSiteContent(value: Partial<SiteContent> | null | undefined): SiteContent {
@@ -106,6 +108,7 @@ export function mergeSiteContent(value: Partial<SiteContent> | null | undefined)
     scheduleBlocks: value?.scheduleBlocks ?? DEFAULT_SITE_CONTENT.scheduleBlocks,
     serviceConfigs: getServiceConfigs(value?.serviceConfigs),
     taxExpenses: value?.taxExpenses ?? DEFAULT_SITE_CONTENT.taxExpenses,
+    weeklyAvailability: value?.weeklyAvailability ?? DEFAULT_SITE_CONTENT.weeklyAvailability,
   };
 }
 
