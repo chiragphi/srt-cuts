@@ -165,6 +165,36 @@ const TOOLS = [
   {
     type: "function",
     function: {
+      name: "close_all_availability",
+      description:
+        "Close ALL availability at once — sets every day of the week to no slots and removes all date-specific overrides. " +
+        "Use when asked to 'close everything', 'remove all slots', 'clear all availability', etc.",
+      parameters: { type: "object", properties: {} },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "remove_date_overrides",
+      description:
+        "Remove date-specific availability overrides for one or more dates, reverting those dates back to the weekly schedule. " +
+        "Different from closing — this restores the recurring weekly pattern for those dates.",
+      parameters: {
+        type: "object",
+        properties: {
+          dates: {
+            type: "array",
+            items: { type: "string" },
+            description: "Dates in YYYY-MM-DD format to revert to weekly defaults.",
+          },
+        },
+        required: ["dates"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
       name: "accept_all_pending",
       description: "Accept ALL pending bookings at once and send SMS confirmation to each customer. Use this when asked to accept everything.",
       parameters: { type: "object", properties: {} },
@@ -338,12 +368,23 @@ TODAY: ${today}
 - If the current state already matches what the admin wants, say so without calling tools.
 
 ## HOW TO USE TOOLS
-- set_weekly_availability and set_date_availability accept ARRAYS — put ALL days/dates in one call.
-  ✓ CORRECT: set_weekly_availability({ days: ["1","3","5","6"], from_time: "9:00 AM", to_time: "5:00 PM" })
-  ✗ WRONG: calling set_weekly_availability 4 separate times for Mon/Wed/Fri/Sat
-- "Accept all pending" → use accept_all_pending (one call, no args)
-- "Raise all prices" → call update_service once per service
-- Time values MUST exactly match the valid slots list. Use "9:00 AM" not "9am" or "9:00am".
+
+OPENING slots:
+  ✓ set_weekly_availability({ days: ["1","3","5","6"], from_time: "9:00 AM", to_time: "5:00 PM" })
+  ✗ Do NOT call set_weekly_availability 4 separate times — put all days in ONE call
+
+CLOSING/REMOVING slots:
+  ✓ "Close all availability" / "remove all slots" / "clear schedule" → close_all_availability (no args, one call)
+  ✓ "Close Monday" → set_weekly_availability({ days: ["1"], close: true })
+  ✓ "Close Mon and Wed" → set_weekly_availability({ days: ["1","3"], close: true })
+  ✓ "Close this Saturday" → set_date_availability({ dates: ["YYYY-MM-DD"], close: true })
+  ✓ "Revert Thursday override to weekly default" → remove_date_overrides({ dates: ["YYYY-MM-DD"] })
+  ✗ NEVER pass from_time/to_time when closing — use close: true instead
+
+OTHER PATTERNS:
+  ✓ "Accept all pending" → accept_all_pending (no args)
+  ✓ "Raise all prices" → call update_service once per service (N calls for N services)
+  ✓ Time values MUST exactly match the valid slots list: "9:00 AM" not "9am" or "9:00am"
 
 ## DAY NUMBER REFERENCE
 0=Sunday 1=Monday 2=Tuesday 3=Wednesday 4=Thursday 5=Friday 6=Saturday
@@ -569,6 +610,35 @@ async function executeTool(
     const value = args.value as string;
     const updatedContent = { ...content, [field]: value };
     return { success: true, description: `Updated ${field}`, updatedContent };
+  }
+
+  if (name === "close_all_availability") {
+    const weeklyAvailability: Record<string, string[]> = {};
+    DAYS_OF_WEEK.forEach((_, i) => { weeklyAvailability[String(i)] = []; });
+    const updatedContent = { ...content, weeklyAvailability, dateAvailability: {} };
+    const openDays = DAYS_OF_WEEK.filter((_, i) => (content.weeklyAvailability[String(i)] ?? []).length > 0);
+    const overrideCount = Object.keys(content.dateAvailability).length;
+    const parts: string[] = [];
+    if (openDays.length) parts.push(`closed weekly schedule for ${openDays.join(", ")}`);
+    if (overrideCount) parts.push(`cleared ${overrideCount} date override${overrideCount !== 1 ? "s" : ""}`);
+    const desc = parts.length ? `Removed all availability: ${parts.join("; ")}` : "All availability was already closed.";
+    return { success: true, description: desc, updatedContent };
+  }
+
+  if (name === "remove_date_overrides") {
+    const dates = (args.dates as string[] | undefined) ?? [];
+    if (!dates.length) return { success: false, description: "No dates provided." };
+    const dateAvailability = { ...content.dateAvailability };
+    const removed: string[] = [];
+    dates.forEach((d) => {
+      if (d in dateAvailability) {
+        delete dateAvailability[d];
+        removed.push(new Date(d + "T00:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }));
+      }
+    });
+    if (!removed.length) return { success: true, description: "No overrides found for those dates — nothing changed." };
+    const updatedContent = { ...content, dateAvailability };
+    return { success: true, description: `Removed date overrides for: ${removed.join(", ")} (now use weekly defaults)`, updatedContent };
   }
 
   // ── Booking actions (write directly — affect bookings table, not site_content) ──
