@@ -119,7 +119,7 @@ export default function HomePage() {
             </div>
           </motion.div>
 
-          <div className="app-shell relative mt-8 grid grid-cols-3 gap-2 sm:gap-3 text-left">
+          <div className="app-shell relative mt-12 grid grid-cols-3 gap-2 text-left sm:mt-14 sm:gap-4 lg:mt-16">
             {["No waiting around", "Text before you arrive", "Always on time"].map((item) => (
               <div key={item} className="rounded-2xl border border-black/5 bg-white/62 px-3 py-3 text-[11px] font-semibold leading-tight text-[#6f6a7c] shadow-[0_10px_24px_rgba(52,43,94,0.06)] sm:px-4 sm:text-sm">
                 {item}
