@@ -25,12 +25,18 @@ const fadeUp: Variants = {
 
 export default function HomePage() {
   const [content, setContent] = useState<SiteContent>(DEFAULT_SITE_CONTENT);
+  const [loading, setLoading] = useState(true);
+  const [fadeOut, setFadeOut] = useState(false);
 
   useEffect(() => {
     fetch("/api/site-content")
       .then((r) => r.json())
       .then((d) => setContent(d.content ?? DEFAULT_SITE_CONTENT))
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => {
+        setFadeOut(true);
+        setTimeout(() => setLoading(false), 500);
+      });
   }, []);
 
   const publicGallery = content.gallery.filter((item) => !isPlaceholderGalleryItem(item));
@@ -40,6 +46,34 @@ export default function HomePage() {
 
   return (
     <>
+      {loading && (
+        <div
+          className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-white transition-opacity duration-500"
+          style={{ opacity: fadeOut ? 0 : 1, pointerEvents: fadeOut ? "none" : "auto" }}
+        >
+          <div className="flex flex-col items-center gap-6">
+            <div className="relative h-16 w-16">
+              <Image src="/srt-logo.png" alt="SRT Cuts" fill className="object-contain rounded-2xl" />
+            </div>
+            <p className="text-2xl font-semibold tracking-tight text-[#17151f]">SRT Cuts</p>
+            <div className="flex gap-1.5">
+              {[0, 1, 2].map((i) => (
+                <span
+                  key={i}
+                  className="h-2 w-2 rounded-full bg-[#4d35d8]"
+                  style={{ animation: `srt-bounce 1.2s ease-in-out ${i * 0.2}s infinite` }}
+                />
+              ))}
+            </div>
+          </div>
+          <style>{`
+            @keyframes srt-bounce {
+              0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+              40% { transform: scale(1); opacity: 1; }
+            }
+          `}</style>
+        </div>
+      )}
       <Navigation />
       <div className="mobile-page-pad">
         <section className="relative min-h-[calc(100svh-28px)] sm:min-h-screen flex flex-col justify-center overflow-hidden px-0 pt-24 pb-32 sm:pb-16">
@@ -184,9 +218,7 @@ export default function HomePage() {
                     variants={fadeUp}
                     custom={i}
                   >
-                    <div className="relative aspect-[4/5] bg-[#f0ecff]">
-                      <Image src={item.imageUrl} alt={item.title} fill sizes="(min-width: 768px) 33vw, 100vw" className="object-cover" />
-                    </div>
+                    <GalleryImage src={item.imageUrl} alt={item.title} />
                     <div className="p-5">
                       <h3 className="font-semibold text-[#17151f]">{item.title}</h3>
                       <p className="text-sm mt-2 leading-relaxed text-[#6f6a7c]">{item.caption}</p>
@@ -252,6 +284,32 @@ export default function HomePage() {
         </footer>
       </div>
     </>
+  );
+}
+
+function GalleryImage({ src, alt }: { src: string; alt: string }) {
+  const [errored, setErrored] = useState(false);
+
+  if (errored) {
+    return (
+      <div className="relative aspect-[4/5] bg-[#f0ecff] flex items-center justify-center">
+        <span className="text-[#c4b8ff] text-sm font-medium">Photo coming soon</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative aspect-[4/5] bg-[#f0ecff]">
+      <Image
+        src={src}
+        alt={alt}
+        fill
+        sizes="(min-width: 768px) 33vw, 100vw"
+        className="object-cover"
+        unoptimized
+        onError={() => setErrored(true)}
+      />
+    </div>
   );
 }
 
