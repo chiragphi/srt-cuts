@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import Navigation from "@/components/Navigation";
 import CalendarPicker from "@/components/CalendarPicker";
+import LoyaltyCard from "@/components/LoyaltyCard";
 import { formatPrice } from "@/lib/services";
 import { DEFAULT_SITE_CONTENT, type SiteContent } from "@/lib/site-content";
 import { TIME_SLOTS } from "@/lib/schedule";
@@ -152,6 +153,8 @@ export default function BookPage() {
       <Navigation />
       <div className="min-h-screen pt-24 pb-28 sm:pb-16 booking-page-pad">
         <div className="app-shell max-w-full sm:max-w-lg">
+          <LoyaltyCard className="mb-6" />
+
           <motion.div
             className="mb-7"
             initial={{ opacity: 0, y: 16 }}

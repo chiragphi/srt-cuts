@@ -6,6 +6,7 @@ import Link from "next/link";
 import { motion, type Variants } from "framer-motion";
 import { ArrowRight, CalendarCheck, Clock3, MapPin, Sparkles } from "lucide-react";
 import Navigation from "@/components/Navigation";
+import LoyaltyCard from "@/components/LoyaltyCard";
 import { formatPrice } from "@/lib/services";
 import {
   DEFAULT_SITE_CONTENT,
@@ -25,18 +26,21 @@ const fadeUp: Variants = {
 
 export default function HomePage() {
   const [content, setContent] = useState<SiteContent>(DEFAULT_SITE_CONTENT);
+  const [loggedIn, setLoggedIn] = useState(false);
   const [loading, setLoading] = useState(true);
   const [fadeOut, setFadeOut] = useState(false);
 
   useEffect(() => {
-    fetch("/api/site-content")
-      .then((r) => r.json())
-      .then((d) => setContent(d.content ?? DEFAULT_SITE_CONTENT))
-      .catch(() => {})
-      .finally(() => {
-        setFadeOut(true);
-        setTimeout(() => setLoading(false), 500);
-      });
+    Promise.all([
+      fetch("/api/site-content").then((r) => r.json()).catch(() => null),
+      fetch("/api/auth/me").then((r) => r.json()).catch(() => null),
+    ]).then(([siteData, authData]) => {
+      if (siteData?.content) setContent(siteData.content);
+      if (authData?.user) setLoggedIn(true);
+    }).finally(() => {
+      setFadeOut(true);
+      setTimeout(() => setLoading(false), 500);
+    });
   }, []);
 
   const publicGallery = content.gallery.filter((item) => !isPlaceholderGalleryItem(item));
@@ -156,6 +160,14 @@ export default function HomePage() {
           </motion.div>
 
         </section>
+
+        {loggedIn && (
+          <section className="pb-2 pt-2">
+            <div className="app-shell">
+              <LoyaltyCard />
+            </div>
+          </section>
+        )}
 
         <section className="py-10 sm:py-16 lg:py-20">
           <div className="flex gap-3 overflow-x-auto px-5 pb-1 sm:px-0 sm:overflow-visible sm:grid sm:grid-cols-3 sm:gap-4 app-shell-sm">
