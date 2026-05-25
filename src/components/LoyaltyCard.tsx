@@ -10,6 +10,26 @@ interface Booking {
 
 const CUTS_REQUIRED = 5;
 
+function LoyaltyCardSkeleton({ className = "" }: { className?: string }) {
+  return (
+    <div className={`app-card p-5 ${className}`}>
+      <div className="flex items-start justify-between gap-3 mb-4">
+        <div className="space-y-2 flex-1">
+          <div className="skeleton h-3 w-28 rounded-full" />
+          <div className="skeleton h-4 w-44 rounded-full" />
+        </div>
+        <div className="skeleton h-10 w-10 rounded-2xl shrink-0" />
+      </div>
+      <div className="flex gap-2 mb-3">
+        {Array.from({ length: CUTS_REQUIRED }).map((_, i) => (
+          <div key={i} className="skeleton flex-1 h-2 rounded-full" />
+        ))}
+      </div>
+      <div className="skeleton h-3 w-36 rounded-full" />
+    </div>
+  );
+}
+
 export default function LoyaltyCard({ className = "" }: { className?: string }) {
   const [accepted, setAccepted] = useState<number | null>(null);
 
@@ -24,7 +44,7 @@ export default function LoyaltyCard({ className = "" }: { className?: string }) 
       .catch(() => {});
   }, []);
 
-  if (accepted === null) return null;
+  if (accepted === null) return <LoyaltyCardSkeleton className={className} />;
 
   const cycleCount = accepted % CUTS_REQUIRED;
   const totalCycles = Math.floor(accepted / CUTS_REQUIRED);
@@ -61,7 +81,6 @@ export default function LoyaltyCard({ className = "" }: { className?: string }) 
         </span>
       </div>
 
-      {/* Progress dots */}
       <div className="flex gap-2 mb-3">
         {Array.from({ length: CUTS_REQUIRED }).map((_, i) => (
           <motion.div

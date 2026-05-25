@@ -1,0 +1,17 @@
+{
+  "name": "SRT Cuts",
+  "short_name": "SRT Cuts",
+  "description": "Precision barbering in Herriman, Utah. Book your appointment.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fbfaff",
+  "theme_color": "#7657ff",
+  "icons": [
+    {
+      "src": "/srt-logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

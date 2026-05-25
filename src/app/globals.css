@@ -477,3 +477,16 @@ textarea {
     width: auto;
   }
 }
+
+/* ── Skeleton loader ── */
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.9; }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, rgba(66,56,104,0.08), rgba(118,87,255,0.1), rgba(66,56,104,0.08));
+  background-size: 200% 100%;
+  animation: skeleton-pulse 1.6s ease-in-out infinite;
+  border-radius: 8px;
+}

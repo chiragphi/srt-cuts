@@ -4,7 +4,19 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, type Variants } from "framer-motion";
-import { ArrowRight, CalendarCheck, Clock3, MapPin, Sparkles } from "lucide-react";
+import {
+  ArrowRight,
+  CalendarCheck,
+  ChevronDown,
+  Clock3,
+  MapPin,
+  MessageCircle,
+  Phone,
+  Scissors,
+  Sparkles,
+  Star,
+  X,
+} from "lucide-react";
 import Navigation from "@/components/Navigation";
 import LoyaltyCard from "@/components/LoyaltyCard";
 import { formatPrice } from "@/lib/services";
@@ -14,6 +26,7 @@ import {
   isPlaceholderTestimonial,
   type SiteContent,
 } from "@/lib/site-content";
+import { useAuth } from "@/context/auth";
 
 const fadeUp: Variants = {
   hidden: { opacity: 0, y: 24 },
@@ -24,29 +37,60 @@ const fadeUp: Variants = {
   }),
 };
 
+const FAQ_ITEMS = [
+  {
+    q: "Do I need to put a deposit down?",
+    a: "No deposits. Pay the full price at your appointment with Venmo or in store. Simple as that.",
+  },
+  {
+    q: "How do I cancel or reschedule?",
+    a: "Just text ahead. Cancellation and reschedule support is handled directly by text message.",
+  },
+  {
+    q: "How long does a typical appointment take?",
+    a: "A fade is around 45 minutes, a lineup is 20 minutes, and a full service is about 60 minutes. Exact durations are listed with each service.",
+  },
+  {
+    q: "Is this a home-based barbershop?",
+    a: "Yes — SRT Cuts is a private barbershop in Herriman, Utah. Exact location details are sent after your booking is confirmed.",
+  },
+  {
+    q: "How does the loyalty program work?",
+    a: "Book 5 accepted cuts and earn a free lineup. Your progress is tracked automatically and shown when you log in.",
+  },
+  {
+    q: "Can I refer friends?",
+    a: "Refer a friend and get $5 off your next cut. Mention the referral when booking or by text.",
+  },
+];
+
 export default function HomePage() {
+  const { user, loading: authLoading } = useAuth();
   const [content, setContent] = useState<SiteContent>(DEFAULT_SITE_CONTENT);
-  const [loggedIn, setLoggedIn] = useState(false);
   const [loading, setLoading] = useState(true);
   const [fadeOut, setFadeOut] = useState(false);
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
+  const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
 
   useEffect(() => {
-    Promise.all([
-      fetch("/api/site-content").then((r) => r.json()).catch(() => null),
-      fetch("/api/auth/me").then((r) => r.json()).catch(() => null),
-    ]).then(([siteData, authData]) => {
-      if (siteData?.content) setContent(siteData.content);
-      if (authData?.user) setLoggedIn(true);
-    }).finally(() => {
-      setFadeOut(true);
-      setTimeout(() => setLoading(false), 500);
-    });
+    fetch("/api/site-content")
+      .then((r) => r.json())
+      .catch(() => null)
+      .then((siteData) => {
+        if (siteData?.content) setContent(siteData.content);
+      })
+      .finally(() => {
+        setFadeOut(true);
+        setTimeout(() => setLoading(false), 500);
+      });
   }, []);
 
   const publicGallery = content.gallery.filter((item) => !isPlaceholderGalleryItem(item));
   const publicTestimonials = content.testimonials.filter((item) => !isPlaceholderTestimonial(item));
   const hasSocialLinks = Boolean(content.instagramUrl || content.tiktokUrl);
   const heroImage = content.heroImageUrl || "/srt-logo.png";
+
+  const todayLabel = new Date().toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" });
 
   return (
     <>
@@ -78,8 +122,33 @@ export default function HomePage() {
           `}</style>
         </div>
       )}
+
+      {/* Gallery lightbox */}
+      {lightboxSrc && (
+        <div
+          className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+          onClick={() => setLightboxSrc(null)}
+        >
+          <button
+            className="absolute top-5 right-5 text-white/80 hover:text-white"
+            onClick={() => setLightboxSrc(null)}
+            aria-label="Close image"
+          >
+            <X size={28} />
+          </button>
+          <div
+            className="relative max-w-2xl w-full aspect-[4/5] rounded-3xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Image src={lightboxSrc} alt="Gallery" fill sizes="(max-width: 768px) 100vw, 672px" className="object-cover" />
+          </div>
+        </div>
+      )}
+
       <Navigation />
       <div className="mobile-page-pad">
+
+        {/* ── Hero ── */}
         <section className="relative min-h-[calc(100svh-28px)] sm:min-h-screen flex flex-col justify-center overflow-hidden px-0 pt-24 pb-32 sm:pb-16">
           <div className="hero-glow absolute inset-0 pointer-events-none" />
           <div className="hero-orbit hidden sm:block w-80 h-80 -right-24 top-28" />
@@ -87,8 +156,14 @@ export default function HomePage() {
 
           <motion.div
             className="app-shell relative grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center"
+            initial="hidden"
+            animate="show"
+            variants={{
+              hidden: {},
+              show: { transition: { staggerChildren: 0.1 } },
+            }}
           >
-            <div className="text-left">
+            <motion.div className="text-left" variants={fadeUp} custom={0}>
               <div className="mb-7 inline-flex items-center gap-3 rounded-full border border-black/10 bg-white/70 py-2 pl-2 pr-4 shadow-[0_12px_32px_rgba(52,43,94,0.08)] backdrop-blur-xl">
                 <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#efeaff] text-[#4d35d8]">
                   <Sparkles size={18} />
@@ -112,15 +187,46 @@ export default function HomePage() {
                   Book Appointment
                   <ArrowRight size={18} />
                 </Link>
-                <a href="#services" className="btn-ghost">
+                <a
+                  href="#services"
+                  className="btn-ghost"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    document.getElementById("services")?.scrollIntoView({ behavior: "smooth" });
+                  }}
+                >
                   View Services
                 </a>
               </div>
-            </div>
 
-            <div className="hero-panel relative p-4 sm:p-7">
+              {/* Contact quick links */}
+              <div className="flex flex-wrap gap-3 mt-6">
+                {content.instagramUrl && (
+                  <a
+                    href={content.instagramUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#6f6a7c] hover:text-[#4d35d8] transition-colors"
+                  >
+                    <Scissors size={14} /> Instagram
+                  </a>
+                )}
+                {content.tiktokUrl && (
+                  <a
+                    href={content.tiktokUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#6f6a7c] hover:text-[#4d35d8] transition-colors"
+                  >
+                    <Scissors size={14} /> TikTok
+                  </a>
+                )}
+              </div>
+            </motion.div>
+
+            <motion.div className="hero-panel relative p-4 sm:p-7" variants={fadeUp} custom={1}>
               <div className="absolute right-4 top-4 sm:right-6 sm:top-6 rounded-full bg-white/72 px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-semibold text-[#4d35d8] shadow-[0_10px_24px_rgba(52,43,94,0.1)]">
-                Today&apos;s flow
+                {todayLabel}
               </div>
               <div className="relative flex flex-col justify-end">
                 <div className="mb-4 sm:mb-6 flex justify-center pt-8 sm:pt-0">
@@ -139,10 +245,15 @@ export default function HomePage() {
                     { icon: CalendarCheck, title: "Choose a service", text: "Fades, lineups, full service." },
                     { icon: Clock3, title: "Pick a time", text: "Clean slots with SMS confirmation." },
                     { icon: MapPin, title: "Arrive ready", text: "Location details sent after approval." },
-                  ].map((item) => {
+                  ].map((item, i) => {
                     const Icon = item.icon;
                     return (
-                      <div key={item.title} className="flex items-center gap-3 rounded-2xl sm:rounded-3xl border border-black/5 bg-white/76 p-3 sm:p-4 shadow-[0_10px_28px_rgba(52,43,94,0.08)]">
+                      <motion.div
+                        key={item.title}
+                        className="flex items-center gap-3 rounded-2xl sm:rounded-3xl border border-black/5 bg-white/76 p-3 sm:p-4 shadow-[0_10px_28px_rgba(52,43,94,0.08)]"
+                        variants={fadeUp}
+                        custom={i + 2}
+                      >
                         <span className="flex h-9 w-9 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl sm:rounded-2xl bg-[#efeaff] text-[#4d35d8]">
                           <Icon size={16} className="sm:hidden" />
                           <Icon size={19} className="hidden sm:block" />
@@ -151,17 +262,17 @@ export default function HomePage() {
                           <p className="text-sm sm:text-base font-semibold text-[#17151f]">{item.title}</p>
                           <p className="text-xs sm:text-sm text-[#6f6a7c]">{item.text}</p>
                         </div>
-                      </div>
+                      </motion.div>
                     );
                   })}
                 </div>
               </div>
-            </div>
+            </motion.div>
           </motion.div>
-
         </section>
 
-        {loggedIn && (
+        {/* ── Loyalty Card (logged in) ── */}
+        {!authLoading && user && (
           <section className="pb-2 pt-2">
             <div className="app-shell">
               <LoyaltyCard />
@@ -169,6 +280,7 @@ export default function HomePage() {
           </section>
         )}
 
+        {/* ── Trust strip ── */}
         <section className="py-10 sm:py-16 lg:py-20">
           <div className="flex gap-3 overflow-x-auto px-5 pb-1 sm:px-0 sm:overflow-visible sm:grid sm:grid-cols-3 sm:gap-4 app-shell-sm">
             {["No waiting around", "Text before you arrive", "Always on time"].map((item) => (
@@ -179,42 +291,62 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* ── Services ── */}
         <section id="services" className="app-section">
           <div className="app-shell">
             <SectionHeader eyebrow="What we offer" title="Services that feel precise before the cut starts" />
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {content.serviceConfigs.map((s, i) => (
-                <motion.div
-                  key={s.name}
-                  className="app-card service-card p-5 sm:p-6 flex flex-col gap-5"
-                  initial="hidden"
-                  whileInView="show"
-                  viewport={{ once: true }}
-                  variants={fadeUp}
-                  custom={i + 1}
-                  whileHover={{ y: -4, transition: { duration: 0.25 } }}
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <p className="text-xs font-bold tracking-widest uppercase text-[#4d35d8]">
-                        {s.name}
-                      </p>
-                      <p className="text-sm mt-3 leading-relaxed text-[#6f6a7c]">
-                        {s.desc}
-                      </p>
+              {content.serviceConfigs.map((s, i) => {
+                const isPopular = s.name === "Full Service";
+                return (
+                  <motion.div
+                    key={s.name}
+                    className="app-card service-card p-5 sm:p-6 flex flex-col gap-5 relative"
+                    initial="hidden"
+                    whileInView="show"
+                    viewport={{ once: true }}
+                    variants={fadeUp}
+                    custom={i + 1}
+                    whileHover={{ y: -4, transition: { duration: 0.25 } }}
+                  >
+                    {isPopular && (
+                      <div className="absolute top-4 right-4">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-[#4d35d8] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
+                          <Star size={9} fill="currentColor" /> Most Popular
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <p className="text-xs font-bold tracking-widest uppercase text-[#4d35d8]">
+                          {s.name}
+                        </p>
+                        <p className="text-sm mt-3 leading-relaxed text-[#6f6a7c]">
+                          {s.desc}
+                        </p>
+                      </div>
+                      <span className="text-3xl font-semibold tracking-tight text-[#17151f]">{formatPrice(s.amount)}</span>
                     </div>
-                    <span className="text-3xl font-semibold tracking-tight text-[#17151f]">{formatPrice(s.amount)}</span>
-                  </div>
-                  <div className="flex items-center justify-between gap-3 border-t border-black/5 pt-4">
-                    <span className="rounded-full bg-[#efeaff] px-3 py-1.5 text-sm font-semibold text-[#4d35d8]">{s.duration}</span>
-                    <span className="text-sm text-[#6f6a7c]">{s.detail}</span>
-                  </div>
-                </motion.div>
-              ))}
+                    <div className="flex items-center justify-between gap-3 border-t border-black/5 pt-4">
+                      <span className="rounded-full bg-[#efeaff] px-3 py-1.5 text-sm font-semibold text-[#4d35d8]">{s.duration}</span>
+                      <span className="text-sm text-[#6f6a7c]">{s.detail}</span>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+
+            {/* Book CTA under services */}
+            <div className="mt-10 text-center">
+              <Link href="/book" className="btn-primary inline-flex">
+                Book an Appointment
+                <ArrowRight size={16} />
+              </Link>
             </div>
           </div>
         </section>
 
+        {/* ── Gallery ── */}
         {publicGallery.length > 0 && (
           <section id="gallery" className="app-section border-t border-black/5">
             <div className="app-shell">
@@ -223,16 +355,18 @@ export default function HomePage() {
                 {publicGallery.map((item, i) => (
                   <motion.article
                     key={`${item.title}-${i}`}
-                    className="app-card"
+                    className="app-card cursor-pointer group"
                     initial="hidden"
                     whileInView="show"
                     viewport={{ once: true }}
                     variants={fadeUp}
                     custom={i}
+                    onClick={() => setLightboxSrc(item.imageUrl)}
+                    whileHover={{ y: -4, transition: { duration: 0.25 } }}
                   >
                     <GalleryImage src={item.imageUrl} alt={item.title} />
                     <div className="p-5">
-                      <h3 className="font-semibold text-[#17151f]">{item.title}</h3>
+                      <h3 className="font-semibold text-[#17151f] group-hover:text-[#4d35d8] transition-colors">{item.title}</h3>
                       <p className="text-sm mt-2 leading-relaxed text-[#6f6a7c]">{item.caption}</p>
                     </div>
                   </motion.article>
@@ -242,6 +376,7 @@ export default function HomePage() {
           </section>
         )}
 
+        {/* ── Barber profile ── */}
         <section className="app-section border-t border-black/5">
           <div className="app-shell grid lg:grid-cols-[0.8fr_1.2fr] gap-7 sm:gap-10 items-center">
             <div className="relative aspect-[4/5] sm:aspect-square max-w-sm mx-auto lg:mx-0 app-card bg-[#efeaff]">
@@ -258,40 +393,168 @@ export default function HomePage() {
                   <span key={s} className="rounded-full border border-[#dcd3ff] bg-white/72 px-4 py-2 text-sm font-semibold text-[#4d35d8]">{s}</span>
                 ))}
               </div>
+
+              {/* SMS / Contact CTA */}
+              <div className="mt-8 flex flex-wrap gap-3">
+                <Link href="/book" className="btn-primary min-h-0 py-3 px-5 text-sm">
+                  Book Now <ArrowRight size={15} />
+                </Link>
+                {content.instagramUrl && (
+                  <a
+                    href={content.instagramUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-ghost min-h-0 py-3 px-5 text-sm inline-flex items-center gap-2"
+                  >
+                    <MessageCircle size={15} /> Follow
+                  </a>
+                )}
+              </div>
             </div>
           </div>
         </section>
 
+        {/* ── Testimonials ── */}
         {publicTestimonials.length > 0 && (
           <section className="app-section border-t border-black/5">
-            <div className="app-shell grid gap-4 md:grid-cols-3">
-              {publicTestimonials.map((t, i) => (
-                <motion.div key={`${t.name}-${i}`} className="app-card p-5 sm:p-6" initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp} custom={i}>
-                  <p className="text-lg leading-relaxed text-[#2b2638]">&ldquo;{t.quote}&rdquo;</p>
-                  <p className="text-sm font-semibold mt-5 text-[#4d35d8]">{t.name}</p>
-                </motion.div>
-              ))}
+            <div className="app-shell">
+              <SectionHeader eyebrow="Reviews" title="What clients say" />
+              <div className="grid gap-4 md:grid-cols-3">
+                {publicTestimonials.map((t, i) => (
+                  <motion.div key={`${t.name}-${i}`} className="app-card p-5 sm:p-6" initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp} custom={i}>
+                    <div className="flex gap-0.5 mb-4">
+                      {Array.from({ length: 5 }).map((_, j) => (
+                        <Star key={j} size={14} className="text-[#4d35d8]" fill="currentColor" />
+                      ))}
+                    </div>
+                    <p className="text-lg leading-relaxed text-[#2b2638]">&ldquo;{t.quote}&rdquo;</p>
+                    <p className="text-sm font-semibold mt-5 text-[#4d35d8]">{t.name}</p>
+                  </motion.div>
+                ))}
+              </div>
             </div>
           </section>
         )}
 
+        {/* ── FAQ ── */}
+        <section id="faq" className="app-section border-t border-black/5">
+          <div className="app-shell">
+            <SectionHeader eyebrow="Got questions" title="Everything you need to know" />
+            <div className="max-w-2xl mx-auto space-y-2">
+              {FAQ_ITEMS.map((item, i) => (
+                <motion.div
+                  key={i}
+                  className="app-card"
+                  initial="hidden"
+                  whileInView="show"
+                  viewport={{ once: true }}
+                  variants={fadeUp}
+                  custom={i}
+                >
+                  <button
+                    className="w-full text-left flex items-center justify-between gap-4 p-5"
+                    onClick={() => setExpandedFaq(expandedFaq === i ? null : i)}
+                    aria-expanded={expandedFaq === i}
+                  >
+                    <span className="font-semibold text-[#17151f] text-base">{item.q}</span>
+                    <ChevronDown
+                      size={18}
+                      className="shrink-0 text-[#4d35d8] transition-transform duration-300"
+                      style={{ transform: expandedFaq === i ? "rotate(180deg)" : "rotate(0deg)" }}
+                    />
+                  </button>
+                  {expandedFaq === i && (
+                    <div className="px-5 pb-5">
+                      <p className="text-[#5d566e] leading-relaxed">{item.a}</p>
+                    </div>
+                  )}
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── Info grid ── */}
         <section className="app-section border-t border-black/5">
           <div className="app-shell grid md:grid-cols-2 gap-4 sm:gap-5">
-            <InfoBlock title="Location" body={content.address} detail={content.parkingNote} href={content.mapUrl} action="Open map" />
+            <InfoBlock
+              title="Location"
+              body={content.address}
+              detail={content.parkingNote}
+              href={content.mapUrl}
+              action="Open map"
+              external
+            />
             <InfoBlock title="Rewards" body={content.loyaltyOffer} detail={content.referralOffer} href="/book" action="Book now" />
             <InfoBlock title="Booking Policy" body="No deposits. Pay the full price with Venmo or in store." detail={content.cancellationPolicy} href="/book" action="Start booking" />
             {hasSocialLinks && (
-              <InfoBlock title="Stay Connected" body="Follow the latest cuts and openings." detail="Fresh work, schedule updates, and quick announcements." href={content.instagramUrl || content.tiktokUrl} action={content.instagramUrl ? "Instagram" : "TikTok"} />
+              <InfoBlock
+                title="Stay Connected"
+                body="Follow the latest cuts and openings."
+                detail="Fresh work, schedule updates, and quick announcements."
+                href={(content.instagramUrl || content.tiktokUrl) as string}
+                action={content.instagramUrl ? "Instagram" : "TikTok"}
+                external
+              />
             )}
           </div>
         </section>
 
+        {/* ── Contact bar ── */}
+        <section className="py-10 border-t border-black/5">
+          <div className="app-shell">
+            <div className="app-card p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-5">
+              <div>
+                <p className="font-semibold text-xl text-[#17151f] mb-1">Ready for a fresh cut?</p>
+                <p className="text-[#5d566e]">Book your appointment in under a minute.</p>
+              </div>
+              <div className="flex flex-wrap gap-3 justify-center sm:justify-start">
+                <Link href="/book" className="btn-primary whitespace-nowrap">
+                  Book Now <ArrowRight size={16} />
+                </Link>
+                {content.instagramUrl && (
+                  <a
+                    href={content.instagramUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-ghost inline-flex items-center gap-2 whitespace-nowrap"
+                  >
+                    <Phone size={15} /> Follow us
+                  </a>
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Footer ── */}
         <footer className="py-10 border-t border-black/5">
-          <div className="app-shell flex flex-col sm:flex-row justify-between items-center gap-4">
-            <p className="text-sm text-[#6f6a7c]">© {new Date().getFullYear()} SRT Cuts · Herriman, Utah</p>
-            <Link href="/book" className="inline-flex items-center gap-1 text-sm font-semibold text-[#4d35d8] hover:text-[#17151f] transition-colors">
-              Book an appointment <ArrowRight size={15} />
-            </Link>
+          <div className="app-shell">
+            <div className="flex flex-col sm:flex-row justify-between items-start gap-8 mb-8">
+              <div>
+                <div className="flex items-center gap-2.5 mb-3">
+                  <Image src="/srt-logo.png" alt="SRT Cuts" width={28} height={28} className="object-contain rounded-lg" />
+                  <span className="font-semibold text-[#17151f]">SRT Cuts</span>
+                </div>
+                <p className="text-sm text-[#6f6a7c] max-w-xs">Precision barbering in Herriman, Utah. Private studio, clean cuts, easy booking.</p>
+              </div>
+              <div className="grid grid-cols-2 gap-x-12 gap-y-2 text-sm">
+                <Link href="/" className="text-[#6f6a7c] hover:text-[#17151f] transition-colors">Home</Link>
+                <Link href="/#services" className="text-[#6f6a7c] hover:text-[#17151f] transition-colors">Services</Link>
+                <Link href="/book" className="text-[#6f6a7c] hover:text-[#17151f] transition-colors">Book</Link>
+                <Link href="/#faq" className="text-[#6f6a7c] hover:text-[#17151f] transition-colors">FAQ</Link>
+                <Link href="/bookings" className="text-[#6f6a7c] hover:text-[#17151f] transition-colors">My Bookings</Link>
+                {content.instagramUrl && (
+                  <a href={content.instagramUrl} target="_blank" rel="noopener noreferrer" className="text-[#6f6a7c] hover:text-[#17151f] transition-colors">Instagram</a>
+                )}
+              </div>
+            </div>
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-6 border-t border-black/5">
+              <p className="text-sm text-[#6f6a7c]">© {new Date().getFullYear()} SRT Cuts · Herriman, Utah</p>
+              <Link href="/book" className="inline-flex items-center gap-1 text-sm font-semibold text-[#4d35d8] hover:text-[#17151f] transition-colors">
+                Book an appointment <ArrowRight size={15} />
+              </Link>
+            </div>
           </div>
         </footer>
       </div>
@@ -301,10 +564,11 @@ export default function HomePage() {
 
 function GalleryImage({ src, alt }: { src: string; alt: string }) {
   const [errored, setErrored] = useState(false);
+  const [loaded, setLoaded] = useState(false);
 
   if (errored) {
     return (
-      <div className="relative aspect-[4/5] bg-[#f0ecff] flex items-center justify-center">
+      <div className="relative aspect-[4/5] bg-[#f0ecff] flex items-center justify-center transition-opacity duration-300">
         <span className="text-[#c4b8ff] text-sm font-medium">Photo coming soon</span>
       </div>
     );
@@ -317,8 +581,10 @@ function GalleryImage({ src, alt }: { src: string; alt: string }) {
         alt={alt}
         fill
         sizes="(min-width: 768px) 33vw, 100vw"
-        className="object-cover"
+        className="object-cover transition-opacity duration-500"
+        style={{ opacity: loaded ? 1 : 0 }}
         unoptimized
+        onLoad={() => setLoaded(true)}
         onError={() => setErrored(true)}
       />
     </div>
@@ -334,15 +600,30 @@ function SectionHeader({ eyebrow, title }: { eyebrow: string; title: string }) {
   );
 }
 
-function InfoBlock({ title, body, detail, href, action }: { title: string; body: string; detail: string; href: string; action: string }) {
+function InfoBlock({
+  title, body, detail, href, action, external,
+}: {
+  title: string; body: string; detail: string; href: string; action: string; external?: boolean;
+}) {
+  const linkProps = external ? { target: "_blank", rel: "noopener noreferrer" } : {};
   return (
     <div className="app-card p-6">
       <h3 className="font-semibold text-xl mb-3 text-[#17151f]">{title}</h3>
       <p className="text-base leading-relaxed text-[#5d566e]">{body}</p>
       <p className="text-sm mt-3 leading-relaxed text-[#6f6a7c]">{detail}</p>
-      <Link href={href} className="inline-flex items-center gap-1 mt-6 text-sm font-semibold text-[#4d35d8] hover:text-[#17151f] transition-colors">
-        {action} <ArrowRight size={15} />
-              </Link>
+      {external ? (
+        <a
+          href={href}
+          {...linkProps}
+          className="inline-flex items-center gap-1 mt-6 text-sm font-semibold text-[#4d35d8] hover:text-[#17151f] transition-colors"
+        >
+          {action} <ArrowRight size={15} />
+        </a>
+      ) : (
+        <Link href={href} className="inline-flex items-center gap-1 mt-6 text-sm font-semibold text-[#4d35d8] hover:text-[#17151f] transition-colors">
+          {action} <ArrowRight size={15} />
+        </Link>
+      )}
     </div>
   );
 }

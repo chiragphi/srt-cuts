@@ -133,7 +133,8 @@ export default function CalendarPicker({ value, onChange, blockedDates, minDate,
       <div className="mt-4 pt-3 border-t border-black/5 flex items-center gap-4 flex-wrap">
         <LegendDot bg="linear-gradient(135deg, #8f76ff, #6852f5)" label="Selected" />
         <LegendDot border="1.5px solid rgba(118,87,255,0.52)" label="Today" />
-        <LegendDot bg="rgba(239,68,68,0.08)" border="1px solid rgba(239,68,68,0.12)" label="Unavailable" />
+        <LegendDot bg="rgba(239,68,68,0.08)" border="1px solid rgba(239,68,68,0.12)" label="Blocked" />
+        <LegendDot bg="rgba(66,56,104,0.05)" label="No slots" />
       </div>
     </div>
   );
