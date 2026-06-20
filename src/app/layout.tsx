@@ -1,16 +1,24 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces } from "next/font/google";
+import { Fraunces, Hanken_Grotesk } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/auth";
 import { ToastProvider } from "@/components/Toast";
 
-// Warm editorial serif for display headings — the main "designed by a human"
-// signal. Clean system sans (set in globals.css) handles body & UI.
+// Warm editorial serif for display headings — high-contrast, optical-sized,
+// the main "art-directed, not a template" signal.
 const fraunces = Fraunces({
   subsets: ["latin"],
   display: "swap",
   variable: "--font-serif",
   axes: ["opsz", "SOFT"],
+});
+
+// Premium humanist grotesk for body & UI — replaces the default system sans
+// so nothing reads as a stock template.
+const hanken = Hanken_Grotesk({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-grotesk",
 });
 
 export const metadata: Metadata = {
@@ -52,7 +60,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`h-full ${fraunces.variable}`}>
+    <html lang="en" className={`h-full ${fraunces.variable} ${hanken.variable}`}>
       <body className="min-h-full bg-[#0a0a0a] text-[#f5f0e6]">
         <AuthProvider>
           <ToastProvider>{children}</ToastProvider>

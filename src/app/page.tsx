@@ -200,7 +200,7 @@ export default function HomePage() {
               </div>
               <motion.h1
                 className="headline-gradient font-semibold leading-none mb-5"
-                style={{ fontSize: "clamp(50px, 10vw, 126px)", letterSpacing: 0 }}
+                style={{ fontSize: "clamp(52px, 10.5vw, 132px)", letterSpacing: "-0.035em" }}
                 initial={{ opacity: 0, y: 18, filter: "blur(16px)" }}
                 animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                 transition={{ duration: 1.05, delay: 0.18, ease: [0.22, 1, 0.36, 1] }}
