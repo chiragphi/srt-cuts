@@ -106,9 +106,9 @@ export default function AdminAgent({ onRefresh }: { onRefresh: () => void }) {
     <div
       className="mb-6 sm:mb-8 rounded-3xl overflow-hidden"
       style={{
-        background: "linear-gradient(180deg, rgba(255,255,255,0.97), rgba(255,255,255,0.82))",
-        border: "1px solid rgba(118,87,255,0.14)",
-        boxShadow: "0 24px 64px rgba(52,43,94,0.1), 0 0 0 1px rgba(255,255,255,0.8) inset",
+        background: "linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.018)), #100f0d",
+        border: "1px solid rgba(212,160,23,0.16)",
+        boxShadow: "0 24px 64px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.04) inset",
       }}
     >
       {/* Header */}
@@ -116,25 +116,25 @@ export default function AdminAgent({ onRefresh }: { onRefresh: () => void }) {
         type="button"
         onClick={() => setOpen((v) => !v)}
         className="w-full flex items-center justify-between px-5 py-4 border-b cursor-pointer bg-transparent"
-        style={{ borderColor: "rgba(118,87,255,0.1)" }}
+        style={{ borderColor: "rgba(212,160,23,0.12)" }}
       >
         <div className="flex items-center gap-3">
           <div
             className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 relative"
             style={{
-              background: "linear-gradient(135deg, #8f76ff 0%, #6852f5 48%, #3d32c7 100%)",
-              boxShadow: "0 6px 20px rgba(96,72,231,0.32)",
+              background: "linear-gradient(135deg, #f0cd66 0%, #d4a017 52%, #b5841f 100%)",
+              boxShadow: "0 6px 20px rgba(212,160,23,0.3)",
             }}
           >
             <Sparkles size={17} className="text-white" />
             <span
               className="absolute inset-0 rounded-2xl animate-pulse"
-              style={{ boxShadow: "0 0 0 6px rgba(118,87,255,0.12)" }}
+              style={{ boxShadow: "0 0 0 6px rgba(212,160,23,0.12)" }}
             />
           </div>
           <div className="text-left">
-            <p className="text-sm font-semibold text-[#17151f] leading-tight">AI Assistant</p>
-            <p className="text-[11px] mt-0.5 text-[#9c90b8]">
+            <p className="text-sm font-semibold text-[#f5f0e6] leading-tight">AI Assistant</p>
+            <p className="text-[11px] mt-0.5 text-[#8c857a]">
               Powered by Groq · llama-3.3-70b
             </p>
           </div>
@@ -152,7 +152,7 @@ export default function AdminAgent({ onRefresh }: { onRefresh: () => void }) {
             animate={{ rotate: open ? 0 : -90 }}
             transition={{ duration: 0.2 }}
             width="16" height="16" viewBox="0 0 16 16" fill="none"
-            style={{ color: "rgba(66,56,104,0.35)" }}
+            style={{ color: "rgba(245,240,230,0.4)" }}
           >
             <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </motion.svg>
@@ -177,7 +177,7 @@ export default function AdminAgent({ onRefresh }: { onRefresh: () => void }) {
             >
               {isEmpty ? (
                 <div className="flex flex-col items-center justify-center py-2 gap-4">
-                  <p className="text-sm text-center text-[#9c90b8]">
+                  <p className="text-sm text-center text-[#8c857a]">
                     Tell me what to do — block dates, accept bookings, update prices.
                   </p>
                   <div className="flex flex-wrap justify-center gap-2">
@@ -188,9 +188,9 @@ export default function AdminAgent({ onRefresh }: { onRefresh: () => void }) {
                         onClick={() => send(s)}
                         className="text-xs px-3 py-1.5 rounded-full transition-all duration-150 active:scale-95 bg-transparent"
                         style={{
-                          background: "rgba(118,87,255,0.08)",
-                          border: "1px solid rgba(118,87,255,0.18)",
-                          color: "#4d35d8",
+                          background: "rgba(212,160,23,0.1)",
+                          border: "1px solid rgba(212,160,23,0.22)",
+                          color: "#e8b84b",
                         }}
                       >
                         {s}
@@ -207,14 +207,14 @@ export default function AdminAgent({ onRefresh }: { onRefresh: () => void }) {
                         style={
                           msg.role === "user"
                             ? {
-                                background: "linear-gradient(135deg, #8f76ff 0%, #6852f5 48%, #3d32c7 100%)",
+                                background: "linear-gradient(135deg, #f0cd66 0%, #d4a017 52%, #b5841f 100%)",
                                 color: "#fff",
-                                boxShadow: "0 6px 18px rgba(96,72,231,0.28)",
+                                boxShadow: "0 6px 18px rgba(212,160,23,0.28)",
                               }
                             : {
-                                background: "rgba(239,234,255,0.55)",
-                                border: "1px solid rgba(118,87,255,0.1)",
-                                color: "#2b2638",
+                                background: "rgba(255,255,255,0.05)",
+                                border: "1px solid rgba(255,255,255,0.09)",
+                                color: "#f5f0e6",
                               }
                         }
                       >
@@ -252,9 +252,9 @@ export default function AdminAgent({ onRefresh }: { onRefresh: () => void }) {
                             }}
                             className="text-xs font-semibold px-4 py-2 rounded-xl active:scale-95 transition-all duration-150"
                             style={{
-                              background: "linear-gradient(135deg, #8f76ff 0%, #6852f5 48%, #3d32c7 100%)",
+                              background: "linear-gradient(135deg, #f0cd66 0%, #d4a017 52%, #b5841f 100%)",
                               color: "#fff",
-                              boxShadow: "0 4px 12px rgba(96,72,231,0.28)",
+                              boxShadow: "0 4px 12px rgba(212,160,23,0.28)",
                             }}
                           >
                             Yes, do it
@@ -289,16 +289,16 @@ export default function AdminAgent({ onRefresh }: { onRefresh: () => void }) {
             <div
               className="px-4 pb-4"
               style={{
-                borderTop: messages.length ? "1px solid rgba(118,87,255,0.08)" : undefined,
+                borderTop: messages.length ? "1px solid rgba(212,160,23,0.1)" : undefined,
                 paddingTop: messages.length ? 12 : 0,
               }}
             >
               <div
                 className="flex items-end gap-2 rounded-2xl px-4 py-3"
                 style={{
-                  background: "rgba(255,255,255,0.8)",
-                  border: "1px solid rgba(118,87,255,0.16)",
-                  boxShadow: "0 2px 12px rgba(52,43,94,0.06)",
+                  background: "rgba(255,255,255,0.05)",
+                  border: "1px solid rgba(212,160,23,0.18)",
+                  boxShadow: "0 2px 12px rgba(0,0,0,0.4)",
                 }}
               >
                 <textarea
@@ -309,7 +309,7 @@ export default function AdminAgent({ onRefresh }: { onRefresh: () => void }) {
                   onKeyDown={onKeyDown}
                   placeholder="Block a date, accept a booking, update a price…"
                   disabled={busy}
-                  className="flex-1 bg-transparent text-sm outline-none resize-none leading-5 font-sans text-[#17151f] placeholder-[#b0a8c4]"
+                  className="flex-1 bg-transparent text-sm outline-none resize-none leading-5 font-sans text-[#f5f0e6] placeholder-[#8c857a]"
                 />
                 <button
                   type="button"
@@ -319,14 +319,14 @@ export default function AdminAgent({ onRefresh }: { onRefresh: () => void }) {
                   style={{
                     background:
                       input.trim() && !busy
-                        ? "linear-gradient(135deg, #8f76ff 0%, #6852f5 48%, #3d32c7 100%)"
-                        : "rgba(118,87,255,0.1)",
+                        ? "linear-gradient(135deg, #f0cd66 0%, #d4a017 52%, #b5841f 100%)"
+                        : "rgba(212,160,23,0.12)",
                   }}
                 >
                   <ArrowUp
                     size={14}
                     strokeWidth={2.5}
-                    style={{ color: input.trim() && !busy ? "#fff" : "#7657ff" }}
+                    style={{ color: input.trim() && !busy ? "#1c1402" : "#e8b84b" }}
                   />
                 </button>
               </div>
@@ -345,7 +345,7 @@ function TypingDots() {
         <motion.span
           key={i}
           className="block w-[5px] h-[5px] rounded-full"
-          style={{ background: "rgba(118,87,255,0.45)" }}
+          style={{ background: "rgba(212,160,23,0.5)" }}
           animate={{ y: [0, -5, 0], opacity: [0.35, 1, 0.35] }}
           transition={{ duration: 0.75, repeat: Infinity, delay: i * 0.18, ease: "easeInOut" }}
         />

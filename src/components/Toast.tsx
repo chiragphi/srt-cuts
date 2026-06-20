@@ -45,15 +45,15 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               animate={{ opacity: 1, x: 0, scale: 1 }}
               exit={{ opacity: 0, x: 48, scale: 0.96 }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="pointer-events-auto flex items-start gap-3 app-card p-4 shadow-[0_20px_48px_rgba(52,43,94,0.18)]"
+              className="pointer-events-auto flex items-start gap-3 app-card p-4 shadow-[0_20px_48px_rgba(0,0,0,0.55)]"
             >
-              {t.type === "success" && <CheckCircle2 size={17} className="text-emerald-500 shrink-0 mt-0.5" />}
-              {t.type === "error" && <AlertCircle size={17} className="text-red-500 shrink-0 mt-0.5" />}
-              {t.type === "info" && <Info size={17} className="text-[#4d35d8] shrink-0 mt-0.5" />}
-              <p className="text-sm text-[#2b2638] flex-1 leading-relaxed">{t.message}</p>
+              {t.type === "success" && <CheckCircle2 size={17} className="text-emerald-400 shrink-0 mt-0.5" />}
+              {t.type === "error" && <AlertCircle size={17} className="text-red-400 shrink-0 mt-0.5" />}
+              {t.type === "info" && <Info size={17} className="text-[#e8b84b] shrink-0 mt-0.5" />}
+              <p className="text-sm text-[#f5f0e6] flex-1 leading-relaxed">{t.message}</p>
               <button
                 onClick={() => dismiss(t.id)}
-                className="text-[#9c90b8] hover:text-[#17151f] transition-colors shrink-0"
+                className="text-[#8c857a] hover:text-[#f5f0e6] transition-colors shrink-0"
                 aria-label="Dismiss notification"
               >
                 <X size={14} />

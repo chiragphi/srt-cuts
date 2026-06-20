@@ -1,7 +1,17 @@
 import type { Metadata, Viewport } from "next";
+import { Fraunces } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/auth";
 import { ToastProvider } from "@/components/Toast";
+
+// Warm editorial serif for display headings — the main "designed by a human"
+// signal. Clean system sans (set in globals.css) handles body & UI.
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-serif",
+  axes: ["opsz", "SOFT"],
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://srtcuts.hair"),
@@ -34,7 +44,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#7657ff",
+  themeColor: "#0a0a0a",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -42,8 +52,8 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="h-full">
-      <body className="min-h-full bg-[#fbfaff] text-[#17151f]">
+    <html lang="en" className={`h-full ${fraunces.variable}`}>
+      <body className="min-h-full bg-[#0a0a0a] text-[#f5f0e6]">
         <AuthProvider>
           <ToastProvider>{children}</ToastProvider>
         </AuthProvider>

@@ -213,7 +213,7 @@ export default function AdminPage() {
               key={t}
               onClick={() => setAdminTab(t)}
               className="shrink-0 min-h-10 px-4 py-2 rounded-xl text-sm transition-all duration-200 font-sans cursor-pointer border-none"
-              style={{ background: adminTab === t ? "rgba(139,92,246,0.2)" : "transparent", color: adminTab === t ? "#C4B5FD" : "#6E6E73" }}
+              style={{ background: adminTab === t ? "rgba(212,160,23,0.18)" : "transparent", color: adminTab === t ? "#e8b84b" : "#6E6E73" }}
             >
               {t}
             </button>
@@ -238,7 +238,7 @@ export default function AdminPage() {
                 </div>
                 <div className="flex gap-1 mb-6 sm:mb-8 p-1 rounded-2xl overflow-x-auto bg-white/[0.04] border border-white/10">
                   {BOOKING_TABS.map((t) => (
-                    <button key={t} onClick={() => setBookingTab(t)} className="shrink-0 min-h-10 px-4 py-2 rounded-xl text-sm transition-all duration-200 border-none cursor-pointer" style={{ background: bookingTab === t ? "rgba(139,92,246,0.2)" : "transparent", color: bookingTab === t ? "#C4B5FD" : "#6E6E73" }}>
+                    <button key={t} onClick={() => setBookingTab(t)} className="shrink-0 min-h-10 px-4 py-2 rounded-xl text-sm transition-all duration-200 border-none cursor-pointer" style={{ background: bookingTab === t ? "rgba(212,160,23,0.18)" : "transparent", color: bookingTab === t ? "#e8b84b" : "#6E6E73" }}>
                       {t} {counts[t] > 0 ? counts[t] : ""}
                     </button>
                   ))}
@@ -434,8 +434,8 @@ function TaxTracker({
               key={row.label}
               className="rounded-2xl border p-4"
               style={{
-                background: row.highlight ? "rgba(139,92,246,0.14)" : "rgba(255,255,255,0.03)",
-                borderColor: row.highlight ? "rgba(139,92,246,0.35)" : "rgba(255,255,255,0.1)",
+                background: row.highlight ? "rgba(212,160,23,0.12)" : "rgba(255,255,255,0.03)",
+                borderColor: row.highlight ? "rgba(212,160,23,0.4)" : "rgba(255,255,255,0.1)",
               }}
             >
               <p className="text-sm text-white/45">{row.label}</p>
@@ -659,12 +659,12 @@ function DateAvailabilityEditor({
                       background: hasOverride
                         ? displaySlots!.length === 0
                           ? "rgba(239,68,68,0.12)"
-                          : "rgba(139,92,246,0.18)"
+                          : "rgba(212,160,23,0.16)"
                         : "rgba(255,255,255,0.06)",
                       color: hasOverride
                         ? displaySlots!.length === 0
                           ? "#F87171"
-                          : "#C4B5FD"
+                          : "#e8b84b"
                         : "#6E6E73",
                     }}
                   >
@@ -695,9 +695,9 @@ function DateAvailabilityEditor({
                           onClick={() => toggle(iso, slot)}
                           className="text-xs px-3 py-1.5 rounded-full transition-all duration-150 active:scale-95 border cursor-pointer"
                           style={{
-                            background: active ? "rgba(139,92,246,0.2)" : "rgba(255,255,255,0.04)",
-                            borderColor: active ? "rgba(139,92,246,0.45)" : "rgba(255,255,255,0.1)",
-                            color: active ? "#C4B5FD" : "#6E6E73",
+                            background: active ? "rgba(212,160,23,0.18)" : "rgba(255,255,255,0.04)",
+                            borderColor: active ? "rgba(212,160,23,0.5)" : "rgba(255,255,255,0.1)",
+                            color: active ? "#e8b84b" : "#6E6E73",
                             fontWeight: active ? 600 : 400,
                           }}
                         >
@@ -779,9 +779,9 @@ function AvailabilityEditor({
                       onClick={() => toggle(key, slot)}
                       className="text-xs px-3 py-1.5 rounded-full transition-all duration-150 active:scale-95 border cursor-pointer"
                       style={{
-                        background: on ? "rgba(139,92,246,0.2)" : "rgba(255,255,255,0.04)",
-                        borderColor: on ? "rgba(139,92,246,0.45)" : "rgba(255,255,255,0.1)",
-                        color: on ? "#C4B5FD" : "#6E6E73",
+                        background: on ? "rgba(212,160,23,0.18)" : "rgba(255,255,255,0.04)",
+                        borderColor: on ? "rgba(212,160,23,0.5)" : "rgba(255,255,255,0.1)",
+                        color: on ? "#e8b84b" : "#6E6E73",
                         fontWeight: on ? 600 : 400,
                       }}
                     >

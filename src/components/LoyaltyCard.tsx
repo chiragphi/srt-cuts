@@ -30,7 +30,7 @@ function LoyaltyCardSkeleton({ className = "" }: { className?: string }) {
   );
 }
 
-export default function LoyaltyCard({ className = "" }: { className?: string }) {
+export default function LoyaltyCard({ className = "", dark = true }: { className?: string; dark?: boolean }) {
   const [accepted, setAccepted] = useState<number | null>(null);
 
   useEffect(() => {
@@ -52,6 +52,14 @@ export default function LoyaltyCard({ className = "" }: { className?: string }) 
   const cutsLeft = earned ? 0 : CUTS_REQUIRED - cycleCount;
   const progress = earned ? CUTS_REQUIRED : cycleCount;
 
+  // Dark (homepage) vs. light (book / bookings pages) palette.
+  const eyebrowColor = dark ? "text-[#e8b84b]" : "text-[#4d35d8]";
+  const titleColor = dark ? "text-[#f5f0e6]" : "text-[#17151f]";
+  const captionColor = dark ? "text-[#8c857a]" : "text-[#6f6a7c]";
+  const iconClass = dark ? "bg-[#d4a017]/15 text-[#e8b84b]" : "bg-[#efeaff] text-[#4d35d8]";
+  const filledBar = dark ? "linear-gradient(90deg, #e8b84b, #d4a017)" : "linear-gradient(90deg, #7657ff, #4d35d8)";
+  const emptyBar = dark ? "rgba(255,255,255,0.08)" : "rgba(66,56,104,0.1)";
+
   return (
     <motion.div
       className={`app-card p-5 ${className}`}
@@ -60,23 +68,25 @@ export default function LoyaltyCard({ className = "" }: { className?: string }) 
       transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
       style={{
         background: earned
-          ? "linear-gradient(135deg, rgba(239,234,255,0.98), rgba(255,255,255,0.9))"
+          ? dark
+            ? "linear-gradient(135deg, rgba(212,160,23,0.16), rgba(255,255,255,0.03))"
+            : "linear-gradient(135deg, rgba(239,234,255,0.98), rgba(255,255,255,0.9))"
           : undefined,
-        borderColor: earned ? "rgba(118,87,255,0.3)" : undefined,
+        borderColor: earned ? (dark ? "rgba(212,160,23,0.4)" : "rgba(118,87,255,0.3)") : undefined,
       }}
     >
       <div className="flex items-start justify-between gap-3 mb-4">
         <div>
-          <p className="text-xs font-bold tracking-widest uppercase text-[#4d35d8] mb-1">
+          <p className={`text-xs font-bold tracking-widest uppercase mb-1 ${eyebrowColor}`}>
             Loyalty Rewards
           </p>
-          <p className="font-semibold text-[#17151f] text-base leading-snug">
+          <p className={`font-semibold text-base leading-snug ${titleColor}`}>
             {earned
               ? "Free lineup earned!"
               : `${cutsLeft} cut${cutsLeft === 1 ? "" : "s"} to your free lineup`}
           </p>
         </div>
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#efeaff] text-[#4d35d8]">
+        <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl ${iconClass}`}>
           <Scissors size={18} />
         </span>
       </div>
@@ -86,12 +96,7 @@ export default function LoyaltyCard({ className = "" }: { className?: string }) 
           <motion.div
             key={i}
             className="flex-1 h-2 rounded-full"
-            style={{
-              background:
-                i < progress
-                  ? "linear-gradient(90deg, #7657ff, #4d35d8)"
-                  : "rgba(66,56,104,0.1)",
-            }}
+            style={{ background: i < progress ? filledBar : emptyBar }}
             initial={{ scaleX: 0 }}
             animate={{ scaleX: 1 }}
             transition={{ duration: 0.4, delay: i * 0.07, ease: "easeOut" }}
@@ -99,7 +104,7 @@ export default function LoyaltyCard({ className = "" }: { className?: string }) 
         ))}
       </div>
 
-      <p className="text-xs text-[#6f6a7c]">
+      <p className={`text-xs ${captionColor}`}>
         {earned
           ? "Mention this at your next appointment and your lineup is on us."
           : `${progress} of ${CUTS_REQUIRED} cuts complete${totalCycles > 0 ? ` · ${totalCycles} free cut${totalCycles === 1 ? "" : "s"} claimed` : ""}`}

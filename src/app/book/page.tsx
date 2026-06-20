@@ -165,7 +165,7 @@ function BookPageInner() {
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="w-6 h-6 rounded-full border-2 border-[#7657ff]/30 border-t-[#7657ff] animate-spin" />
+        <div className="w-6 h-6 rounded-full border-2 border-white/15 border-t-[#e8b84b] animate-spin" />
       </div>
     );
   }
@@ -191,18 +191,18 @@ function BookPageInner() {
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           >
             <div
-              className="w-20 h-20 rounded-[2rem] mx-auto mb-7 flex items-center justify-center text-3xl text-[#4d35d8]"
-              style={{ background: "rgba(239,234,255,0.9)", border: "1px solid rgba(118,87,255,0.16)" }}
+              className="w-20 h-20 rounded-[2rem] mx-auto mb-7 flex items-center justify-center text-3xl text-[#e8b84b]"
+              style={{ background: "rgba(212,160,23,0.14)", border: "1px solid rgba(212,160,23,0.3)" }}
             >
               <CheckCircle2 size={36} />
             </div>
             <h1
-              className="font-semibold text-[#17151f] mb-4"
+              className="font-semibold text-[#f5f0e6] mb-4"
               style={{ fontSize: 36, letterSpacing: "-0.03em" }}
             >
               Booking requested
             </h1>
-            <p className="text-base font-light mb-6" style={{ color: "#6f6a7c" }}>
+            <p className="text-base font-light mb-6" style={{ color: "#8c857a" }}>
               You&apos;ll get a text confirmation once it&apos;s approved.
               <br />
               Check your phone for updates.
@@ -212,34 +212,34 @@ function BookPageInner() {
             {service && date && time && (
               <div className="app-card p-5 mb-6 text-left space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-[#6f6a7c]">Service</span>
-                  <span className="text-sm font-semibold text-[#17151f]">{service}</span>
+                  <span className="text-sm text-[#8c857a]">Service</span>
+                  <span className="text-sm font-semibold text-[#f5f0e6]">{service}</span>
                 </div>
                 {selectedService && (
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-[#6f6a7c]">Price</span>
-                    <span className="text-sm font-semibold text-[#17151f]">{formatPrice(selectedService.amount)}</span>
+                    <span className="text-sm text-[#8c857a]">Price</span>
+                    <span className="text-sm font-semibold text-[#f5f0e6]">{formatPrice(selectedService.amount)}</span>
                   </div>
                 )}
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-[#6f6a7c]">Date</span>
-                  <span className="text-sm font-semibold text-[#17151f]">{displayDate}</span>
+                  <span className="text-sm text-[#8c857a]">Date</span>
+                  <span className="text-sm font-semibold text-[#f5f0e6]">{displayDate}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-[#6f6a7c]">Time</span>
-                  <span className="text-sm font-semibold text-[#17151f]">{time}</span>
+                  <span className="text-sm text-[#8c857a]">Time</span>
+                  <span className="text-sm font-semibold text-[#f5f0e6]">{time}</span>
                 </div>
               </div>
             )}
 
             {/* Referral promo */}
             <div className="app-card p-4 mb-6 flex items-start gap-3 text-left">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#efeaff] text-[#4d35d8]">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#e8b84b]/12 text-[#e8b84b]">
                 <Gift size={16} />
               </span>
               <div>
-                <p className="text-sm font-semibold text-[#17151f] mb-0.5">Refer a friend, get $5 off</p>
-                <p className="text-xs text-[#6f6a7c]">Share SRT Cuts with a friend. When they book, you both save.</p>
+                <p className="text-sm font-semibold text-[#f5f0e6] mb-0.5">Refer a friend, get $5 off</p>
+                <p className="text-xs text-[#8c857a]">Share SRT Cuts with a friend. When they book, you both save.</p>
               </div>
             </div>
 
@@ -300,10 +300,10 @@ function BookPageInner() {
             transition={{ duration: 0.6 }}
           >
             <p className="mobile-section-label mb-3">Book</p>
-            <h1 className="app-title font-semibold text-[#17151f] mb-2">
+            <h1 className="app-title font-semibold text-[#f5f0e6] mb-2">
               {step === 1 ? "Choose a service" : step === 2 ? "Pick a time" : "Confirm"}
             </h1>
-            <p className="text-sm" style={{ color: "#6f6a7c" }}>
+            <p className="text-sm" style={{ color: "#8c857a" }}>
               Step {step} of 3{user ? ` · Hi ${user.name.split(" ")[0]}` : ""}
             </p>
           </motion.div>
@@ -316,9 +316,9 @@ function BookPageInner() {
                 <div key={label} className="min-w-0">
                   <div
                     className="h-1 rounded-full transition-all duration-500"
-                    style={{ background: s <= step ? "#7657ff" : "rgba(66,56,104,0.1)" }}
+                    style={{ background: s <= step ? "#e8b84b" : "rgba(255,255,255,0.1)" }}
                   />
-                  <p className="mt-2 text-[11px] font-semibold" style={{ color: s <= step ? "#4d35d8" : "#6f6a7c" }}>{label}</p>
+                  <p className="mt-2 text-[11px] font-semibold" style={{ color: s <= step ? "#e8b84b" : "#8c857a" }}>{label}</p>
                 </div>
               );
             })}
@@ -340,22 +340,22 @@ function BookPageInner() {
                     key={s.name}
                     className="w-full text-left app-card service-card p-4"
                     style={{
-                      background: service === s.name ? "rgba(239,234,255,0.9)" : "rgba(255,255,255,0.76)",
-                      borderColor: service === s.name ? "rgba(118,87,255,0.35)" : "rgba(66,56,104,0.1)",
-                      boxShadow: service === s.name ? "0 16px 36px rgba(96,72,231,0.14)" : "0 10px 30px rgba(52,43,94,0.08)",
+                      background: service === s.name ? "rgba(212,160,23,0.14)" : "rgba(255,255,255,0.04)",
+                      borderColor: service === s.name ? "rgba(212,160,23,0.45)" : "rgba(255,255,255,0.1)",
+                      boxShadow: service === s.name ? "0 16px 36px rgba(212,160,23,0.16)" : "0 10px 30px rgba(0,0,0,0.45)",
                     }}
                     onClick={() => { setService(s.name); }}
                     onKeyDown={(e) => handleKeyDown(e, () => { setService(s.name); setStep(2); })}
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div className="min-w-0">
-                        <p className="font-semibold text-[#17151f] text-base">{s.name}</p>
-                        <p className="text-sm mt-0.5" style={{ color: "#6f6a7c" }}>{s.desc}</p>
-                        <p className="text-xs mt-2" style={{ color: "#7c748c" }}>
+                        <p className="font-semibold text-[#f5f0e6] text-base">{s.name}</p>
+                        <p className="text-sm mt-0.5" style={{ color: "#8c857a" }}>{s.desc}</p>
+                        <p className="text-xs mt-2" style={{ color: "#8c857a" }}>
                           {s.duration} · {s.detail}
                         </p>
                       </div>
-                      <span className="text-lg font-semibold shrink-0" style={{ color: "#4d35d8" }}>
+                      <span className="text-lg font-semibold shrink-0" style={{ color: "#e8b84b" }}>
                         {formatPrice(s.amount)}
                       </span>
                     </div>
@@ -382,21 +382,21 @@ function BookPageInner() {
               >
                 {/* Next available quick-select */}
                 <button
-                  className="w-full flex items-center gap-3 app-card p-4 text-left hover:border-[rgba(118,87,255,0.3)] transition-colors"
+                  className="w-full flex items-center gap-3 app-card p-4 text-left hover:border-[rgba(212,160,23,0.4)] transition-colors"
                   onClick={selectNextAvailable}
                 >
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#efeaff] text-[#4d35d8]">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#e8b84b]/12 text-[#e8b84b]">
                     <Zap size={16} />
                   </span>
                   <div>
-                    <p className="font-semibold text-[#17151f] text-sm">Next available slot</p>
-                    <p className="text-xs text-[#6f6a7c]">Auto-select the soonest open time</p>
+                    <p className="font-semibold text-[#f5f0e6] text-sm">Next available slot</p>
+                    <p className="text-xs text-[#8c857a]">Auto-select the soonest open time</p>
                   </div>
-                  <ArrowRight size={16} className="ml-auto text-[#9c90b8] shrink-0" />
+                  <ArrowRight size={16} className="ml-auto text-[#8c857a] shrink-0" />
                 </button>
 
                 <div>
-                  <label className="block text-xs text-[#6f6a7c] mb-3 tracking-wide uppercase font-bold">
+                  <label className="block text-xs text-[#8c857a] mb-3 tracking-wide uppercase font-bold">
                     Date
                   </label>
                   <CalendarPicker
@@ -410,13 +410,13 @@ function BookPageInner() {
                 </div>
 
                 <div>
-                  <label className="block text-xs text-[#6f6a7c] mb-3 tracking-wide uppercase font-bold">
+                  <label className="block text-xs text-[#8c857a] mb-3 tracking-wide uppercase font-bold">
                     Time
                   </label>
                   {!date ? (
-                    <p className="text-sm text-[#9c90b8]">Select a date above to see available times.</p>
+                    <p className="text-sm text-[#8c857a]">Select a date above to see available times.</p>
                   ) : availableTimes.length === 0 ? (
-                    <p className="text-sm text-[#9c90b8]">No availability set for this day. Try another date or use &ldquo;Next available slot&rdquo; above.</p>
+                    <p className="text-sm text-[#8c857a]">No availability set for this day. Try another date or use &ldquo;Next available slot&rdquo; above.</p>
                   ) : (
                     <>
                       <div className="grid grid-cols-2 min-[390px]:grid-cols-3 gap-2">
@@ -425,9 +425,9 @@ function BookPageInner() {
                             key={t}
                             className="min-h-12 px-3 rounded-lg text-sm transition-all duration-150 border"
                             style={{
-                              background: time === t ? "rgba(239,234,255,0.95)" : "rgba(255,255,255,0.72)",
-                              borderColor: time === t ? "rgba(118,87,255,0.36)" : "rgba(66,56,104,0.1)",
-                              color: time === t ? "#4d35d8" : "#5d566e",
+                              background: time === t ? "rgba(212,160,23,0.16)" : "rgba(255,255,255,0.04)",
+                              borderColor: time === t ? "rgba(212,160,23,0.45)" : "rgba(255,255,255,0.1)",
+                              color: time === t ? "#e8b84b" : "#cfc8ba",
                             }}
                             onClick={() => setTime(t)}
                             onKeyDown={(e) => handleKeyDown(e, () => { setTime(t); setStep(3); })}
@@ -436,7 +436,7 @@ function BookPageInner() {
                           </button>
                         ))}
                       </div>
-                      <p className="text-xs mt-3" style={{ color: "#6f6a7c" }}>
+                      <p className="text-xs mt-3" style={{ color: "#8c857a" }}>
                         Final confirmation comes by SMS after review.
                       </p>
                     </>
@@ -475,14 +475,14 @@ function BookPageInner() {
                     { label: "Time", value: time },
                   ].map((row) => (
                     <div key={row.label} className="flex justify-between items-center gap-4">
-                      <span className="text-sm" style={{ color: "#6f6a7c" }}>{row.label}</span>
-                      <span className="text-sm font-semibold text-[#17151f] text-right">{row.value}</span>
+                      <span className="text-sm" style={{ color: "#8c857a" }}>{row.label}</span>
+                      <span className="text-sm font-semibold text-[#f5f0e6] text-right">{row.value}</span>
                     </div>
                   ))}
                 </div>
 
                 <div>
-                  <label className="block text-xs text-[#6f6a7c] mb-2 tracking-wide uppercase font-bold">
+                  <label className="block text-xs text-[#8c857a] mb-2 tracking-wide uppercase font-bold">
                     Notes (optional)
                   </label>
                   <textarea
@@ -495,7 +495,7 @@ function BookPageInner() {
                 </div>
 
                 <div>
-                  <label className="block text-xs text-[#6f6a7c] mb-2 tracking-wide uppercase font-bold">
+                  <label className="block text-xs text-[#8c857a] mb-2 tracking-wide uppercase font-bold">
                     Referral Code (optional)
                   </label>
                   <input
@@ -508,7 +508,7 @@ function BookPageInner() {
                 </div>
 
                 <div>
-                  <label className="block text-xs text-[#6f6a7c] mb-3 tracking-wide uppercase font-bold">
+                  <label className="block text-xs text-[#8c857a] mb-3 tracking-wide uppercase font-bold">
                     Payment
                   </label>
                   <div className="grid gap-3 sm:grid-cols-2">
@@ -520,15 +520,15 @@ function BookPageInner() {
                         key={option.id}
                         className="text-left app-card p-4 transition-all duration-200"
                         style={{
-                          background: paymentMethod === option.id ? "rgba(239,234,255,0.95)" : "rgba(255,255,255,0.72)",
-                          borderColor: paymentMethod === option.id ? "rgba(118,87,255,0.36)" : "rgba(66,56,104,0.1)",
+                          background: paymentMethod === option.id ? "rgba(212,160,23,0.16)" : "rgba(255,255,255,0.04)",
+                          borderColor: paymentMethod === option.id ? "rgba(212,160,23,0.45)" : "rgba(255,255,255,0.1)",
                         }}
                         onClick={() => setPaymentMethod(option.id as "in_store" | "online")}
                       >
-                        <p className="text-[#17151f] font-semibold">{option.title}</p>
-                        <p className="text-sm mt-1" style={{ color: "#6f6a7c" }}>{option.desc}</p>
+                        <p className="text-[#f5f0e6] font-semibold">{option.title}</p>
+                        <p className="text-sm mt-1" style={{ color: "#8c857a" }}>{option.desc}</p>
                         {option.id === "online" && content.venmoUrl && (
-                          <p className="text-xs mt-1.5 font-semibold text-[#4d35d8]">
+                          <p className="text-xs mt-1.5 font-semibold text-[#e8b84b]">
                             {content.venmoUrl.replace("https://venmo.com/", "@")}
                           </p>
                         )}
@@ -538,14 +538,14 @@ function BookPageInner() {
                 </div>
 
                 <div className="app-card p-5 space-y-3">
-                  <p className="text-sm text-[#2b2638]">No deposits. Choose Venmo full payment or pay in store.</p>
-                  <p className="text-sm" style={{ color: "#6f6a7c" }}>{content.cancellationPolicy}</p>
-                  <p className="text-sm" style={{ color: "#6f6a7c" }}>{content.reminderPolicy}</p>
+                  <p className="text-sm text-[#f5f0e6]">No deposits. Choose Venmo full payment or pay in store.</p>
+                  <p className="text-sm" style={{ color: "#8c857a" }}>{content.cancellationPolicy}</p>
+                  <p className="text-sm" style={{ color: "#8c857a" }}>{content.reminderPolicy}</p>
                 </div>
 
                 {error && (
-                  <div className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 p-4">
-                    <p className="text-sm text-red-600">{error}</p>
+                  <div className="flex items-start gap-2 rounded-xl border border-red-500/30 bg-red-500/10 p-4">
+                    <p className="text-sm text-red-300">{error}</p>
                   </div>
                 )}
 
@@ -556,7 +556,7 @@ function BookPageInner() {
                   </button>
                 </div>
 
-                <p className="text-xs text-center" style={{ color: "#6f6a7c" }}>
+                <p className="text-xs text-center" style={{ color: "#8c857a" }}>
                   You&apos;ll receive a text once confirmed. Cancel and reschedule by text.
                 </p>
               </motion.div>
@@ -602,7 +602,7 @@ export default function BookPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen flex items-center justify-center">
-        <div className="w-6 h-6 rounded-full border-2 border-[#7657ff]/30 border-t-[#7657ff] animate-spin" />
+        <div className="w-6 h-6 rounded-full border-2 border-white/15 border-t-[#e8b84b] animate-spin" />
       </div>
     }>
       <BookPageInner />

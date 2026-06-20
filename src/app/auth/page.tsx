@@ -128,7 +128,7 @@ function AuthForm() {
   return (
     <div className="min-h-screen flex flex-col mobile-page-pad">
       <div className="p-5 pt-[max(20px,env(safe-area-inset-top))]">
-        <Link href="/" className="text-sm font-semibold text-[#6f6a7c] hover:text-[#17151f] transition-colors">
+        <Link href="/" className="text-sm font-semibold text-[#8c857a] hover:text-[#f5f0e6] transition-colors">
           ← SRT Cuts
         </Link>
       </div>
@@ -148,10 +148,10 @@ function AuthForm() {
                 exit={{ opacity: 0, y: -12 }}
                 transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
               >
-                <h1 className="font-semibold text-[#17151f] text-center mb-2" style={{ fontSize: 28, letterSpacing: "-0.025em" }}>
+                <h1 className="font-semibold text-[#f5f0e6] text-center mb-2" style={{ fontSize: 28, letterSpacing: "-0.025em" }}>
                   Sign in
                 </h1>
-                <p className="text-sm text-center mb-8 text-[#6f6a7c]">
+                <p className="text-sm text-center mb-8 text-[#8c857a]">
                   Enter your phone number to continue.
                 </p>
 
@@ -187,12 +187,12 @@ function AuthForm() {
                 exit={{ opacity: 0, y: -12 }}
                 transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
               >
-                <h1 className="font-semibold text-[#17151f] text-center mb-2" style={{ fontSize: 28, letterSpacing: "-0.025em" }}>
+                <h1 className="font-semibold text-[#f5f0e6] text-center mb-2" style={{ fontSize: 28, letterSpacing: "-0.025em" }}>
                   Enter code
                 </h1>
-                <p className="text-sm text-center mb-8 text-[#6f6a7c]">
+                <p className="text-sm text-center mb-8 text-[#8c857a]">
                   We sent a 6-digit code to{" "}
-                  <span className="font-semibold text-[#17151f]">{phone}</span>
+                  <span className="font-semibold text-[#f5f0e6]">{phone}</span>
                 </p>
 
                 {isNewUser && (
@@ -233,13 +233,13 @@ function AuthForm() {
 
                 <div className="flex justify-between mt-4">
                   <button
-                    className="text-sm bg-transparent border-none cursor-pointer transition-colors text-[#6f6a7c] hover:text-[#17151f]"
+                    className="text-sm bg-transparent border-none cursor-pointer transition-colors text-[#8c857a] hover:text-[#f5f0e6]"
                     onClick={() => { setStep("phone"); setCode(["","","","","",""]); setError(""); }}
                   >
                     Change number
                   </button>
                   <button
-                    className="text-sm bg-transparent border-none cursor-pointer transition-colors text-[#4d35d8] hover:text-[#17151f] font-semibold"
+                    className="text-sm bg-transparent border-none cursor-pointer transition-colors text-[#e8b84b] hover:text-[#f5f0e6] font-semibold"
                     onClick={resendCode}
                     disabled={resending}
                   >

@@ -33,7 +33,7 @@ export default function Navigation() {
 
   return (
     <>
-      <nav className="fixed top-0 left-0 right-0 z-40 border-b border-black/[0.06] bg-white/72 pt-[env(safe-area-inset-top)] backdrop-blur-2xl">
+      <nav className="fixed top-0 left-0 right-0 z-40 border-b border-white/[0.08] bg-black/55 pt-[env(safe-area-inset-top)] backdrop-blur-2xl">
         <div className="app-shell flex items-center justify-between h-16">
           <Link href="/" onClick={() => setAccountOpen(false)} className="flex items-center gap-2.5">
             <Image
@@ -43,7 +43,7 @@ export default function Navigation() {
               height={30}
               className="object-contain rounded-lg"
             />
-            <span className="text-sm font-semibold tracking-wider text-[#17151f] uppercase hidden min-[360px]:inline">
+            <span className="text-sm font-semibold tracking-[0.18em] uppercase hidden min-[360px]:inline text-[#f5f0e6]">
               SRT Cuts
             </span>
           </Link>
@@ -52,7 +52,7 @@ export default function Navigation() {
             <Link
               href="/#services"
               onClick={() => setAccountOpen(false)}
-              className="hidden sm:inline text-sm font-medium text-[#6f6a7c] hover:text-[#17151f] transition-colors"
+              className="hidden sm:inline text-sm font-medium transition-colors text-[#cfc8ba] hover:text-[#f5f0e6]"
             >
               Services
             </Link>
@@ -63,7 +63,7 @@ export default function Navigation() {
                   <Link
                     href="/book"
                     onClick={() => setAccountOpen(false)}
-                    className="btn-primary min-h-0 py-2.5 px-4 text-sm"
+                    className="btn-gold min-h-0 py-2.5 px-4 text-sm"
                   >
                     Book
                   </Link>
@@ -74,41 +74,41 @@ export default function Navigation() {
                     aria-expanded={accountOpen}
                     aria-haspopup="menu"
                     onClick={() => setAccountOpen((open) => !open)}
-                    className="min-h-10 rounded-full px-4 text-sm font-semibold text-[#5d566e] hover:text-[#17151f] transition-colors bg-white/70 border border-black/10"
+                    className="min-h-10 rounded-full px-4 text-sm font-semibold transition-colors text-[#cfc8ba] hover:text-[#f5f0e6] bg-white/[0.05] border border-white/10"
                   >
                     {user.name.split(" ")[0]}
                   </button>
                   {accountOpen && (
-                    <div className="absolute right-0 top-full mt-2 w-48 glass rounded-xl py-1 shadow-[0_20px_48px_rgba(52,43,94,0.14)]">
+                    <div className="absolute right-0 top-full mt-2 w-48 glass rounded-xl py-1 shadow-[0_20px_48px_rgba(0,0,0,0.5)]">
                       <Link
                         href="/bookings"
                         onClick={() => setAccountOpen(false)}
-                        className="flex items-center gap-2.5 w-full text-left px-4 py-2.5 text-sm text-[#6f6a7c] hover:text-[#17151f] transition-colors"
+                        className="flex items-center gap-2.5 w-full text-left px-4 py-2.5 text-sm text-[#cfc8ba] hover:text-[#f5f0e6] transition-colors"
                       >
                         <ClockIcon size={14} />
                         My Bookings
                       </Link>
-                      <div className="h-px bg-black/[0.06] mx-2 my-1" />
+                      <div className="h-px bg-white/10 mx-2 my-1" />
                       {!confirmLogout ? (
                         <button
                           onClick={() => setConfirmLogout(true)}
-                          className="w-full text-left px-4 py-2.5 text-sm text-[#6f6a7c] hover:text-[#17151f] transition-colors"
+                          className="w-full text-left px-4 py-2.5 text-sm text-[#cfc8ba] hover:text-[#f5f0e6] transition-colors"
                         >
                           Sign out
                         </button>
                       ) : (
                         <div className="px-4 py-2.5">
-                          <p className="text-xs text-[#6f6a7c] mb-2">Sign out?</p>
+                          <p className="text-xs text-[#8c857a] mb-2">Sign out?</p>
                           <div className="flex gap-2">
                             <button
                               onClick={logout}
-                              className="flex-1 text-xs font-semibold text-red-500 hover:text-red-600 transition-colors"
+                              className="flex-1 text-xs font-semibold text-red-400 hover:text-red-300 transition-colors"
                             >
                               Yes
                             </button>
                             <button
                               onClick={() => setConfirmLogout(false)}
-                              className="flex-1 text-xs font-semibold text-[#6f6a7c] hover:text-[#17151f] transition-colors"
+                              className="flex-1 text-xs font-semibold text-[#8c857a] hover:text-[#f5f0e6] transition-colors"
                             >
                               Cancel
                             </button>
@@ -121,7 +121,11 @@ export default function Navigation() {
               </>
             ) : (
               <span className="desktop-only">
-                <Link href="/auth" onClick={() => setAccountOpen(false)} className="btn-primary min-h-0 py-2.5 px-4 text-sm">
+                <Link
+                  href="/auth"
+                  onClick={() => setAccountOpen(false)}
+                  className="btn-gold min-h-0 py-2.5 px-4 text-sm"
+                >
                   Sign in
                 </Link>
               </span>
@@ -130,7 +134,7 @@ export default function Navigation() {
               <button
                 onClick={() => { setConfirmLogout(true); setAccountOpen(false); }}
                 aria-label="Sign out"
-                className="mobile-only min-h-10 w-10 rounded-full border border-black/10 bg-white/70 text-[#5d566e] inline-flex items-center justify-center"
+                className="mobile-only min-h-10 w-10 rounded-full inline-flex items-center justify-center border border-white/10 bg-white/[0.05] text-[#cfc8ba]"
               >
                 <LogOut size={17} />
               </button>
@@ -138,7 +142,7 @@ export default function Navigation() {
               <Link
                 href="/auth"
                 aria-label="Sign in"
-                className="mobile-only min-h-10 w-10 rounded-full border border-black/10 bg-white/70 text-[#5d566e] inline-flex items-center justify-center"
+                className="mobile-only min-h-10 w-10 rounded-full inline-flex items-center justify-center border border-white/10 bg-white/[0.05] text-[#cfc8ba]"
               >
                 <UserRound size={17} />
               </Link>
@@ -154,14 +158,14 @@ export default function Navigation() {
           onClick={() => setConfirmLogout(false)}
         >
           <div
-            className="w-full app-card rounded-b-none p-6 shadow-[0_-20px_48px_rgba(52,43,94,0.14)]"
+            className="w-full app-card rounded-b-none p-6 shadow-[0_-20px_48px_rgba(0,0,0,0.55)]"
             onClick={(e) => e.stopPropagation()}
           >
-            <p className="font-semibold text-[#17151f] mb-1">Sign out?</p>
-            <p className="text-sm text-[#6f6a7c] mb-5">You&apos;ll need to enter your phone number again to log back in.</p>
+            <p className="font-semibold text-[#f5f0e6] mb-1">Sign out?</p>
+            <p className="text-sm text-[#8c857a] mb-5">You&apos;ll need to enter your phone number again to log back in.</p>
             <div className="grid grid-cols-2 gap-3">
-              <button onClick={() => setConfirmLogout(false)} className="btn-ghost">Cancel</button>
-              <button onClick={logout} className="btn-primary">Sign out</button>
+              <button onClick={() => setConfirmLogout(false)} className="btn-outline">Cancel</button>
+              <button onClick={logout} className="btn-gold">Sign out</button>
             </div>
           </div>
         </div>
