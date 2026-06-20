@@ -326,11 +326,9 @@ export default function HomePage() {
                     whileHover={{ y: -4, transition: { duration: 0.25 } }}
                   >
                     {isPopular && (
-                      <div className="absolute top-4 right-4">
-                        <span className="inline-flex items-center gap-1 rounded-full bg-[#d4a017] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-[#1c1402]">
-                          <Star size={9} fill="currentColor" /> Most Popular
-                        </span>
-                      </div>
+                      <span className="inline-flex items-center gap-1 self-start rounded-full bg-[#d4a017] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-[#1c1402]">
+                        <Star size={9} fill="currentColor" /> Most Popular
+                      </span>
                     )}
                     <div className="flex items-start justify-between gap-4">
                       <div>

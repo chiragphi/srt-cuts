@@ -260,7 +260,7 @@ textarea {
 }
 
 .photo-blend img {
-  filter: saturate(0.9) brightness(0.9) contrast(1.04);
+  filter: saturate(0.82) brightness(0.78) contrast(0.94);
 }
 
 .photo-blend::after {
@@ -270,9 +270,9 @@ textarea {
   border-radius: inherit;
   pointer-events: none;
   background:
-    linear-gradient(180deg, rgba(10, 10, 10, 0) 38%, rgba(10, 10, 10, 0.62) 100%),
-    radial-gradient(125% 115% at 50% 38%, transparent 52%, rgba(10, 10, 10, 0.6) 100%),
-    rgba(120, 86, 48, 0.07);
+    linear-gradient(180deg, rgba(10, 10, 10, 0.2) 0%, rgba(10, 10, 10, 0) 32%, rgba(10, 10, 10, 0.78) 100%),
+    radial-gradient(135% 125% at 50% 32%, transparent 38%, rgba(10, 10, 10, 0.72) 100%),
+    rgba(10, 10, 10, 0.16);
 }
 
 /* ── Hero ── */
