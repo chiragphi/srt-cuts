@@ -18,7 +18,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { MotionConfig, motion, type Variants } from "framer-motion";
+import { AnimatePresence, MotionConfig, motion, type Variants } from "framer-motion";
 import {
   ArrowRight,
   CalendarCheck,
@@ -44,13 +44,22 @@ import {
 import { useAuth } from "@/context/auth";
 
 const fadeUp: Variants = {
-  hidden: { opacity: 0, y: 24 },
+  hidden: { opacity: 0, y: 28, filter: "blur(6px)" },
   show: (i: number) => ({
     opacity: 1,
     y: 0,
-    transition: { duration: 0.7, delay: i * 0.08, ease: "easeOut" },
+    filter: "blur(0px)",
+    transition: { duration: 0.75, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] },
   }),
 };
+
+// Cursor-following spotlight: writes pointer position into CSS vars the
+// `.spotlight` class reads. Cheap, no re-renders.
+function handleSpotlight(e: React.MouseEvent<HTMLElement>) {
+  const r = e.currentTarget.getBoundingClientRect();
+  e.currentTarget.style.setProperty("--mx", `${e.clientX - r.left}px`);
+  e.currentTarget.style.setProperty("--my", `${e.clientY - r.top}px`);
+}
 
 const FAQ_ITEMS = [
   {
@@ -189,12 +198,15 @@ export default function HomePage() {
                   <p className="text-sm text-[#8c857a]">Private barber booking</p>
                 </div>
               </div>
-              <h1
+              <motion.h1
                 className="headline-gradient font-semibold leading-none mb-5"
                 style={{ fontSize: "clamp(50px, 10vw, 126px)", letterSpacing: 0 }}
+                initial={{ opacity: 0, y: 18, filter: "blur(16px)" }}
+                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                transition={{ duration: 1.05, delay: 0.18, ease: [0.22, 1, 0.36, 1] }}
               >
                 SRT Cuts.
-              </h1>
+              </motion.h1>
               <p className="text-lg sm:text-2xl mb-8 max-w-2xl leading-relaxed text-[#cfc8ba]">
                 Precision fades, clean edges, and a booking experience that feels effortless from the first tap.
               </p>
@@ -317,13 +329,15 @@ export default function HomePage() {
                 return (
                   <motion.div
                     key={s.name}
-                    className="app-card service-card p-5 sm:p-6 flex flex-col gap-5 relative"
+                    className="app-card service-card spotlight p-5 sm:p-6 flex flex-col gap-5 relative"
+                    onMouseMove={handleSpotlight}
                     initial="hidden"
                     whileInView="show"
                     viewport={{ once: true }}
                     variants={fadeUp}
                     custom={i + 1}
-                    whileHover={{ y: -4, transition: { duration: 0.25 } }}
+                    whileHover={{ y: -5, transition: { type: "spring", stiffness: 320, damping: 22 } }}
+                    whileTap={{ scale: 0.985 }}
                   >
                     {isPopular && (
                       <span className="inline-flex items-center gap-1 self-start rounded-full bg-[#d4a017] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-[#1c1402]">
@@ -369,14 +383,16 @@ export default function HomePage() {
                 {publicGallery.map((item, i) => (
                   <motion.article
                     key={`${item.title}-${i}`}
-                    className="app-card cursor-pointer group"
+                    className="app-card spotlight cursor-pointer group"
+                    onMouseMove={handleSpotlight}
                     initial="hidden"
                     whileInView="show"
                     viewport={{ once: true }}
                     variants={fadeUp}
                     custom={i}
                     onClick={() => setLightboxSrc(item.imageUrl)}
-                    whileHover={{ y: -4, transition: { duration: 0.25 } }}
+                    whileHover={{ y: -5, transition: { type: "spring", stiffness: 320, damping: 22 } }}
+                    whileTap={{ scale: 0.99 }}
                   >
                     <GalleryImage src={item.imageUrl} alt={item.title} />
                     <div className="p-5">
@@ -471,17 +487,30 @@ export default function HomePage() {
                     aria-expanded={expandedFaq === i}
                   >
                     <span className="font-semibold text-[#f5f0e6] text-base">{item.q}</span>
-                    <ChevronDown
-                      size={18}
-                      className="shrink-0 text-[#e8b84b] transition-transform duration-300"
-                      style={{ transform: expandedFaq === i ? "rotate(180deg)" : "rotate(0deg)" }}
-                    />
+                    <motion.span
+                      className="shrink-0 text-[#e8b84b]"
+                      animate={{ rotate: expandedFaq === i ? 180 : 0 }}
+                      transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                    >
+                      <ChevronDown size={18} />
+                    </motion.span>
                   </button>
-                  {expandedFaq === i && (
-                    <div className="px-5 pb-5">
-                      <p className="text-[#cfc8ba] leading-relaxed">{item.a}</p>
-                    </div>
-                  )}
+                  <AnimatePresence initial={false}>
+                    {expandedFaq === i && (
+                      <motion.div
+                        key="answer"
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.36, ease: [0.22, 1, 0.36, 1] }}
+                        style={{ overflow: "hidden" }}
+                      >
+                        <div className="px-5 pb-5">
+                          <p className="text-[#cfc8ba] leading-relaxed">{item.a}</p>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </motion.div>
               ))}
             </div>
@@ -595,7 +624,7 @@ function GalleryImage({ src, alt }: { src: string; alt: string }) {
         alt={alt}
         fill
         sizes="(min-width: 768px) 33vw, 100vw"
-        className="object-cover transition-opacity duration-500"
+        className="gallery-zoom object-cover"
         style={{ opacity: loaded ? 1 : 0 }}
         unoptimized
         onLoad={() => setLoaded(true)}
@@ -621,7 +650,7 @@ function InfoBlock({
 }) {
   const linkProps = external ? { target: "_blank", rel: "noopener noreferrer" } : {};
   return (
-    <div className="app-card p-6">
+    <div className="app-card spotlight p-6" onMouseMove={handleSpotlight}>
       <h3 className="font-semibold text-xl mb-3 text-[#f5f0e6]">{title}</h3>
       <p className="text-base leading-relaxed text-[#cfc8ba]">{body}</p>
       <p className="text-sm mt-3 leading-relaxed text-[#8c857a]">{detail}</p>

@@ -567,6 +567,77 @@ textarea {
   border-radius: 8px;
 }
 
+/* ════════════════════════════════════════════════════════════════════
+   Micro-interactions — small, tactile rewards (the "ooh, nice" moments)
+   ════════════════════════════════════════════════════════════════════ */
+
+/* Light-sweep shine across the gold buttons on hover. */
+.btn-primary,
+.btn-gold {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary::after,
+.btn-gold::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -40%;
+  width: 35%;
+  height: 100%;
+  pointer-events: none;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+  transform: skewX(-18deg);
+  opacity: 0;
+}
+
+.btn-primary:hover::after,
+.btn-gold:hover::after {
+  animation: btn-shine 0.85s ease;
+}
+
+@keyframes btn-shine {
+  0% { left: -40%; opacity: 0; }
+  14% { opacity: 0.8; }
+  100% { left: 130%; opacity: 0; }
+}
+
+/* Cursor-following warm spotlight on cards (set --mx/--my via JS). */
+.spotlight {
+  position: relative;
+}
+
+.spotlight::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(240px circle at var(--mx, 50%) var(--my, 50%), rgba(212, 160, 23, 0.16), transparent 62%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.spotlight:hover::before {
+  opacity: 1;
+}
+
+.spotlight > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Slow, cinematic zoom for gallery photos on hover. */
+.gallery-zoom {
+  transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.5s ease;
+}
+
+.group:hover .gallery-zoom {
+  transform: scale(1.06);
+}
+
 /* ── Respect reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
   html {
@@ -580,5 +651,13 @@ textarea {
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
+  }
+
+  .group:hover .gallery-zoom {
+    transform: none;
+  }
+
+  .spotlight::before {
+    display: none;
   }
 }
