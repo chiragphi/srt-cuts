@@ -30,7 +30,7 @@ function LoyaltyCardSkeleton({ className = "" }: { className?: string }) {
   );
 }
 
-export default function LoyaltyCard({ className = "", dark = true }: { className?: string; dark?: boolean }) {
+export default function LoyaltyCard({ className = "" }: { className?: string; dark?: boolean }) {
   const [accepted, setAccepted] = useState<number | null>(null);
 
   useEffect(() => {
@@ -52,13 +52,13 @@ export default function LoyaltyCard({ className = "", dark = true }: { className
   const cutsLeft = earned ? 0 : CUTS_REQUIRED - cycleCount;
   const progress = earned ? CUTS_REQUIRED : cycleCount;
 
-  // Dark (homepage) vs. light (book / bookings pages) palette.
-  const eyebrowColor = dark ? "text-[#e8b84b]" : "text-[#4d35d8]";
-  const titleColor = dark ? "text-[#f5f0e6]" : "text-[#17151f]";
-  const captionColor = dark ? "text-[#8c857a]" : "text-[#6f6a7c]";
-  const iconClass = dark ? "bg-[#d4a017]/15 text-[#e8b84b]" : "bg-[#efeaff] text-[#4d35d8]";
-  const filledBar = dark ? "linear-gradient(90deg, #e8b84b, #d4a017)" : "linear-gradient(90deg, #7657ff, #4d35d8)";
-  const emptyBar = dark ? "rgba(255,255,255,0.08)" : "rgba(66,56,104,0.1)";
+  // Forest palette throughout (the `dark` prop is kept for compatibility).
+  const eyebrowColor = "text-[#e0a458]";
+  const titleColor = "text-[#f1ece0]";
+  const captionColor = "text-[#7d8c79]";
+  const iconClass = "bg-[rgba(224,164,88,0.14)] text-[#e0a458]";
+  const filledBar = "linear-gradient(90deg, #eab468, #d9973f)";
+  const emptyBar = "rgba(120,150,110,0.18)";
 
   return (
     <motion.div
@@ -68,11 +68,9 @@ export default function LoyaltyCard({ className = "", dark = true }: { className
       transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
       style={{
         background: earned
-          ? dark
-            ? "linear-gradient(135deg, rgba(212,160,23,0.16), rgba(255,255,255,0.03))"
-            : "linear-gradient(135deg, rgba(239,234,255,0.98), rgba(255,255,255,0.9))"
+          ? "linear-gradient(135deg, rgba(224,164,88,0.16), rgba(120,150,110,0.08))"
           : undefined,
-        borderColor: earned ? (dark ? "rgba(212,160,23,0.4)" : "rgba(118,87,255,0.3)") : undefined,
+        borderColor: earned ? "rgba(224,164,88,0.4)" : undefined,
       }}
     >
       <div className="flex items-start justify-between gap-3 mb-4">

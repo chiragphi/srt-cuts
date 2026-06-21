@@ -46,15 +46,15 @@ export default function CalendarPicker({ value, onChange, blockedDates, minDate,
           type="button"
           onClick={() => setView(new Date(y, m - 1, 1))}
           disabled={viewYM <= minYM}
-          className="h-9 w-9 flex items-center justify-center rounded-full border border-white/10 bg-white/[0.05] text-[#cfc8ba] disabled:opacity-25 active:scale-95 transition-transform"
+          className="h-9 w-9 flex items-center justify-center rounded-full border border-[rgba(120,150,110,0.18)] bg-[rgba(120,150,110,0.1)] text-[#b8c4b1] disabled:opacity-25 active:scale-95 transition-transform"
         >
           <ChevronLeft size={16} strokeWidth={2.5} />
         </button>
-        <span className="text-[15px] font-semibold text-[#f5f0e6]">{monthLabel}</span>
+        <span className="text-[15px] font-semibold text-[#f1ece0]">{monthLabel}</span>
         <button
           type="button"
           onClick={() => setView(new Date(y, m + 1, 1))}
-          className="h-9 w-9 flex items-center justify-center rounded-full border border-white/10 bg-white/[0.05] text-[#cfc8ba] active:scale-95 transition-transform"
+          className="h-9 w-9 flex items-center justify-center rounded-full border border-[rgba(120,150,110,0.18)] bg-[rgba(120,150,110,0.1)] text-[#b8c4b1] active:scale-95 transition-transform"
         >
           <ChevronRight size={16} strokeWidth={2.5} />
         </button>
@@ -63,7 +63,7 @@ export default function CalendarPicker({ value, onChange, blockedDates, minDate,
       {/* Day-of-week headers */}
       <div className="grid grid-cols-7 mb-2">
         {DAYS.map((d) => (
-          <div key={d} className="py-1 text-center text-[10px] font-bold uppercase tracking-widest text-[#8c857a]">
+          <div key={d} className="py-1 text-center text-[10px] font-bold uppercase tracking-widest text-[#7d8c79]">
             {d}
           </div>
         ))}
@@ -97,32 +97,32 @@ export default function CalendarPicker({ value, onChange, blockedDates, minDate,
               className="aspect-square flex items-center justify-center rounded-[10px] text-[13px] font-medium relative active:scale-95 transition-all duration-100"
               style={{
                 background: sel
-                  ? "linear-gradient(135deg, #f0cd66 0%, #d4a017 52%, #b5841f 100%)"
+                  ? "linear-gradient(135deg, #eab468 0%, #d9973f 52%, #d9973f 100%)"
                   : blocked
                   ? "rgba(239,68,68,0.06)"
-                  : "rgba(255,255,255,0.04)",
+                  : "rgba(120,150,110,0.08)",
                 color: sel
-                  ? "#1c1402"
+                  ? "#0c130e"
                   : blocked
                   ? "rgba(248,113,113,0.5)"
                   : past || noSlots
                   ? "rgba(245,240,230,0.25)"
-                  : "#f5f0e6",
+                  : "#f1ece0",
                 border: sel
-                  ? "1px solid rgba(212,160,23,0.5)"
+                  ? "1px solid rgba(224,164,88,0.5)"
                   : isToday && !sel
-                  ? "1.5px solid rgba(212,160,23,0.6)"
+                  ? "1.5px solid rgba(224,164,88,0.6)"
                   : blocked
                   ? "1px solid rgba(239,68,68,0.1)"
                   : "1px solid rgba(255,255,255,0.07)",
-                boxShadow: sel ? "0 4px 14px rgba(212,160,23,0.3)" : "none",
+                boxShadow: sel ? "0 4px 14px rgba(224,164,88,0.3)" : "none",
                 opacity: past || noSlots ? 0.32 : 1,
                 cursor: disabled ? "default" : "pointer",
               }}
             >
               {day}
               {isToday && !sel && (
-                <span className="absolute bottom-[3px] left-1/2 -translate-x-1/2 w-[5px] h-[5px] rounded-full bg-[#e8b84b]" />
+                <span className="absolute bottom-[3px] left-1/2 -translate-x-1/2 w-[5px] h-[5px] rounded-full bg-[#e0a458]" />
               )}
             </button>
           );
@@ -130,11 +130,11 @@ export default function CalendarPicker({ value, onChange, blockedDates, minDate,
       </div>
 
       {/* Legend */}
-      <div className="mt-4 pt-3 border-t border-white/[0.07] flex items-center gap-4 flex-wrap">
-        <LegendDot bg="linear-gradient(135deg, #f0cd66, #d4a017)" label="Selected" />
-        <LegendDot border="1.5px solid rgba(212,160,23,0.6)" label="Today" />
+      <div className="mt-4 pt-3 border-t border-[rgba(120,150,110,0.16)] flex items-center gap-4 flex-wrap">
+        <LegendDot bg="linear-gradient(135deg, #eab468, #d9973f)" label="Selected" />
+        <LegendDot border="1.5px solid rgba(224,164,88,0.6)" label="Today" />
         <LegendDot bg="rgba(239,68,68,0.08)" border="1px solid rgba(239,68,68,0.12)" label="Blocked" />
-        <LegendDot bg="rgba(66,56,104,0.05)" label="No slots" />
+        <LegendDot bg="rgba(120,150,110,0.1)" label="No slots" />
       </div>
     </div>
   );
@@ -144,7 +144,7 @@ function LegendDot({ bg, border, label }: { bg?: string; border?: string; label:
   return (
     <div className="flex items-center gap-1.5">
       <div className="w-3 h-3 rounded-[4px]" style={{ background: bg, border }} />
-      <span className="text-[11px] font-medium text-[#8c857a]">{label}</span>
+      <span className="text-[11px] font-medium text-[#7d8c79]">{label}</span>
     </div>
   );
 }

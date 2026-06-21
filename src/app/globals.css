@@ -1,30 +1,34 @@
 @import "tailwindcss";
 
 /* ════════════════════════════════════════════════════════════════════
-   SRT CUTS — global dark theme
-   "Apple precision meets warm barber craftsmanship."
-   Near-black canvas · cream type · editorial serif headings · sparing gold.
-   Crafted, not AI-generated: real texture (film grain), hairline detailing,
-   solid warm-dark surfaces (not generic glass), confident solid type.
+   SRT CUTS — "Dusk in the Pines"
+   A one-chair grooming room hidden where the pavement gives way to pine.
+   Deep evergreen canvas · warm bone type · amber light through the trees.
+   Hand-built texture: drifting fog, embers, fireflies, film grain,
+   ridge-line treeline dividers, generous negative space.
    ════════════════════════════════════════════════════════════════════ */
 
 :root {
-  --background: #0a0a0a;
-  --foreground: #f5f0e6;       /* cream */
-  --cream: #f5f0e6;
-  --cream-soft: #cfc8ba;
-  --surface: rgba(255, 255, 255, 0.04);
-  --surface-strong: rgba(255, 255, 255, 0.06);
-  --stroke: rgba(255, 255, 255, 0.09);
-  --muted: #8c857a;
-  --accent: #e8b84b;           /* gold (focus rings, selection) */
-  --accent-soft: rgba(212, 160, 23, 0.12);
-  --accent-strong: #e8b84b;
-  --gold: #d4a017;
-  --gold-bright: #e8b84b;
-  --wood: #a67b5b;
-  --shadow-soft: 0 24px 64px rgba(0, 0, 0, 0.55);
-  --shadow-tight: 0 14px 34px rgba(0, 0, 0, 0.45);
+  --background: #0a0f0b;
+  --foreground: #e7ede4;          /* warm bone */
+  --bone: #f3ecdd;                /* brighter display bone */
+  --sage: #b8c4b1;               /* soft body sage */
+  --moss: #7d8c79;               /* muted moss-grey */
+  --moss-bright: #9aab93;        /* eyebrow moss */
+
+  --amber: #e0a458;              /* primary light-through-trees */
+  --amber-bright: #eab468;
+  --amber-deep: #d9973f;
+  --amber-glow: #e6c690;         /* italic display accent */
+  --amber-soft: rgba(224, 164, 88, 0.12);
+
+  --surface: rgba(20, 30, 22, 0.55);
+  --surface-strong: rgba(18, 28, 21, 0.85);
+  --stroke: rgba(120, 150, 110, 0.16);
+  --stroke-strong: rgba(120, 150, 110, 0.26);
+
+  --shadow-soft: 0 30px 80px rgba(0, 0, 0, 0.5);
+  --shadow-tight: 0 16px 40px rgba(0, 0, 0, 0.42);
   --font-display: var(--font-serif), "Iowan Old Style", Georgia, "Times New Roman", serif;
 }
 
@@ -58,24 +62,11 @@ body {
   font-family: var(--font-grotesk), -apple-system, BlinkMacSystemFont, system-ui,
     "Helvetica Neue", Arial, sans-serif;
   letter-spacing: -0.011em;
-  /* Solid near-black with a faint warm crown glow + a soft edge vignette —
-     no bright "blobs" (those read as AI). */
+  /* Deep forest clearing at dusk — a warm crown of canopy light up high,
+     settling into near-black pine at the base. */
   background:
-    radial-gradient(120% 70% at 50% -8%, rgba(166, 123, 91, 0.07), transparent 60%),
-    radial-gradient(100% 120% at 50% 110%, rgba(0, 0, 0, 0.55), transparent 60%),
-    #0a0a0a;
+    radial-gradient(140% 90% at 70% -10%, #16241b 0%, #0d1611 38%, #0a0f0b 72%);
   background-attachment: fixed;
-}
-
-/* Film grain over the whole frame for organic, hand-finished depth. */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  opacity: 0.035;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 button,
@@ -92,8 +83,8 @@ textarea {
 }
 
 ::selection {
-  background: rgba(212, 160, 23, 0.28);
-  color: #fff;
+  background: rgba(224, 164, 88, 0.3);
+  color: #f3ead9;
 }
 
 ::-webkit-scrollbar {
@@ -101,7 +92,7 @@ textarea {
 }
 
 :focus-visible {
-  outline: 2px solid var(--gold);
+  outline: 2px solid var(--amber);
   outline-offset: 2px;
 }
 
@@ -113,14 +104,22 @@ textarea {
   font-optical-sizing: auto;
 }
 
+/* An italic Fraunces accent used across headlines — "that finds you". */
+.display-accent {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
+  color: var(--amber-glow);
+}
+
 /* ── Surfaces ── */
 .glass,
 .glass-strong {
-  background: rgba(18, 17, 15, 0.82);
+  background: rgba(13, 20, 15, 0.78);
   border: 1px solid var(--stroke);
   box-shadow: var(--shadow-tight);
-  backdrop-filter: blur(28px) saturate(140%);
-  -webkit-backdrop-filter: blur(28px) saturate(140%);
+  backdrop-filter: blur(22px) saturate(125%);
+  -webkit-backdrop-filter: blur(22px) saturate(125%);
 }
 
 /* ── Buttons ── */
@@ -136,24 +135,24 @@ textarea {
   padding: 14px 24px;
   border-radius: 999px;
   font-size: 15px;
-  font-weight: 650;
-  letter-spacing: 0;
+  font-weight: 600;
+  letter-spacing: 0.01em;
   cursor: pointer;
   transition: background 0.22s ease, transform 0.18s ease, box-shadow 0.22s ease, border-color 0.22s ease, color 0.22s ease;
 }
 
-/* Primary == warm gold; used app-wide. */
+/* Primary == warm amber light. */
 .btn-primary,
 .btn-gold {
-  color: #1c1402;
-  border: 1px solid rgba(212, 160, 23, 0.5);
-  background: linear-gradient(135deg, #f0cd66 0%, #d4a017 52%, #b5841f 100%);
-  box-shadow: 0 16px 38px rgba(212, 160, 23, 0.22);
+  color: #0c130e;
+  border: 1px solid rgba(224, 164, 88, 0.55);
+  background: linear-gradient(180deg, #eab468 0%, #d9973f 100%);
+  box-shadow: 0 12px 34px rgba(224, 164, 88, 0.28);
 }
 
 .btn-primary:hover,
 .btn-gold:hover {
-  box-shadow: 0 22px 48px rgba(212, 160, 23, 0.32);
+  box-shadow: 0 18px 44px rgba(224, 164, 88, 0.36);
   transform: translateY(-1px);
 }
 
@@ -170,18 +169,18 @@ textarea {
   box-shadow: none;
 }
 
-/* Secondary == hairline cream outline. */
+/* Secondary == mossy hairline outline. */
 .btn-ghost,
 .btn-outline {
-  color: var(--cream);
-  border: 1px solid rgba(245, 240, 230, 0.22);
-  background: rgba(255, 255, 255, 0.03);
+  color: var(--sage);
+  border: 1px solid rgba(150, 170, 140, 0.24);
+  background: rgba(20, 30, 22, 0.4);
 }
 
 .btn-ghost:hover,
 .btn-outline:hover {
-  border-color: rgba(212, 160, 23, 0.5);
-  color: #fff;
+  border-color: rgba(224, 164, 88, 0.5);
+  color: var(--bone);
   transform: translateY(-1px);
 }
 
@@ -197,7 +196,7 @@ textarea {
   width: 100%;
   min-height: 54px;
   color: var(--foreground);
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(20, 30, 22, 0.5);
   border: 1px solid var(--stroke);
   border-radius: 16px;
   padding: 15px 16px;
@@ -208,20 +207,20 @@ textarea {
 }
 
 .input-field::placeholder {
-  color: rgba(245, 240, 230, 0.32);
+  color: rgba(184, 196, 177, 0.4);
 }
 
 .input-field:focus {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(212, 160, 23, 0.55);
-  box-shadow: 0 0 0 4px rgba(212, 160, 23, 0.14);
+  background: rgba(24, 36, 27, 0.7);
+  border-color: rgba(224, 164, 88, 0.55);
+  box-shadow: 0 0 0 4px rgba(224, 164, 88, 0.14);
 }
 
-/* ── Headline (homepage h1) — solid cream serif, no gradient ── */
+/* ── Headline (homepage h1) — solid bone serif ── */
 .headline-gradient {
-  color: var(--cream);
+  color: var(--bone);
   font-family: var(--font-display);
-  font-weight: 500;
+  font-weight: 300;
   letter-spacing: -0.03em;
   font-optical-sizing: auto;
 }
@@ -244,24 +243,23 @@ textarea {
   padding-bottom: 64px;
 }
 
-/* ── Cards — solid warm-dark with hairline + faint top highlight ── */
+/* ── Cards — solid forest-dark with mossy hairline + faint top light ── */
 .app-card {
   overflow: hidden;
   border: 1px solid var(--stroke);
-  border-radius: 22px;
+  border-radius: 20px;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.012)),
-    #100f0d;
-  box-shadow: var(--shadow-soft), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    linear-gradient(180deg, rgba(20, 30, 22, 0.7), rgba(13, 20, 15, 0.55));
+  box-shadow: var(--shadow-soft), inset 0 1px 0 rgba(150, 180, 140, 0.05);
 }
 
-/* ── Photo blending — feather edges into the canvas, warm tonal grade ── */
+/* ── Photo blending — feather edges into the canvas, cool forest grade ── */
 .photo-blend {
   position: relative;
 }
 
 .photo-blend img {
-  filter: saturate(0.82) brightness(0.78) contrast(0.94);
+  filter: saturate(0.85) brightness(0.8) contrast(0.96);
 }
 
 .photo-blend::after {
@@ -271,74 +269,82 @@ textarea {
   border-radius: inherit;
   pointer-events: none;
   background:
-    linear-gradient(180deg, rgba(10, 10, 10, 0.2) 0%, rgba(10, 10, 10, 0) 32%, rgba(10, 10, 10, 0.78) 100%),
-    radial-gradient(135% 125% at 50% 32%, transparent 38%, rgba(10, 10, 10, 0.72) 100%),
-    rgba(10, 10, 10, 0.16);
+    linear-gradient(180deg, rgba(10, 15, 11, 0.18) 0%, rgba(10, 15, 11, 0) 32%, rgba(10, 15, 11, 0.78) 100%),
+    radial-gradient(135% 125% at 50% 32%, transparent 40%, rgba(10, 15, 11, 0.68) 100%),
+    rgba(10, 15, 11, 0.12);
 }
 
-/* ── Hero ── */
+/* ── Hero glow — amber light pooling through the canopy ── */
 .hero-glow {
   background:
-    radial-gradient(circle at 24% 20%, rgba(212, 160, 23, 0.1), transparent 26rem),
-    radial-gradient(circle at 84% 12%, rgba(166, 123, 91, 0.1), transparent 30rem),
-    linear-gradient(180deg, rgba(10, 10, 10, 0) 0%, rgba(10, 10, 10, 0.35) 72%, #0a0a0a 100%);
+    radial-gradient(circle at 24% 20%, rgba(224, 164, 88, 0.1), transparent 26rem),
+    radial-gradient(circle at 84% 12%, rgba(120, 150, 110, 0.12), transparent 30rem),
+    linear-gradient(180deg, rgba(10, 15, 11, 0) 0%, rgba(10, 15, 11, 0.3) 72%, #0a0f0b 100%);
 }
 
 .hero-panel {
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(150, 180, 140, 0.16);
   border-radius: 28px;
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.018)),
-    radial-gradient(circle at 12% 18%, rgba(212, 160, 23, 0.08), transparent 18rem),
-    #0d0c0a;
-  box-shadow: 0 40px 110px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    linear-gradient(135deg, rgba(30, 44, 33, 0.7), rgba(13, 20, 15, 0.55)),
+    radial-gradient(circle at 12% 18%, rgba(224, 164, 88, 0.1), transparent 18rem);
+  box-shadow: 0 40px 110px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(150, 180, 140, 0.06);
 }
 
 .hero-orbit {
   position: absolute;
   border-radius: 999px;
-  border: 1px solid rgba(212, 160, 23, 0.12);
-  background: rgba(255, 255, 255, 0.012);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(224, 164, 88, 0.12);
+  background: rgba(120, 150, 110, 0.02);
+  box-shadow: inset 0 1px 0 rgba(150, 180, 140, 0.05);
 }
 
 .service-card {
-  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  transition: border-color 0.4s ease, background 0.4s ease, box-shadow 0.4s ease, transform 0.4s ease;
 }
 
 .service-card:hover {
-  border-color: rgba(212, 160, 23, 0.4);
-  box-shadow: var(--shadow-soft), 0 0 0 1px rgba(212, 160, 23, 0.12);
+  border-color: rgba(224, 164, 88, 0.4);
+  box-shadow: var(--shadow-soft), 0 0 0 1px rgba(224, 164, 88, 0.12);
 }
 
 .service-card:active {
   transform: scale(0.99);
 }
 
-/* ── Editorial eyebrow chip — hairline outline, gold, tracked-out caps ── */
+/* ── Editorial eyebrow chip — hairline outline, moss, tracked-out caps ── */
 .app-chip {
   display: inline-flex;
   align-items: center;
   min-height: 30px;
   border-radius: 999px;
   padding: 0 14px;
-  color: var(--gold-bright);
+  color: var(--moss-bright);
   background: transparent;
-  border: 1px solid rgba(212, 160, 23, 0.32);
+  border: 1px solid rgba(120, 150, 110, 0.3);
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
+}
+
+/* A barer eyebrow used on the home page — "— The menu" */
+.eyebrow {
+  font-size: 12px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--moss-bright);
 }
 
 /* ── Section / page titles use the serif display ── */
 .app-title {
   font-family: var(--font-display);
   font-size: 38px;
-  line-height: 1.04;
+  line-height: 1.02;
   letter-spacing: -0.022em;
-  font-weight: 480;
+  font-weight: 400;
   font-optical-sizing: auto;
+  color: var(--bone);
 }
 
 .mobile-only {
@@ -353,7 +359,7 @@ textarea {
   display: none;
 }
 
-/* ── Mobile bottom nav (dark) ── */
+/* ── Mobile bottom nav (forest) ── */
 .mobile-bottom-nav {
   position: fixed;
   left: 0;
@@ -361,11 +367,11 @@ textarea {
   bottom: 0;
   z-index: 45;
   padding: 8px max(12px, env(safe-area-inset-left)) max(8px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-right));
-  background: rgba(10, 10, 10, 0.82);
+  background: rgba(10, 15, 11, 0.82);
   border-top: 1px solid var(--stroke);
   box-shadow: 0 -18px 50px rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(24px) saturate(140%);
-  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  backdrop-filter: blur(24px) saturate(130%);
+  -webkit-backdrop-filter: blur(24px) saturate(130%);
 }
 
 .mobile-nav-grid {
@@ -381,15 +387,15 @@ textarea {
   align-items: center;
   justify-content: center;
   gap: 3px;
-  border-radius: 18px;
-  color: rgba(245, 240, 230, 0.5);
+  border-radius: 16px;
+  color: rgba(184, 196, 177, 0.5);
   font-size: 11px;
   font-weight: 700;
 }
 
 .mobile-nav-item[data-active="true"] {
-  color: var(--gold-bright);
-  background: rgba(212, 160, 23, 0.12);
+  color: var(--amber);
+  background: rgba(224, 164, 88, 0.12);
 }
 
 .mobile-page-pad {
@@ -411,23 +417,23 @@ textarea {
 
 .mobile-booking-actions > div {
   border: 1px solid var(--stroke) !important;
-  background: rgba(13, 12, 10, 0.9) !important;
+  background: rgba(13, 20, 15, 0.9) !important;
   box-shadow: var(--shadow-tight);
-  backdrop-filter: blur(24px) saturate(140%);
-  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  backdrop-filter: blur(24px) saturate(130%);
+  -webkit-backdrop-filter: blur(24px) saturate(130%);
 }
 
 .mobile-section-label {
-  color: var(--gold-bright);
+  color: var(--moss-bright);
   font-size: 11px;
   font-weight: 800;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
 }
 
 .mobile-rule {
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(212, 160, 23, 0.28), transparent);
+  background: linear-gradient(90deg, transparent, rgba(224, 164, 88, 0.28), transparent);
 }
 
 .mobile-cta {
@@ -445,7 +451,7 @@ textarea {
   min-height: 64px;
   border-radius: 18px;
   border: 1px solid var(--stroke);
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(20, 30, 22, 0.4);
 }
 
 .otp-input {
@@ -453,7 +459,7 @@ textarea {
   height: 52px;
   border-radius: 16px;
   border: 1px solid var(--stroke);
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(20, 30, 22, 0.6);
   color: var(--foreground);
   text-align: center;
   font-size: 22px;
@@ -462,13 +468,162 @@ textarea {
 }
 
 .otp-input:focus {
-  border-color: rgba(212, 160, 23, 0.55);
-  box-shadow: 0 0 0 4px rgba(212, 160, 23, 0.14);
+  border-color: rgba(224, 164, 88, 0.55);
+  box-shadow: 0 0 0 4px rgba(224, 164, 88, 0.14);
 }
 
 /* ════════════════════════════════════════════════════════════════════
-   Admin — the page is dark-native (bg-black / text-white / purple).
-   We keep its dark base and just recolour the purple accent → gold.
+   Ambient forest layer — fog/embers/fireflies canvas, light shafts,
+   parallax pines, film grain. Mounted site-wide (not on /admin).
+   ════════════════════════════════════════════════════════════════════ */
+.forest-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.forest-shafts {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.forest-shaft {
+  position: absolute;
+  top: -20%;
+  height: 140%;
+  filter: blur(24px);
+}
+
+.forest-trees {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.forest-tree {
+  position: absolute;
+  color: #101c14;
+  will-change: transform;
+}
+
+.forest-grain {
+  position: fixed;
+  inset: -20%;
+  z-index: 31;
+  pointer-events: none;
+  opacity: 0.055;
+  mix-blend-mode: screen;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: srt-grain 1.2s steps(3) infinite;
+}
+
+@keyframes srt-grain {
+  0%, 100% { transform: translate(0, 0); }
+  10% { transform: translate(-4%, -3%); }
+  30% { transform: translate(3%, -5%); }
+  50% { transform: translate(-3%, 4%); }
+  70% { transform: translate(4%, 2%); }
+  90% { transform: translate(-2%, -4%); }
+}
+
+@keyframes srt-shaft {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 0.85; }
+}
+
+@keyframes srt-drift {
+  0% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-22px) rotate(0.6deg); }
+  100% { transform: translateY(0) rotate(0deg); }
+}
+
+@keyframes srt-drift-b {
+  0% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-14px) rotate(-0.5deg); }
+  100% { transform: translateY(0) rotate(0deg); }
+}
+
+/* Keep page content above the ambient layer. */
+.forest-content {
+  position: relative;
+  z-index: 10;
+}
+
+/* ── Ridge-line / treeline section divider ── */
+.treeline {
+  position: relative;
+  z-index: 9;
+  line-height: 0;
+  color: rgba(10, 18, 13, 0.85);
+}
+
+.treeline svg {
+  display: block;
+  width: 100%;
+  height: 54px;
+}
+
+/* ── Ambient sound toggle (lower-left) ── */
+.sound-toggle {
+  position: fixed;
+  left: clamp(16px, 3vw, 30px);
+  bottom: clamp(16px, 3vw, 30px);
+  z-index: 44;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  background: rgba(13, 20, 15, 0.7);
+  border: 1px solid rgba(120, 150, 110, 0.18);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: border-color 0.3s ease, background 0.3s ease;
+}
+
+.sound-toggle[data-on="true"] {
+  border-color: rgba(224, 164, 88, 0.5);
+}
+
+.sound-toggle .bar {
+  width: 3px;
+  border-radius: 2px;
+  background: #5d6c59;
+  transition: background 0.3s ease, height 0.3s ease;
+}
+
+.sound-toggle[data-on="true"] .bar {
+  background: var(--amber);
+}
+
+.sound-toggle .label {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--sage);
+}
+
+/* On small screens the bottom nav owns the lower edge — lift the toggle. */
+@media (max-width: 639px) {
+  .sound-toggle {
+    bottom: calc(88px + env(safe-area-inset-bottom));
+    left: 14px;
+    padding: 8px 12px;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   Admin — intentionally LEFT AS-IS. The original gold accent is kept
+   literally here so the internal dashboard is unchanged by the redesign.
    ════════════════════════════════════════════════════════════════════ */
 .admin-shell {
   color: var(--foreground);
@@ -480,7 +635,7 @@ textarea {
 .admin-shell .text-purple-100,
 .admin-shell .text-purple-200,
 .admin-shell .text-purple-300 {
-  color: var(--gold-bright) !important;
+  color: #e8b84b !important;
 }
 
 .admin-shell .bg-purple-400\/10 {
@@ -493,12 +648,12 @@ textarea {
 }
 
 .admin-shell .border-purple-500 {
-  border-color: var(--gold) !important;
+  border-color: #d4a017 !important;
 }
 
 .admin-shell .hover\:text-purple-100:hover,
 .admin-shell .hover\:text-purple-400:hover {
-  color: var(--gold-bright) !important;
+  color: #e8b84b !important;
 }
 
 .admin-shell .sticky.bottom-4 {
@@ -536,12 +691,16 @@ textarea {
   }
 
   .app-section {
-    padding-top: 108px;
-    padding-bottom: 108px;
+    padding-top: 100px;
+    padding-bottom: 100px;
   }
 
   .app-title {
     font-size: 60px;
+  }
+
+  .treeline svg {
+    height: 70px;
   }
 
   .mobile-cta {
@@ -562,17 +721,17 @@ textarea {
 }
 
 .skeleton {
-  background: linear-gradient(90deg, rgba(255, 255, 255, 0.04), rgba(212, 160, 23, 0.12), rgba(255, 255, 255, 0.04));
+  background: linear-gradient(90deg, rgba(120, 150, 110, 0.06), rgba(224, 164, 88, 0.14), rgba(120, 150, 110, 0.06));
   background-size: 200% 100%;
   animation: skeleton-pulse 1.6s ease-in-out infinite;
   border-radius: 8px;
 }
 
 /* ════════════════════════════════════════════════════════════════════
-   Micro-interactions — small, tactile rewards (the "ooh, nice" moments)
+   Micro-interactions — small, tactile rewards
    ════════════════════════════════════════════════════════════════════ */
 
-/* Light-sweep shine across the gold buttons on hover. */
+/* Light-sweep shine across the amber buttons on hover. */
 .btn-primary,
 .btn-gold {
   position: relative;
@@ -588,7 +747,7 @@ textarea {
   width: 35%;
   height: 100%;
   pointer-events: none;
-  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.5), transparent);
   transform: skewX(-18deg);
   opacity: 0;
 }
@@ -604,7 +763,7 @@ textarea {
   100% { left: 130%; opacity: 0; }
 }
 
-/* Cursor-following warm spotlight on cards (set --mx/--my via JS). */
+/* Cursor-following warm light pool on cards (set --mx/--my via JS). */
 .spotlight {
   position: relative;
 }
@@ -616,7 +775,7 @@ textarea {
   border-radius: inherit;
   z-index: 0;
   pointer-events: none;
-  background: radial-gradient(240px circle at var(--mx, 50%) var(--my, 50%), rgba(212, 160, 23, 0.16), transparent 62%);
+  background: radial-gradient(240px circle at var(--mx, 50%) var(--my, 50%), rgba(224, 164, 88, 0.16), transparent 62%);
   opacity: 0;
   transition: opacity 0.4s ease;
 }
@@ -660,5 +819,11 @@ textarea {
 
   .spotlight::before {
     display: none;
+  }
+
+  .forest-grain,
+  .forest-tree,
+  .forest-shaft {
+    animation: none !important;
   }
 }

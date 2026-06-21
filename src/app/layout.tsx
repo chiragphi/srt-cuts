@@ -3,6 +3,7 @@ import { Fraunces, Hanken_Grotesk } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/auth";
 import { ToastProvider } from "@/components/Toast";
+import SiteAtmosphere from "@/components/SiteAtmosphere";
 
 // Warm editorial serif for display headings — high-contrast, optical-sized,
 // the main "art-directed, not a template" signal.
@@ -52,7 +53,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0a0a0a",
+  themeColor: "#0a0f0b",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -61,9 +62,12 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`h-full ${fraunces.variable} ${hanken.variable}`}>
-      <body className="min-h-full bg-[#0a0a0a] text-[#f5f0e6]">
+      <body className="min-h-full bg-[#0a0f0b] text-[#e7ede4]">
         <AuthProvider>
-          <ToastProvider>{children}</ToastProvider>
+          <ToastProvider>
+            <SiteAtmosphere />
+            {children}
+          </ToastProvider>
         </AuthProvider>
       </body>
     </html>

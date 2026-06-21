@@ -94,7 +94,7 @@ export default function BookingsPage() {
   if (authLoading || (!user && !authLoading)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="w-6 h-6 rounded-full border-2 border-white/15 border-t-[#e8b84b] animate-spin" />
+        <div className="w-6 h-6 rounded-full border-2 border-[rgba(120,150,110,0.22)] border-t-[#e0a458] animate-spin" />
       </div>
     );
   }
@@ -102,7 +102,7 @@ export default function BookingsPage() {
   return (
     <>
       <Navigation />
-      <div className="min-h-screen pt-24 pb-28 sm:pb-16 mobile-page-pad">
+      <div className="min-h-screen pt-24 pb-28 sm:pb-16 mobile-page-pad forest-content">
         <div className="app-shell max-w-2xl">
           <LoyaltyCard className="mb-6" />
 
@@ -113,9 +113,9 @@ export default function BookingsPage() {
             transition={{ duration: 0.5 }}
           >
             <p className="mobile-section-label mb-2">Account</p>
-            <h1 className="app-title font-semibold text-[#f5f0e6] mb-2">My Bookings</h1>
+            <h1 className="app-title font-semibold text-[#f1ece0] mb-2">My Bookings</h1>
             {user && (
-              <p className="text-sm text-[#8c857a]">
+              <p className="text-sm text-[#7d8c79]">
                 {user.name} · {upcomingCount} upcoming
               </p>
             )}
@@ -129,10 +129,10 @@ export default function BookingsPage() {
                 onClick={() => setActiveFilter(f)}
                 className="px-4 py-2 rounded-full text-sm font-semibold capitalize transition-all"
                 style={{
-                  background: activeFilter === f ? "linear-gradient(135deg, #f0cd66 0%, #d4a017 52%, #b5841f 100%)" : "rgba(255,255,255,0.04)",
-                  color: activeFilter === f ? "#1c1402" : "#cfc8ba",
-                  border: activeFilter === f ? "1px solid rgba(212,160,23,0.5)" : "1px solid rgba(255,255,255,0.1)",
-                  boxShadow: activeFilter === f ? "0 8px 20px rgba(212,160,23,0.2)" : "none",
+                  background: activeFilter === f ? "linear-gradient(135deg, #eab468 0%, #d9973f 52%, #d9973f 100%)" : "rgba(120,150,110,0.08)",
+                  color: activeFilter === f ? "#0c130e" : "#b8c4b1",
+                  border: activeFilter === f ? "1px solid rgba(224,164,88,0.5)" : "1px solid rgba(120,150,110,0.18)",
+                  boxShadow: activeFilter === f ? "0 8px 20px rgba(224,164,88,0.2)" : "none",
                 }}
               >
                 {f}
@@ -158,13 +158,13 @@ export default function BookingsPage() {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              <div className="flex h-16 w-16 mx-auto mb-5 items-center justify-center rounded-2xl bg-[#e8b84b]/12">
-                <CalendarDays size={28} className="text-[#e8b84b]" />
+              <div className="flex h-16 w-16 mx-auto mb-5 items-center justify-center rounded-2xl bg-[#e0a458]/12">
+                <CalendarDays size={28} className="text-[#e0a458]" />
               </div>
-              <p className="font-semibold text-[#f5f0e6] mb-2">
+              <p className="font-semibold text-[#f1ece0] mb-2">
                 {activeFilter === "upcoming" ? "No upcoming bookings" : "No bookings yet"}
               </p>
-              <p className="text-sm text-[#8c857a] mb-6">
+              <p className="text-sm text-[#7d8c79] mb-6">
                 {activeFilter === "upcoming"
                   ? "Ready to book your next cut?"
                   : "Your appointments will appear here after you book."}
@@ -195,8 +195,8 @@ export default function BookingsPage() {
                   >
                     <div className="flex items-start justify-between gap-4 mb-4">
                       <div>
-                        <p className="font-semibold text-[#f5f0e6] text-base">{booking.service}</p>
-                        <p className="text-sm text-[#8c857a] mt-1">{displayDate} at {booking.booking_time}</p>
+                        <p className="font-semibold text-[#f1ece0] text-base">{booking.service}</p>
+                        <p className="text-sm text-[#7d8c79] mt-1">{displayDate} at {booking.booking_time}</p>
                       </div>
                       <div
                         className="flex items-center gap-1.5 rounded-full px-3 py-1.5 shrink-0"
@@ -209,14 +209,14 @@ export default function BookingsPage() {
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between border-t border-white/[0.07] pt-4">
-                      <span className="text-sm font-semibold text-[#e8b84b]">
+                    <div className="flex items-center justify-between border-t border-[rgba(120,150,110,0.16)] pt-4">
+                      <span className="text-sm font-semibold text-[#e0a458]">
                         {formatPrice(booking.service_price_cents)}
                       </span>
                       {!isPast && booking.status === "accepted" && (
                         <Link
                           href={`/book`}
-                          className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#8c857a] hover:text-[#e8b84b] transition-colors"
+                          className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#7d8c79] hover:text-[#e0a458] transition-colors"
                         >
                           <RefreshCw size={13} /> Rebook
                         </Link>
@@ -224,7 +224,7 @@ export default function BookingsPage() {
                       {isPast && booking.status === "accepted" && (
                         <Link
                           href="/book"
-                          className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#e8b84b] hover:text-[#f5f0e6] transition-colors"
+                          className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#e0a458] hover:text-[#f1ece0] transition-colors"
                         >
                           <RefreshCw size={13} /> Book again
                         </Link>
@@ -232,7 +232,7 @@ export default function BookingsPage() {
                     </div>
 
                     {booking.notes && (
-                      <p className="mt-3 text-xs text-[#8c857a] border-t border-white/[0.07] pt-3">{booking.notes}</p>
+                      <p className="mt-3 text-xs text-[#7d8c79] border-t border-[rgba(120,150,110,0.16)] pt-3">{booking.notes}</p>
                     )}
                   </motion.div>
                 );

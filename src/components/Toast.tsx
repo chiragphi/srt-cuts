@@ -49,11 +49,11 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             >
               {t.type === "success" && <CheckCircle2 size={17} className="text-emerald-400 shrink-0 mt-0.5" />}
               {t.type === "error" && <AlertCircle size={17} className="text-red-400 shrink-0 mt-0.5" />}
-              {t.type === "info" && <Info size={17} className="text-[#e8b84b] shrink-0 mt-0.5" />}
-              <p className="text-sm text-[#f5f0e6] flex-1 leading-relaxed">{t.message}</p>
+              {t.type === "info" && <Info size={17} className="text-[#e0a458] shrink-0 mt-0.5" />}
+              <p className="text-sm text-[#f1ece0] flex-1 leading-relaxed">{t.message}</p>
               <button
                 onClick={() => dismiss(t.id)}
-                className="text-[#8c857a] hover:text-[#f5f0e6] transition-colors shrink-0"
+                className="text-[#7d8c79] hover:text-[#f1ece0] transition-colors shrink-0"
                 aria-label="Dismiss notification"
               >
                 <X size={14} />
