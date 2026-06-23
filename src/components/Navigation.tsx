@@ -104,7 +104,7 @@ export default function Navigation() {
               </Link>
             )}
 
-            <Link href="/book" className="btn btn--accent !min-h-[44px] !px-5 only-desk">
+            <Link href="/book" className="btn btn--accent !min-h-[40px] !px-4 !text-[12px] sm:!min-h-[44px] sm:!px-5">
               Reserve
             </Link>
           </div>

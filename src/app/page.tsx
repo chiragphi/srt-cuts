@@ -70,15 +70,10 @@ export default function HomePage() {
           <div className="shell grid items-end gap-12 pb-14 lg:grid-cols-[1.15fr_0.85fr] lg:gap-10">
             <div>
               <Reveal>
-                <div className="mb-7 flex flex-wrap items-center gap-x-5 gap-y-2">
-                  <span className="eyebrow">Herriman, UT</span>
-                  <span className="font-mono text-[12px] font-bold uppercase tracking-[0.16em] text-[var(--mute)]">
-                    By appointment
-                  </span>
-                  <span className="font-mono text-[12px] font-bold uppercase tracking-[0.16em] text-[var(--mute)]">
-                    One chair
-                  </span>
-                </div>
+                <p className="mb-6 flex items-center gap-2.5 font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--mute)] sm:text-[12px]">
+                  <span className="h-0.5 w-5 shrink-0 bg-[var(--accent)]" />
+                  Herriman, UT — By appointment
+                </p>
               </Reveal>
 
               <Reveal delay={60}>
@@ -99,27 +94,27 @@ export default function HomePage() {
               </Reveal>
 
               <Reveal delay={200}>
-                <div className="mt-9 flex flex-wrap gap-3">
-                  <Link href="/book" className="btn btn--accent">
+                <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                  <Link href="/book" className="btn btn--accent w-full sm:w-auto">
                     Reserve the chair
                     <ArrowUpRight size={17} strokeWidth={2.5} />
                   </Link>
-                  <a href="#work" className="btn btn--ghost">
+                  <a href="#work" className="btn btn--ghost w-full sm:w-auto">
                     See the work
                   </a>
                 </div>
               </Reveal>
 
               <Reveal delay={260}>
-                <dl className="mt-11 grid max-w-lg grid-cols-3 gap-px overflow-hidden rounded-[4px] border border-[var(--line)] bg-[var(--line)]">
+                <dl className="mt-9 grid max-w-lg grid-cols-3 gap-px overflow-hidden rounded-[4px] border border-[var(--line)] bg-[var(--line)]">
                   {[
                     ["No deposits", "Pay at the chair"],
                     ["Replies fast", "Texts, not voicemail"],
                     ["Current cuts", "What's sharp now"],
                   ].map(([k, v]) => (
-                    <div key={k} className="bg-[var(--paper)] px-4 py-4">
-                      <dt className="font-display text-lg uppercase leading-none">{k}</dt>
-                      <dd className="mt-1.5 font-mono text-[10px] uppercase tracking-[0.08em] text-[var(--mute)]">{v}</dd>
+                    <div key={k} className="bg-[var(--paper)] px-3 py-3.5 sm:px-4 sm:py-4">
+                      <dt className="font-display text-[15px] uppercase leading-none sm:text-lg">{k}</dt>
+                      <dd className="mt-1.5 font-mono text-[9px] uppercase leading-tight tracking-[0.06em] text-[var(--mute)] sm:text-[10px]">{v}</dd>
                     </div>
                   ))}
                 </dl>

@@ -332,7 +332,7 @@ function BookPageInner() {
                     </button>
                   );
                 })}
-                <div className="only-desk pt-3">
+                <div className="pt-3">
                   <button className="btn btn--accent btn--block" disabled={!canNext1} onClick={() => setStep(2)}>
                     Continue <ArrowUpRight size={16} strokeWidth={2.5} />
                   </button>
@@ -413,7 +413,7 @@ function BookPageInner() {
                   )}
                 </div>
 
-                <div className="hidden grid-cols-2 gap-3 pt-1 sm:grid">
+                <div className="grid grid-cols-2 gap-3 pt-1">
                   <button className="btn btn--ghost" onClick={() => setStep(1)}>Back</button>
                   <button className="btn btn--accent" disabled={!canNext2} onClick={() => setStep(3)}>Continue</button>
                 </div>
@@ -506,7 +506,7 @@ function BookPageInner() {
                   </div>
                 )}
 
-                <div className="hidden grid-cols-2 gap-3 pt-1 sm:grid">
+                <div className="grid grid-cols-2 gap-3 pt-1">
                   <button className="btn btn--ghost" onClick={() => setStep(2)}>Back</button>
                   <button className="btn btn--accent" disabled={submitting} onClick={submit}>
                     {submitting ? "Booking…" : "Confirm booking"}
@@ -519,36 +519,6 @@ function BookPageInner() {
               </motion.div>
             )}
           </AnimatePresence>
-        </div>
-      </div>
-
-      {/* Mobile action bar */}
-      <div className="only-mobile fixed inset-x-0 bottom-0 z-40 border-t border-[var(--line)] bg-[var(--paper)]/92 px-4 pb-[max(10px,env(safe-area-inset-bottom))] pt-2.5 backdrop-blur-md">
-        <div className="grid grid-cols-2 gap-2">
-          {step > 1 ? (
-            <button className="btn btn--ghost !min-h-12" onClick={() => setStep(step === 3 ? 2 : 1)}>
-              Back
-            </button>
-          ) : (
-            <Link href="/" className="btn btn--ghost !min-h-12">
-              Home
-            </Link>
-          )}
-          {step === 1 && (
-            <button className="btn btn--accent !min-h-12" disabled={!canNext1} onClick={() => setStep(2)}>
-              Continue
-            </button>
-          )}
-          {step === 2 && (
-            <button className="btn btn--accent !min-h-12" disabled={!canNext2} onClick={() => setStep(3)}>
-              Continue
-            </button>
-          )}
-          {step === 3 && (
-            <button className="btn btn--accent !min-h-12" disabled={submitting} onClick={submit}>
-              {submitting ? "Booking…" : "Confirm"}
-            </button>
-          )}
         </div>
       </div>
     </>
