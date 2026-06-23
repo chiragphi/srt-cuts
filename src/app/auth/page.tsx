@@ -4,7 +4,6 @@ import { useState, useRef, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import Image from "next/image";
 import { useAuth } from "@/context/auth";
 
 type Step = "phone" | "code";
@@ -40,7 +39,7 @@ function AuthForm() {
     setError("");
     const digits = phone.replace(/\D/g, "");
     if (digits.length < 10) {
-      setError("Please enter your 10-digit phone number.");
+      setError("Enter your 10-digit phone number.");
       return;
     }
     setLoading(true);
@@ -52,11 +51,7 @@ function AuthForm() {
     setLoading(false);
     if (!res.ok) {
       const d = await res.json();
-      setError(
-        d.error === "Invalid phone number"
-          ? "Please enter a valid 10-digit US phone number."
-          : d.error || "Failed to send code."
-      );
+      setError(d.error === "Invalid phone number" ? "Enter a valid 10-digit US phone number." : d.error || "Failed to send code.");
       return;
     }
     const d = await res.json();
@@ -86,7 +81,10 @@ function AuthForm() {
 
   async function verifyCode() {
     const full = code.join("");
-    if (full.length !== 6) { setError("Enter the full 6-digit code."); return; }
+    if (full.length !== 6) {
+      setError("Enter the full 6-digit code.");
+      return;
+    }
     setError("");
     setLoading(true);
     const res = await fetch("/api/auth/verify-otp", {
@@ -115,9 +113,7 @@ function AuthForm() {
   }
 
   function handleCodeKeyDown(i: number, e: React.KeyboardEvent) {
-    if (e.key === "Backspace" && !code[i] && i > 0) {
-      codeRefs.current[i - 1]?.focus();
-    }
+    if (e.key === "Backspace" && !code[i] && i > 0) codeRefs.current[i - 1]?.focus();
     if (e.key === "Enter" && code.join("").length === 6) verifyCode();
   }
 
@@ -126,40 +122,35 @@ function AuthForm() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col mobile-page-pad forest-content">
+    <div className="band-ink flex min-h-screen flex-col">
       <div className="p-5 pt-[max(20px,env(safe-area-inset-top))]">
-        <Link href="/" className="text-sm font-semibold text-[#7d8c79] hover:text-[#f1ece0] transition-colors">
-          ← SRT Cuts
+        <Link href="/" className="font-mono text-[12px] font-bold uppercase tracking-[0.12em] text-[var(--mute-ink)] transition-colors hover:text-[var(--paper)]">
+          ← SRT.CUTS
         </Link>
       </div>
 
-      <div className="flex-1 flex items-center justify-center px-5 py-8">
-        <div className="w-full max-w-[20rem] sm:max-w-sm">
-          <div className="flex justify-center mb-8">
-            <Image src="/srt-logo.png" alt="SRT" width={64} height={64} className="object-contain rounded-2xl" />
-          </div>
-
+      <div className="flex flex-1 items-center justify-center px-5 py-8">
+        <div className="w-full max-w-sm">
           <AnimatePresence mode="wait">
             {step === "phone" && (
               <motion.div
                 key="phone"
-                initial={{ opacity: 0, y: 16 }}
+                initial={{ opacity: 0, y: 14 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -12 }}
-                transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
               >
-                <h1 className="font-semibold text-[#f1ece0] text-center mb-2" style={{ fontSize: 28, letterSpacing: "-0.025em" }}>
-                  Sign in
+                <p className="idx mb-4">[ SIGN IN ]</p>
+                <h1 className="display display--lg">
+                  Claim your <span className="hot">chair.</span>
                 </h1>
-                <p className="text-sm text-center mb-8 text-[#7d8c79]">
-                  Enter your phone number to continue.
-                </p>
+                <p className="mb-8 mt-3 text-sm text-[var(--mute-ink)]">Enter your phone number — we&apos;ll text a code.</p>
 
-                <div className="space-y-4 app-card p-4">
+                <div className="space-y-4">
                   <div>
-                    <label className="block mobile-section-label mb-2">Phone Number</label>
+                    <label className="field-label">Phone number</label>
                     <input
-                      className="input-field"
+                      className="field"
                       type="tel"
                       inputMode="numeric"
                       placeholder="(801) 555-0100"
@@ -170,10 +161,10 @@ function AuthForm() {
                     />
                   </div>
 
-                  {error && <p className="text-sm text-red-500 text-center">{error}</p>}
+                  {error && <p className="text-sm text-[var(--accent)]">{error}</p>}
 
-                  <button className="btn-primary w-full" onClick={sendCode} disabled={loading}>
-                    {loading ? "Sending…" : "Send Code"}
+                  <button className="btn btn--accent btn--block" onClick={sendCode} disabled={loading}>
+                    {loading ? "Sending…" : "Send code"}
                   </button>
                 </div>
               </motion.div>
@@ -182,24 +173,22 @@ function AuthForm() {
             {step === "code" && (
               <motion.div
                 key="code"
-                initial={{ opacity: 0, y: 16 }}
+                initial={{ opacity: 0, y: 14 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -12 }}
-                transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
               >
-                <h1 className="font-semibold text-[#f1ece0] text-center mb-2" style={{ fontSize: 28, letterSpacing: "-0.025em" }}>
-                  Enter code
-                </h1>
-                <p className="text-sm text-center mb-8 text-[#7d8c79]">
-                  We sent a 6-digit code to{" "}
-                  <span className="font-semibold text-[#f1ece0]">{phone}</span>
+                <p className="idx mb-4">[ VERIFY ]</p>
+                <h1 className="display display--lg">Enter the code</h1>
+                <p className="mb-8 mt-3 text-sm text-[var(--mute-ink)]">
+                  Sent a 6-digit code to <span className="spec text-[var(--paper)]">{phone}</span>
                 </p>
 
                 {isNewUser && (
-                  <div className="app-card p-4 mb-4">
-                    <label className="block mobile-section-label mb-2">Your Name</label>
+                  <div className="mb-5">
+                    <label className="field-label">Your name</label>
                     <input
-                      className="input-field"
+                      className="field"
                       type="text"
                       placeholder="First Last"
                       value={name}
@@ -209,12 +198,12 @@ function AuthForm() {
                   </div>
                 )}
 
-                <div className="flex gap-2 justify-center mb-6">
+                <div className="mb-6 flex justify-center gap-2">
                   {code.map((d, i) => (
                     <input
                       key={i}
                       ref={(el) => { codeRefs.current[i] = el; }}
-                      className="otp-input"
+                      className="otp"
                       type="text"
                       inputMode="numeric"
                       maxLength={1}
@@ -225,21 +214,21 @@ function AuthForm() {
                   ))}
                 </div>
 
-                {error && <p className="text-sm text-red-500 text-center mb-4">{error}</p>}
+                {error && <p className="mb-4 text-center text-sm text-[var(--accent)]">{error}</p>}
 
-                <button className="btn-primary w-full" onClick={verifyCode} disabled={loading}>
+                <button className="btn btn--accent btn--block" onClick={verifyCode} disabled={loading}>
                   {loading ? "Verifying…" : "Continue"}
                 </button>
 
-                <div className="flex justify-between mt-4">
+                <div className="mt-4 flex justify-between font-mono text-[11px] font-bold uppercase tracking-[0.08em]">
                   <button
-                    className="text-sm bg-transparent border-none cursor-pointer transition-colors text-[#7d8c79] hover:text-[#f1ece0]"
-                    onClick={() => { setStep("phone"); setCode(["","","","","",""]); setError(""); }}
+                    className="text-[var(--mute-ink)] transition-colors hover:text-[var(--paper)]"
+                    onClick={() => { setStep("phone"); setCode(["", "", "", "", "", ""]); setError(""); }}
                   >
                     Change number
                   </button>
                   <button
-                    className="text-sm bg-transparent border-none cursor-pointer transition-colors text-[#e0a458] hover:text-[#f1ece0] font-semibold"
+                    className="text-[var(--accent)] transition-colors hover:text-[var(--paper)]"
                     onClick={resendCode}
                     disabled={resending}
                   >
@@ -257,7 +246,7 @@ function AuthForm() {
 
 export default function AuthPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen" />}>
+    <Suspense fallback={<div className="min-h-screen bg-[var(--ink)]" />}>
       <AuthForm />
     </Suspense>
   );

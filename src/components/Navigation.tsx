@@ -3,16 +3,14 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { CalendarDays, ClockIcon, Home, LogOut, Scissors, UserRound } from "lucide-react";
+import { CalendarDays, House, LogOut, Scissors, User } from "lucide-react";
 import { useAuth } from "@/context/auth";
 import { useToast } from "@/components/Toast";
 
 function Wordmark() {
   return (
-    <span className="flex items-baseline gap-0.5">
-      <span className="font-display font-semibold text-[20px] tracking-[-0.02em] text-[#f1ece0]">SRT</span>
-      <span className="font-display italic font-light text-[20px] text-[#e0a458]">cuts</span>
-      <span className="text-[10px] tracking-[0.2em] text-[#7d8c79] ml-1 hidden min-[360px]:inline">.hair</span>
+    <span className="wordmark">
+      SRT<span className="hot">.</span>CUTS
     </span>
   );
 }
@@ -32,151 +30,132 @@ export default function Navigation() {
       setAccountOpen(false);
       setConfirmLogout(false);
       router.push("/");
-      toast("Signed out successfully.", "success");
+      toast("Signed out.", "success");
     } catch {
-      toast("Sign out failed. Please try again.", "error");
+      toast("Sign out failed. Try again.", "error");
     }
   }
 
-  const isServices = pathname === "/" || pathname.startsWith("/#");
-
   return (
     <>
-      <nav className="fixed top-0 left-0 right-0 z-40 border-b border-[rgba(120,150,110,0.12)] bg-[rgba(10,15,11,0.55)] pt-[env(safe-area-inset-top)] backdrop-blur-2xl">
-        <div className="app-shell flex items-center justify-between h-16">
+      <nav className="nav">
+        <div className="shell flex h-16 items-center justify-between">
           <Link href="/" onClick={() => setAccountOpen(false)} aria-label="SRT Cuts home">
             <Wordmark />
           </Link>
 
-          <div className="flex items-center gap-2 sm:gap-5">
+          <div className="flex items-center gap-3 sm:gap-6">
+            <Link
+              href="/#work"
+              className="hidden font-mono text-[12px] font-bold uppercase tracking-[0.12em] text-[var(--mute)] transition-colors hover:text-[var(--ink)] sm:inline"
+            >
+              Work
+            </Link>
             <Link
               href="/#services"
-              onClick={() => setAccountOpen(false)}
-              className="hidden sm:inline text-[13px] font-medium tracking-[0.04em] transition-colors text-[#a6b3a0] hover:text-[#f1ece0]"
+              className="hidden font-mono text-[12px] font-bold uppercase tracking-[0.12em] text-[var(--mute)] transition-colors hover:text-[var(--ink)] sm:inline"
             >
               Services
             </Link>
 
             {user ? (
-              <>
-                <span className="desktop-only">
-                  <Link href="/book" onClick={() => setAccountOpen(false)} className="btn-gold min-h-0 py-2.5 px-4 text-sm">
-                    Reserve a chair
-                  </Link>
-                </span>
-                <div className="relative hidden sm:block">
-                  <button
-                    type="button"
-                    aria-expanded={accountOpen}
-                    aria-haspopup="menu"
-                    onClick={() => setAccountOpen((open) => !open)}
-                    className="min-h-10 rounded-full px-4 text-sm font-semibold transition-colors text-[#b8c4b1] hover:text-[#f1ece0] bg-[rgba(20,30,22,0.5)] border border-[rgba(120,150,110,0.18)]"
-                  >
-                    {user.name.split(" ")[0]}
-                  </button>
-                  {accountOpen && (
-                    <div className="absolute right-0 top-full mt-2 w-48 glass rounded-xl py-1 shadow-[0_20px_48px_rgba(0,0,0,0.5)]">
-                      <Link
-                        href="/bookings"
-                        onClick={() => setAccountOpen(false)}
-                        className="flex items-center gap-2.5 w-full text-left px-4 py-2.5 text-sm text-[#b8c4b1] hover:text-[#f1ece0] transition-colors"
-                      >
-                        <ClockIcon size={14} />
-                        My Bookings
-                      </Link>
-                      <div className="h-px bg-[rgba(120,150,110,0.18)] mx-2 my-1" />
-                      {!confirmLogout ? (
-                        <button
-                          onClick={() => setConfirmLogout(true)}
-                          className="w-full text-left px-4 py-2.5 text-sm text-[#b8c4b1] hover:text-[#f1ece0] transition-colors"
-                        >
-                          Sign out
-                        </button>
-                      ) : (
-                        <div className="px-4 py-2.5">
-                          <p className="text-xs text-[#7d8c79] mb-2">Sign out?</p>
-                          <div className="flex gap-2">
-                            <button onClick={logout} className="flex-1 text-xs font-semibold text-red-400 hover:text-red-300 transition-colors">
-                              Yes
-                            </button>
-                            <button onClick={() => setConfirmLogout(false)} className="flex-1 text-xs font-semibold text-[#7d8c79] hover:text-[#f1ece0] transition-colors">
-                              Cancel
-                            </button>
-                          </div>
+              <div className="relative hidden sm:block">
+                <button
+                  type="button"
+                  aria-expanded={accountOpen}
+                  aria-haspopup="menu"
+                  onClick={() => setAccountOpen((o) => !o)}
+                  className="font-mono text-[12px] font-bold uppercase tracking-[0.1em] text-[var(--ink)] transition-colors hover:text-[var(--accent-deep)]"
+                >
+                  {user.name.split(" ")[0]}
+                </button>
+                {accountOpen && (
+                  <div className="menu" role="menu">
+                    <Link href="/bookings" onClick={() => setAccountOpen(false)}>
+                      <CalendarDays size={15} /> My bookings
+                    </Link>
+                    <div className="rule" />
+                    {!confirmLogout ? (
+                      <button onClick={() => setConfirmLogout(true)}>
+                        <LogOut size={15} /> Sign out
+                      </button>
+                    ) : (
+                      <div className="px-4 py-3">
+                        <p className="mb-2 text-xs text-[var(--mute)]">Sign out?</p>
+                        <div className="flex gap-3">
+                          <button onClick={logout} className="!w-auto !p-0 text-xs font-bold text-[var(--accent-deep)]">
+                            Yes
+                          </button>
+                          <button onClick={() => setConfirmLogout(false)} className="!w-auto !p-0 text-xs font-bold text-[var(--mute)]">
+                            Cancel
+                          </button>
                         </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </>
-            ) : (
-              <span className="desktop-only">
-                <Link href="/auth" onClick={() => setAccountOpen(false)} className="btn-gold min-h-0 py-2.5 px-4 text-sm">
-                  Sign in
-                </Link>
-              </span>
-            )}
-            {user ? (
-              <button
-                onClick={() => { setConfirmLogout(true); setAccountOpen(false); }}
-                aria-label="Sign out"
-                className="mobile-only min-h-10 w-10 rounded-full inline-flex items-center justify-center border border-[rgba(120,150,110,0.18)] bg-[rgba(20,30,22,0.5)] text-[#b8c4b1]"
-              >
-                <LogOut size={17} />
-              </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             ) : (
               <Link
                 href="/auth"
-                aria-label="Sign in"
-                className="mobile-only min-h-10 w-10 rounded-full inline-flex items-center justify-center border border-[rgba(120,150,110,0.18)] bg-[rgba(20,30,22,0.5)] text-[#b8c4b1]"
+                className="hidden font-mono text-[12px] font-bold uppercase tracking-[0.12em] text-[var(--mute)] transition-colors hover:text-[var(--ink)] sm:inline"
               >
-                <UserRound size={17} />
+                Sign in
               </Link>
             )}
+
+            <Link href="/book" className="btn btn--accent !min-h-[44px] !px-5 only-desk">
+              Reserve
+            </Link>
           </div>
         </div>
       </nav>
 
-      {/* Mobile logout confirmation overlay */}
+      {/* Mobile sign-out sheet */}
       {confirmLogout && (
-        <div className="mobile-only fixed inset-0 z-50 flex items-end" onClick={() => setConfirmLogout(false)}>
+        <div className="only-mobile fixed inset-0 z-[60] flex items-end bg-black/40" onClick={() => setConfirmLogout(false)}>
           <div
-            className="w-full app-card rounded-b-none p-6 shadow-[0_-20px_48px_rgba(0,0,0,0.55)]"
+            className="w-full rounded-t-[14px] border-t border-[var(--line-strong)] bg-[var(--paper)] p-6"
             onClick={(e) => e.stopPropagation()}
           >
-            <p className="font-semibold text-[#f1ece0] mb-1">Sign out?</p>
-            <p className="text-sm text-[#7d8c79] mb-5">You&apos;ll need to enter your phone number again to log back in.</p>
+            <p className="font-display text-2xl uppercase">Sign out?</p>
+            <p className="mb-5 mt-1 text-sm text-[var(--mute)]">
+              You&apos;ll enter your phone number again to log back in.
+            </p>
             <div className="grid grid-cols-2 gap-3">
-              <button onClick={() => setConfirmLogout(false)} className="btn-outline">Cancel</button>
-              <button onClick={logout} className="btn-gold">Sign out</button>
+              <button onClick={() => setConfirmLogout(false)} className="btn btn--ghost">
+                Cancel
+              </button>
+              <button onClick={logout} className="btn btn--accent">
+                Sign out
+              </button>
             </div>
           </div>
         </div>
       )}
 
-      <div className="mobile-only mobile-bottom-nav">
-        <div className="mobile-nav-grid">
-          <Link href="/" className="mobile-nav-item" data-active={pathname === "/"}>
-            <Home size={18} />
-            <span>Home</span>
-          </Link>
-          <Link href="/#services" className="mobile-nav-item" data-active={isServices && pathname === "/"}>
-            <Scissors size={18} />
-            <span>Cuts</span>
-          </Link>
-          <Link href="/book" className="mobile-nav-item" data-active={pathname === "/book"}>
-            <CalendarDays size={18} />
-            <span>Book</span>
-          </Link>
-          <Link
-            href={user ? "/bookings" : "/auth"}
-            className="mobile-nav-item"
-            data-active={pathname === "/bookings" || pathname === "/auth"}
-          >
-            <UserRound size={18} />
-            <span>{user ? user.name.split(" ")[0] : "Sign in"}</span>
-          </Link>
-        </div>
+      {/* Mobile bottom tab bar */}
+      <div className="tabbar only-mobile">
+        <Link href="/" className="tab" data-active={pathname === "/"}>
+          <House size={19} />
+          <span>Home</span>
+        </Link>
+        <Link href="/#services" className="tab" data-active={false}>
+          <Scissors size={19} />
+          <span>Menu</span>
+        </Link>
+        <Link href="/book" className="tab" data-active={pathname === "/book"}>
+          <CalendarDays size={19} />
+          <span>Book</span>
+        </Link>
+        <Link
+          href={user ? "/bookings" : "/auth"}
+          className="tab"
+          data-active={pathname === "/bookings" || pathname === "/auth"}
+        >
+          <User size={19} />
+          <span>{user ? user.name.split(" ")[0] : "Sign in"}</span>
+        </Link>
       </div>
     </>
   );

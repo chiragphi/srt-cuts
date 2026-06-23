@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { ArrowRight, CalendarPlus, CheckCircle2, Copy, Gift, Zap } from "lucide-react";
+import { ArrowUpRight, CalendarPlus, Check, Copy, Gift, Zap } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import CalendarPicker from "@/components/CalendarPicker";
 import LoyaltyCard from "@/components/LoyaltyCard";
@@ -12,7 +12,6 @@ import { formatPrice } from "@/lib/services";
 import { DEFAULT_SITE_CONTENT, type SiteContent } from "@/lib/site-content";
 import { useAuth } from "@/context/auth";
 import { useToast } from "@/components/Toast";
-import { Suspense } from "react";
 
 function getMinDate() {
   const d = new Date();
@@ -41,6 +40,8 @@ function convertTo24h(time: string) {
   return `${String(hours).padStart(2, "0")}:${String(m).padStart(2, "0")}:00`;
 }
 
+const STEPS = ["Cut", "Time", "Confirm"];
+
 function BookPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -55,7 +56,7 @@ function BookPageInner() {
   const [paymentMethod, setPaymentMethod] = useState<"in_store" | "online">("in_store");
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
-  const [done, setDone] = useState(false);
+  const [done, setDone] = useState(() => searchParams.get("payment") === "success");
   const [error, setError] = useState("");
   const [content, setContent] = useState<SiteContent>(DEFAULT_SITE_CONTENT);
   const [copied, setCopied] = useState(false);
@@ -74,10 +75,6 @@ function BookPageInner() {
       .then((d) => setContent(d.content ?? DEFAULT_SITE_CONTENT))
       .catch(() => {});
   }, []);
-
-  useEffect(() => {
-    if (searchParams.get("payment") === "success") setDone(true);
-  }, [searchParams]);
 
   async function submit() {
     setSubmitting(true);
@@ -101,9 +98,9 @@ function BookPageInner() {
         return;
       }
       setDone(true);
-      toast("Booking requested! You'll get a text once confirmed.", "success");
+      toast("Booking requested. You'll get a text once it's confirmed.", "success");
     } catch {
-      const msg = "Network error. Please check your connection and try again.";
+      const msg = "Network error. Check your connection and try again.";
       setError(msg);
       toast(msg, "error");
     } finally {
@@ -117,11 +114,13 @@ function BookPageInner() {
 
   function copyBookingInfo() {
     const text = `${service} at SRT Cuts\n${new Date(date + "T00:00:00").toLocaleDateString("en-US", {
-      weekday: "long", month: "long", day: "numeric",
+      weekday: "long",
+      month: "long",
+      day: "numeric",
     })} at ${time}\nHerriman, Utah`;
     navigator.clipboard.writeText(text).then(() => {
       setCopied(true);
-      toast("Appointment details copied!", "success");
+      toast("Appointment details copied.", "success");
       setTimeout(() => setCopied(false), 2000);
     });
   }
@@ -135,18 +134,18 @@ function BookPageInner() {
       const dow = String(d.getDay());
       const blocked = content.scheduleBlocks.some((b) => b.date === iso);
       if (blocked) continue;
-      const slots =
-        iso in content.dateAvailability
-          ? content.dateAvailability[iso]
-          : content.weeklyAvailability[dow] ?? [];
+      const slots = iso in content.dateAvailability ? content.dateAvailability[iso] : content.weeklyAvailability[dow] ?? [];
       if (slots.length > 0) {
         setDate(iso);
         setTime(slots[0]);
-        toast(`Next available: ${d.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" })} at ${slots[0]}`, "success");
+        toast(
+          `Next open: ${d.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" })} at ${slots[0]}`,
+          "success"
+        );
         return;
       }
     }
-    toast("No available slots found in the next 60 days.", "info");
+    toast("No open slots in the next 60 days.", "info");
   }
 
   const services = content.serviceConfigs;
@@ -156,7 +155,7 @@ function BookPageInner() {
     ? date in content.dateAvailability
       ? content.dateAvailability[date]
       : selectedDow
-      ? (content.weeklyAvailability[selectedDow] ?? [])
+      ? content.weeklyAvailability[selectedDow] ?? []
       : []
     : [];
   const canNext2 = !!date && !!time && availableTimes.includes(time);
@@ -164,106 +163,78 @@ function BookPageInner() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="w-6 h-6 rounded-full border-2 border-[rgba(120,150,110,0.22)] border-t-[#e0a458] animate-spin" />
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="spin h-6 w-6 rounded-full border-2 border-[var(--line-strong)] border-t-[var(--accent)]" />
       </div>
     );
   }
 
   if (!user) return null;
 
+  // ── Confirmation payoff ──────────────────────────────────────────
   if (done) {
     const displayDate = date
-      ? new Date(date + "T00:00:00").toLocaleDateString("en-US", {
-          weekday: "long", month: "long", day: "numeric",
-        })
+      ? new Date(date + "T00:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })
       : "";
     const calUrl = date && time && service ? buildGoogleCalendarUrl(service, date, time) : null;
 
     return (
       <>
         <Navigation />
-        <div className="min-h-screen flex items-center justify-center mobile-page-pad px-5 forest-content">
+        <div className="flex min-h-screen items-center justify-center px-5 pb-24 pt-24">
           <motion.div
-            className="app-shell max-w-md w-full text-center"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            className="w-full max-w-md text-center"
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
           >
-            <div
-              className="w-20 h-20 rounded-[2rem] mx-auto mb-7 flex items-center justify-center text-3xl text-[#e0a458]"
-              style={{ background: "rgba(224,164,88,0.14)", border: "1px solid rgba(224,164,88,0.3)" }}
+            <motion.div
+              className="mx-auto mb-7 flex h-16 w-16 items-center justify-center rounded-[6px] bg-[var(--accent)] text-[#1a0c05]"
+              initial={{ scale: 0.7, rotate: -8 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ type: "spring", stiffness: 260, damping: 16, delay: 0.1 }}
             >
-              <CheckCircle2 size={36} />
-            </div>
-            <h1
-              className="font-semibold text-[#f1ece0] mb-4"
-              style={{ fontSize: 36, letterSpacing: "-0.03em" }}
-            >
-              Booking requested
-            </h1>
-            <p className="text-base font-light mb-6" style={{ color: "#7d8c79" }}>
-              You&apos;ll get a text confirmation once it&apos;s approved.
-              <br />
-              Check your phone for updates.
-            </p>
+              <Check size={30} strokeWidth={3} />
+            </motion.div>
 
-            {/* Booking summary */}
+            <p className="idx mb-4">[ BOOKING REQUESTED ]</p>
+            <h1 className="display display--lg">
+              You&apos;re on <span className="hot">the list.</span>
+            </h1>
+            <p className="mt-4 text-[var(--mute)]">A text confirmation lands once it&apos;s approved. Keep your phone close.</p>
+
             {service && date && time && (
-              <div className="app-card p-5 mb-6 text-left space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-[#7d8c79]">Service</span>
-                  <span className="text-sm font-semibold text-[#f1ece0]">{service}</span>
-                </div>
-                {selectedService && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-[#7d8c79]">Price</span>
-                    <span className="text-sm font-semibold text-[#f1ece0]">{formatPrice(selectedService.amount)}</span>
-                  </div>
-                )}
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-[#7d8c79]">Date</span>
-                  <span className="text-sm font-semibold text-[#f1ece0]">{displayDate}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-[#7d8c79]">Time</span>
-                  <span className="text-sm font-semibold text-[#f1ece0]">{time}</span>
-                </div>
+              <div className="panel-fill mt-7 p-5 text-left">
+                <SummaryRow label="Service" value={service} />
+                {selectedService && <SummaryRow label="Price" value={formatPrice(selectedService.amount)} />}
+                <SummaryRow label="Date" value={displayDate} />
+                <SummaryRow label="Time" value={time} last />
               </div>
             )}
 
-            {/* Referral promo */}
-            <div className="app-card p-4 mb-6 flex items-start gap-3 text-left">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#e0a458]/12 text-[#e0a458]">
+            <div className="panel-fill mt-4 flex items-start gap-3 p-4 text-left">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[4px] bg-[var(--accent)]/14 text-[var(--accent-deep)]">
                 <Gift size={16} />
               </span>
               <div>
-                <p className="text-sm font-semibold text-[#f1ece0] mb-0.5">Refer a friend, get $5 off</p>
-                <p className="text-xs text-[#7d8c79]">Share SRT Cuts with a friend. When they book, you both save.</p>
+                <p className="font-display text-lg uppercase leading-none">Refer a friend, get $5 off</p>
+                <p className="mt-1.5 text-xs text-[var(--mute)]">Share SRT Cuts. When they book, you both save.</p>
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
               {calUrl && (
-                <a
-                  href={calUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn-ghost inline-flex items-center gap-2"
-                >
-                  <CalendarPlus size={16} /> Add to Calendar
+                <a href={calUrl} target="_blank" rel="noopener noreferrer" className="btn btn--ghost">
+                  <CalendarPlus size={16} /> Add to calendar
                 </a>
               )}
-              <button
-                onClick={copyBookingInfo}
-                className="btn-ghost inline-flex items-center gap-2"
-              >
-                <Copy size={15} /> {copied ? "Copied!" : "Copy details"}
+              <button onClick={copyBookingInfo} className="btn btn--ghost">
+                <Copy size={15} /> {copied ? "Copied" : "Copy details"}
               </button>
             </div>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center mt-3">
+            <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:justify-center">
               <button
-                className="btn-primary"
+                className="btn btn--accent"
                 onClick={() => {
                   setDone(false);
                   setStep(1);
@@ -276,7 +247,7 @@ function BookPageInner() {
               >
                 Book another
               </button>
-              <Link href="/bookings" className="btn-ghost">
+              <Link href="/bookings" className="btn btn--ink">
                 My bookings
               </Link>
             </div>
@@ -289,116 +260,112 @@ function BookPageInner() {
   return (
     <>
       <Navigation />
-      <div className="min-h-screen pt-24 pb-28 sm:pb-16 booking-page-pad forest-content">
-        <div className="app-shell max-w-full sm:max-w-lg">
+      <div className="has-tabbar min-h-screen px-5 pb-28 pt-24 sm:pb-16">
+        <div className="mx-auto w-full max-w-xl">
           <LoyaltyCard className="mb-6" />
 
-          <motion.div
-            className="mb-7"
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <p className="mobile-section-label mb-3">Book</p>
-            <h1 className="app-title font-semibold text-[#f1ece0] mb-2">
-              {step === 1 ? "Choose a service" : step === 2 ? "Pick a time" : "Confirm"}
+          <div className="mb-7">
+            <p className="idx mb-3">[ RESERVE / STEP {step} OF 3 ]</p>
+            <h1 className="display display--lg">
+              {step === 1 ? "Choose your cut" : step === 2 ? "Pick a time" : "Lock it in"}
             </h1>
-            <p className="text-sm" style={{ color: "#7d8c79" }}>
-              Step {step} of 3{user ? ` · Hi ${user.name.split(" ")[0]}` : ""}
-            </p>
-          </motion.div>
+            {user && <p className="mt-2 text-sm text-[var(--mute)]">Hey {user.name.split(" ")[0]} — almost there.</p>}
+          </div>
 
-          {/* Progress bar */}
-          <div className="grid grid-cols-3 gap-2 mb-7">
-            {["Cut", "Time", "Confirm"].map((label, i) => {
+          {/* Progress */}
+          <div className="mb-8 grid grid-cols-3 gap-2">
+            {STEPS.map((label, i) => {
               const s = i + 1;
               return (
-                <div key={label} className="min-w-0">
+                <div key={label}>
                   <div
-                    className="h-1 rounded-full transition-all duration-500"
-                    style={{ background: s <= step ? "#e0a458" : "rgba(120,150,110,0.18)" }}
+                    className="h-1 rounded-full transition-colors duration-500"
+                    style={{ background: s <= step ? "var(--accent)" : "var(--line-strong)" }}
                   />
-                  <p className="mt-2 text-[11px] font-semibold" style={{ color: s <= step ? "#e0a458" : "#7d8c79" }}>{label}</p>
+                  <p
+                    className="mt-2 font-mono text-[11px] font-bold uppercase tracking-[0.1em]"
+                    style={{ color: s <= step ? "var(--accent-deep)" : "var(--mute)" }}
+                  >
+                    {String(s).padStart(2, "0")} {label}
+                  </p>
                 </div>
               );
             })}
           </div>
 
           <AnimatePresence mode="wait">
-            {/* Step 1: Service */}
+            {/* Step 1 — Service */}
             {step === 1 && (
               <motion.div
                 key="s1"
-                initial={{ opacity: 0, x: 20 }}
+                initial={{ opacity: 0, x: 18 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                exit={{ opacity: 0, x: -18 }}
+                transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
                 className="space-y-3"
               >
-                {services.map((s) => (
-                  <button
-                    key={s.name}
-                    className="w-full text-left app-card service-card p-4"
-                    style={{
-                      background: service === s.name ? "rgba(224,164,88,0.14)" : "rgba(120,150,110,0.08)",
-                      borderColor: service === s.name ? "rgba(224,164,88,0.45)" : "rgba(120,150,110,0.18)",
-                      boxShadow: service === s.name ? "0 16px 36px rgba(224,164,88,0.16)" : "0 10px 30px rgba(0,0,0,0.45)",
-                    }}
-                    onClick={() => { setService(s.name); }}
-                    onKeyDown={(e) => handleKeyDown(e, () => { setService(s.name); setStep(2); })}
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="min-w-0">
-                        <p className="font-semibold text-[#f1ece0] text-base">{s.name}</p>
-                        <p className="text-sm mt-0.5" style={{ color: "#7d8c79" }}>{s.desc}</p>
-                        <p className="text-xs mt-2" style={{ color: "#7d8c79" }}>
-                          {s.duration} · {s.detail}
-                        </p>
-                      </div>
-                      <span className="text-lg font-semibold shrink-0" style={{ color: "#e0a458" }}>
-                        {formatPrice(s.amount)}
+                {services.map((s) => {
+                  const active = service === s.name;
+                  return (
+                    <button
+                      key={s.name}
+                      onClick={() => setService(s.name)}
+                      onKeyDown={(e) => handleKeyDown(e, () => { setService(s.name); setStep(2); })}
+                      className="flex w-full items-center gap-4 rounded-[4px] border p-4 text-left transition-colors"
+                      style={{
+                        borderColor: active ? "var(--accent)" : "var(--line-strong)",
+                        background: active ? "rgba(255,74,28,0.07)" : "transparent",
+                      }}
+                    >
+                      <span
+                        className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border"
+                        style={{ borderColor: active ? "var(--accent)" : "var(--line-strong)", background: active ? "var(--accent)" : "transparent" }}
+                      >
+                        {active && <Check size={12} strokeWidth={3} className="text-[#1a0c05]" />}
                       </span>
-                    </div>
-                  </button>
-                ))}
-
-                <div className="pt-4 desktop-only">
-                  <button className="btn-primary w-full" disabled={!canNext1} onClick={() => setStep(2)}>
-                    Continue
+                      <div className="min-w-0 flex-1">
+                        <p className="font-display text-xl uppercase leading-none">{s.name}</p>
+                        <p className="mt-1.5 text-sm text-[var(--mute)]">{s.desc}</p>
+                        <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--mute)]">{s.duration}</p>
+                      </div>
+                      <span className="spec shrink-0 text-lg text-[var(--accent-deep)]">{formatPrice(s.amount)}</span>
+                    </button>
+                  );
+                })}
+                <div className="only-desk pt-3">
+                  <button className="btn btn--accent btn--block" disabled={!canNext1} onClick={() => setStep(2)}>
+                    Continue <ArrowUpRight size={16} strokeWidth={2.5} />
                   </button>
                 </div>
               </motion.div>
             )}
 
-            {/* Step 2: Date & Time */}
+            {/* Step 2 — Date & Time */}
             {step === 2 && (
               <motion.div
                 key="s2"
-                initial={{ opacity: 0, x: 20 }}
+                initial={{ opacity: 0, x: 18 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                exit={{ opacity: 0, x: -18 }}
+                transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
                 className="space-y-5"
               >
-                {/* Next available quick-select */}
                 <button
-                  className="w-full flex items-center gap-3 app-card p-4 text-left hover:border-[rgba(224,164,88,0.4)] transition-colors"
                   onClick={selectNextAvailable}
+                  className="flex w-full items-center gap-3 rounded-[4px] border border-[var(--line-strong)] p-4 text-left transition-colors hover:border-[var(--accent)]"
                 >
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#e0a458]/12 text-[#e0a458]">
-                    <Zap size={16} />
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[4px] bg-[var(--accent)] text-[#1a0c05]">
+                    <Zap size={16} fill="currentColor" />
                   </span>
-                  <div>
-                    <p className="font-semibold text-[#f1ece0] text-sm">Next available slot</p>
-                    <p className="text-xs text-[#7d8c79]">Auto-select the soonest open time</p>
+                  <div className="flex-1">
+                    <p className="font-display text-lg uppercase leading-none">Next open slot</p>
+                    <p className="mt-1 text-xs text-[var(--mute)]">Auto-pick the soonest time</p>
                   </div>
-                  <ArrowRight size={16} className="ml-auto text-[#7d8c79] shrink-0" />
+                  <ArrowUpRight size={16} strokeWidth={2.5} className="text-[var(--mute)]" />
                 </button>
 
                 <div>
-                  <label className="block text-xs text-[#7d8c79] mb-3 tracking-wide uppercase font-bold">
-                    Date
-                  </label>
+                  <label className="field-label">Date</label>
                   <CalendarPicker
                     value={date}
                     onChange={(d) => { setDate(d); setTime(""); }}
@@ -410,83 +377,74 @@ function BookPageInner() {
                 </div>
 
                 <div>
-                  <label className="block text-xs text-[#7d8c79] mb-3 tracking-wide uppercase font-bold">
-                    Time
-                  </label>
+                  <label className="field-label">Time</label>
                   {!date ? (
-                    <p className="text-sm text-[#7d8c79]">Select a date above to see available times.</p>
+                    <p className="text-sm text-[var(--mute)]">Pick a date to see open times.</p>
                   ) : availableTimes.length === 0 ? (
-                    <p className="text-sm text-[#7d8c79]">No availability set for this day. Try another date or use &ldquo;Next available slot&rdquo; above.</p>
+                    <p className="text-sm text-[var(--mute)]">
+                      No times set for this day. Try another date or tap &ldquo;Next open slot&rdquo; above.
+                    </p>
                   ) : (
                     <>
-                      <div className="grid grid-cols-2 min-[390px]:grid-cols-3 gap-2">
-                        {availableTimes.map((t) => (
-                          <button
-                            key={t}
-                            className="min-h-12 px-3 rounded-lg text-sm transition-all duration-150 border"
-                            style={{
-                              background: time === t ? "rgba(224,164,88,0.16)" : "rgba(120,150,110,0.08)",
-                              borderColor: time === t ? "rgba(224,164,88,0.45)" : "rgba(120,150,110,0.18)",
-                              color: time === t ? "#e0a458" : "#b8c4b1",
-                            }}
-                            onClick={() => setTime(t)}
-                            onKeyDown={(e) => handleKeyDown(e, () => { setTime(t); setStep(3); })}
-                          >
-                            {t}
-                          </button>
-                        ))}
+                      <div className="grid grid-cols-3 gap-2">
+                        {availableTimes.map((t) => {
+                          const active = time === t;
+                          return (
+                            <button
+                              key={t}
+                              onClick={() => setTime(t)}
+                              onKeyDown={(e) => handleKeyDown(e, () => { setTime(t); setStep(3); })}
+                              className="min-h-12 rounded-[4px] border px-2 font-mono text-sm font-bold transition-colors"
+                              style={{
+                                borderColor: active ? "var(--accent)" : "var(--line-strong)",
+                                background: active ? "var(--accent)" : "transparent",
+                                color: active ? "#1a0c05" : "var(--ink)",
+                              }}
+                            >
+                              {t}
+                            </button>
+                          );
+                        })}
                       </div>
-                      <p className="text-xs mt-3" style={{ color: "#7d8c79" }}>
+                      <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--mute)]">
                         Final confirmation comes by SMS after review.
                       </p>
                     </>
                   )}
                 </div>
 
-                <div className="hidden sm:grid grid-cols-2 gap-3 pt-2">
-                  <button className="btn-ghost flex-1" onClick={() => setStep(1)}>Back</button>
-                  <button className="btn-primary flex-1" disabled={!canNext2} onClick={() => setStep(3)}>Continue</button>
+                <div className="hidden grid-cols-2 gap-3 pt-1 sm:grid">
+                  <button className="btn btn--ghost" onClick={() => setStep(1)}>Back</button>
+                  <button className="btn btn--accent" disabled={!canNext2} onClick={() => setStep(3)}>Continue</button>
                 </div>
               </motion.div>
             )}
 
-            {/* Step 3: Confirm */}
+            {/* Step 3 — Confirm */}
             {step === 3 && (
               <motion.div
                 key="s3"
-                initial={{ opacity: 0, x: 20 }}
+                initial={{ opacity: 0, x: 18 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                exit={{ opacity: 0, x: -18 }}
+                transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
                 className="space-y-5"
               >
-                {/* Summary card */}
-                <div className="app-card p-5 space-y-4">
-                  {[
-                    { label: "Service", value: service },
-                    { label: "Duration", value: selectedService?.duration ?? "Appointment" },
-                    { label: "Price", value: selectedService ? formatPrice(selectedService.amount) : "TBD" },
-                    {
-                      label: "Date",
-                      value: new Date(date + "T00:00:00").toLocaleDateString("en-US", {
-                        weekday: "long", month: "long", day: "numeric",
-                      }),
-                    },
-                    { label: "Time", value: time },
-                  ].map((row) => (
-                    <div key={row.label} className="flex justify-between items-center gap-4">
-                      <span className="text-sm" style={{ color: "#7d8c79" }}>{row.label}</span>
-                      <span className="text-sm font-semibold text-[#f1ece0] text-right">{row.value}</span>
-                    </div>
-                  ))}
+                <div className="panel-fill p-5">
+                  <SummaryRow label="Service" value={service} />
+                  <SummaryRow label="Duration" value={selectedService?.duration ?? "Appointment"} />
+                  <SummaryRow label="Price" value={selectedService ? formatPrice(selectedService.amount) : "TBD"} />
+                  <SummaryRow
+                    label="Date"
+                    value={new Date(date + "T00:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
+                  />
+                  <SummaryRow label="Time" value={time} last />
                 </div>
 
                 <div>
-                  <label className="block text-xs text-[#7d8c79] mb-2 tracking-wide uppercase font-bold">
-                    Notes (optional)
-                  </label>
+                  <label className="field-label">Notes (optional)</label>
                   <textarea
-                    className="input-field resize-none"
+                    className="field resize-none"
                     rows={3}
                     placeholder="Any preferences or requests…"
                     value={notes}
@@ -495,11 +453,9 @@ function BookPageInner() {
                 </div>
 
                 <div>
-                  <label className="block text-xs text-[#7d8c79] mb-2 tracking-wide uppercase font-bold">
-                    Referral Code (optional)
-                  </label>
+                  <label className="field-label">Referral code (optional)</label>
                   <input
-                    className="input-field"
+                    className="field"
                     type="text"
                     placeholder="Enter a referral code if you have one"
                     value={referralCode}
@@ -508,56 +464,57 @@ function BookPageInner() {
                 </div>
 
                 <div>
-                  <label className="block text-xs text-[#7d8c79] mb-3 tracking-wide uppercase font-bold">
-                    Payment
-                  </label>
+                  <label className="field-label">Payment</label>
                   <div className="grid gap-3 sm:grid-cols-2">
                     {[
-                      { id: "in_store", title: "Pay in store", desc: "Pay the full price at your appointment with cash or Venmo." },
+                      { id: "in_store", title: "Pay in store", desc: "Full price at your appointment — cash or Venmo." },
                       { id: "online", title: "Pay with Venmo", desc: "Send payment on Venmo right after booking." },
-                    ].map((option) => (
-                      <button
-                        key={option.id}
-                        className="text-left app-card p-4 transition-all duration-200"
-                        style={{
-                          background: paymentMethod === option.id ? "rgba(224,164,88,0.16)" : "rgba(120,150,110,0.08)",
-                          borderColor: paymentMethod === option.id ? "rgba(224,164,88,0.45)" : "rgba(120,150,110,0.18)",
-                        }}
-                        onClick={() => setPaymentMethod(option.id as "in_store" | "online")}
-                      >
-                        <p className="text-[#f1ece0] font-semibold">{option.title}</p>
-                        <p className="text-sm mt-1" style={{ color: "#7d8c79" }}>{option.desc}</p>
-                        {option.id === "online" && content.venmoUrl && (
-                          <p className="text-xs mt-1.5 font-semibold text-[#e0a458]">
-                            {content.venmoUrl.replace("https://venmo.com/", "@")}
-                          </p>
-                        )}
-                      </button>
-                    ))}
+                    ].map((option) => {
+                      const active = paymentMethod === option.id;
+                      return (
+                        <button
+                          key={option.id}
+                          onClick={() => setPaymentMethod(option.id as "in_store" | "online")}
+                          className="rounded-[4px] border p-4 text-left transition-colors"
+                          style={{
+                            borderColor: active ? "var(--accent)" : "var(--line-strong)",
+                            background: active ? "rgba(255,74,28,0.07)" : "transparent",
+                          }}
+                        >
+                          <p className="font-display text-lg uppercase leading-none">{option.title}</p>
+                          <p className="mt-1.5 text-sm text-[var(--mute)]">{option.desc}</p>
+                          {option.id === "online" && content.venmoUrl && (
+                            <p className="spec mt-1.5 text-xs text-[var(--accent-deep)]">
+                              {content.venmoUrl.replace("https://venmo.com/", "@")}
+                            </p>
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
-                <div className="app-card p-5 space-y-3">
-                  <p className="text-sm text-[#f1ece0]">No deposits. Choose Venmo full payment or pay in store.</p>
-                  <p className="text-sm" style={{ color: "#7d8c79" }}>{content.cancellationPolicy}</p>
-                  <p className="text-sm" style={{ color: "#7d8c79" }}>{content.reminderPolicy}</p>
+                <div className="panel-fill space-y-2 p-5">
+                  <p className="text-sm">No deposits. Choose Venmo full payment or pay in store.</p>
+                  <p className="text-sm text-[var(--mute)]">{content.cancellationPolicy}</p>
+                  <p className="text-sm text-[var(--mute)]">{content.reminderPolicy}</p>
                 </div>
 
                 {error && (
-                  <div className="flex items-start gap-2 rounded-xl border border-red-500/30 bg-red-500/10 p-4">
-                    <p className="text-sm text-red-300">{error}</p>
+                  <div className="rounded-[4px] border border-[var(--accent)] bg-[rgba(255,74,28,0.08)] p-4">
+                    <p className="text-sm text-[var(--accent-deep)]">{error}</p>
                   </div>
                 )}
 
-                <div className="hidden sm:grid grid-cols-2 gap-3 pt-1">
-                  <button className="btn-ghost flex-1" onClick={() => setStep(2)}>Back</button>
-                  <button className="btn-primary flex-1" disabled={submitting} onClick={submit}>
-                    {submitting ? "Booking…" : "Confirm Booking"}
+                <div className="hidden grid-cols-2 gap-3 pt-1 sm:grid">
+                  <button className="btn btn--ghost" onClick={() => setStep(2)}>Back</button>
+                  <button className="btn btn--accent" disabled={submitting} onClick={submit}>
+                    {submitting ? "Booking…" : "Confirm booking"}
                   </button>
                 </div>
 
-                <p className="text-xs text-center" style={{ color: "#7d8c79" }}>
-                  You&apos;ll receive a text once confirmed. Cancel and reschedule by text.
+                <p className="text-center font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--mute)]">
+                  You&apos;ll get a text once confirmed · Reschedule by text
                 </p>
               </motion.div>
             )}
@@ -565,31 +522,31 @@ function BookPageInner() {
         </div>
       </div>
 
-      {/* Mobile bottom action bar */}
-      <div className="mobile-only mobile-booking-actions">
-        <div className="grid grid-cols-2 gap-2 rounded-[1.4rem] border p-2 backdrop-blur-xl">
+      {/* Mobile action bar */}
+      <div className="only-mobile fixed inset-x-0 bottom-0 z-40 border-t border-[var(--line)] bg-[var(--paper)]/92 px-4 pb-[max(10px,env(safe-area-inset-bottom))] pt-2.5 backdrop-blur-md">
+        <div className="grid grid-cols-2 gap-2">
           {step > 1 ? (
-            <button className="btn-ghost min-h-12 text-sm" onClick={() => setStep(step === 3 ? 2 : 1)}>
+            <button className="btn btn--ghost !min-h-12" onClick={() => setStep(step === 3 ? 2 : 1)}>
               Back
             </button>
           ) : (
-            <Link href="/" className="btn-ghost min-h-12 text-sm inline-flex items-center justify-center">
+            <Link href="/" className="btn btn--ghost !min-h-12">
               Home
             </Link>
           )}
           {step === 1 && (
-            <button className="btn-primary min-h-12 text-sm" disabled={!canNext1} onClick={() => setStep(2)}>
+            <button className="btn btn--accent !min-h-12" disabled={!canNext1} onClick={() => setStep(2)}>
               Continue
             </button>
           )}
           {step === 2 && (
-            <button className="btn-primary min-h-12 text-sm" disabled={!canNext2} onClick={() => setStep(3)}>
+            <button className="btn btn--accent !min-h-12" disabled={!canNext2} onClick={() => setStep(3)}>
               Continue
             </button>
           )}
           {step === 3 && (
-            <button className="btn-primary min-h-12 text-sm" disabled={submitting} onClick={submit}>
-              {submitting ? "Booking..." : "Confirm"}
+            <button className="btn btn--accent !min-h-12" disabled={submitting} onClick={submit}>
+              {submitting ? "Booking…" : "Confirm"}
             </button>
           )}
         </div>
@@ -598,13 +555,27 @@ function BookPageInner() {
   );
 }
 
+function SummaryRow({ label, value, last }: { label: string; value: string; last?: boolean }) {
+  return (
+    <div
+      className="flex items-center justify-between gap-4 py-2.5"
+      style={last ? undefined : { borderBottom: "1px solid var(--line)" }}
+    >
+      <span className="font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--mute)]">{label}</span>
+      <span className="spec text-right text-sm">{value}</span>
+    </div>
+  );
+}
+
 export default function BookPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="w-6 h-6 rounded-full border-2 border-[rgba(120,150,110,0.22)] border-t-[#e0a458] animate-spin" />
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center">
+          <div className="spin h-6 w-6 rounded-full border-2 border-[var(--line-strong)] border-t-[var(--accent)]" />
+        </div>
+      }
+    >
       <BookPageInner />
     </Suspense>
   );

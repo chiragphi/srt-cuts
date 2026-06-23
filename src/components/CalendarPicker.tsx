@@ -3,10 +3,14 @@
 import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-const DAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+const DAYS = ["S", "M", "T", "W", "T", "F", "S"];
 
-function pad(n: number) { return String(n).padStart(2, "0"); }
-function toISO(y: number, m: number, d: number) { return `${y}-${pad(m + 1)}-${pad(d)}`; }
+function pad(n: number) {
+  return String(n).padStart(2, "0");
+}
+function toISO(y: number, m: number, d: number) {
+  return `${y}-${pad(m + 1)}-${pad(d)}`;
+}
 
 interface Props {
   value: string;
@@ -17,7 +21,14 @@ interface Props {
   dateAvailability?: Record<string, string[]>;
 }
 
-export default function CalendarPicker({ value, onChange, blockedDates, minDate, weeklyAvailability, dateAvailability }: Props) {
+export default function CalendarPicker({
+  value,
+  onChange,
+  blockedDates,
+  minDate,
+  weeklyAvailability,
+  dateAvailability,
+}: Props) {
   const base = new Date((value || minDate) + "T00:00:00");
   const [view, setView] = useState(() => new Date(base.getFullYear(), base.getMonth(), 1));
 
@@ -39,38 +50,37 @@ export default function CalendarPicker({ value, onChange, blockedDates, minDate,
   for (let d = 1; d <= daysInMonth; d++) cells.push(d);
 
   return (
-    <div className="app-card p-4 sm:p-5">
-      {/* Month navigation */}
-      <div className="flex items-center justify-between mb-5">
+    <div className="panel-fill p-4 sm:p-5">
+      <div className="mb-5 flex items-center justify-between">
         <button
           type="button"
           onClick={() => setView(new Date(y, m - 1, 1))}
           disabled={viewYM <= minYM}
-          className="h-9 w-9 flex items-center justify-center rounded-full border border-[rgba(120,150,110,0.18)] bg-[rgba(120,150,110,0.1)] text-[#b8c4b1] disabled:opacity-25 active:scale-95 transition-transform"
+          aria-label="Previous month"
+          className="flex h-10 w-10 items-center justify-center rounded-[4px] border border-[var(--line-strong)] text-[var(--ink)] transition-transform active:scale-95 disabled:opacity-25"
         >
           <ChevronLeft size={16} strokeWidth={2.5} />
         </button>
-        <span className="text-[15px] font-semibold text-[#f1ece0]">{monthLabel}</span>
+        <span className="font-mono text-[13px] font-bold uppercase tracking-[0.12em]">{monthLabel}</span>
         <button
           type="button"
           onClick={() => setView(new Date(y, m + 1, 1))}
-          className="h-9 w-9 flex items-center justify-center rounded-full border border-[rgba(120,150,110,0.18)] bg-[rgba(120,150,110,0.1)] text-[#b8c4b1] active:scale-95 transition-transform"
+          aria-label="Next month"
+          className="flex h-10 w-10 items-center justify-center rounded-[4px] border border-[var(--line-strong)] text-[var(--ink)] transition-transform active:scale-95"
         >
           <ChevronRight size={16} strokeWidth={2.5} />
         </button>
       </div>
 
-      {/* Day-of-week headers */}
-      <div className="grid grid-cols-7 mb-2">
-        {DAYS.map((d) => (
-          <div key={d} className="py-1 text-center text-[10px] font-bold uppercase tracking-widest text-[#7d8c79]">
+      <div className="mb-2 grid grid-cols-7">
+        {DAYS.map((d, i) => (
+          <div key={i} className="py-1 text-center font-mono text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--mute)]">
             {d}
           </div>
         ))}
       </div>
 
-      {/* Day cells */}
-      <div className="grid grid-cols-7 gap-[3px]">
+      <div className="grid grid-cols-7 gap-1">
         {cells.map((day, i) => {
           if (!day) return <div key={`e${i}`} className="aspect-square" />;
 
@@ -80,13 +90,24 @@ export default function CalendarPicker({ value, onChange, blockedDates, minDate,
           const blocked = blockedDates.includes(iso);
           const past = iso < minDate;
           const isToday = iso === todayISO;
-          const slots = dateAvailability && iso in dateAvailability
-            ? dateAvailability[iso]
-            : weeklyAvailability
-            ? (weeklyAvailability[String(dow)] ?? [])
-            : null;
+          const slots =
+            dateAvailability && iso in dateAvailability
+              ? dateAvailability[iso]
+              : weeklyAvailability
+              ? weeklyAvailability[String(dow)] ?? []
+              : null;
           const noSlots = slots !== null && slots.length === 0;
           const disabled = past || blocked || noSlots;
+
+          const state = sel
+            ? "selected"
+            : blocked
+            ? "blocked"
+            : disabled
+            ? "disabled"
+            : isToday
+            ? "today"
+            : "open";
 
           return (
             <button
@@ -94,57 +115,36 @@ export default function CalendarPicker({ value, onChange, blockedDates, minDate,
               type="button"
               disabled={disabled}
               onClick={() => onChange(iso)}
-              className="aspect-square flex items-center justify-center rounded-[10px] text-[13px] font-medium relative active:scale-95 transition-all duration-100"
-              style={{
-                background: sel
-                  ? "linear-gradient(135deg, #eab468 0%, #d9973f 52%, #d9973f 100%)"
-                  : blocked
-                  ? "rgba(239,68,68,0.06)"
-                  : "rgba(120,150,110,0.08)",
-                color: sel
-                  ? "#0c130e"
-                  : blocked
-                  ? "rgba(248,113,113,0.5)"
-                  : past || noSlots
-                  ? "rgba(245,240,230,0.25)"
-                  : "#f1ece0",
-                border: sel
-                  ? "1px solid rgba(224,164,88,0.5)"
-                  : isToday && !sel
-                  ? "1.5px solid rgba(224,164,88,0.6)"
-                  : blocked
-                  ? "1px solid rgba(239,68,68,0.1)"
-                  : "1px solid rgba(255,255,255,0.07)",
-                boxShadow: sel ? "0 4px 14px rgba(224,164,88,0.3)" : "none",
-                opacity: past || noSlots ? 0.32 : 1,
-                cursor: disabled ? "default" : "pointer",
-              }}
+              data-state={state}
+              className="cal-day"
             >
               {day}
-              {isToday && !sel && (
-                <span className="absolute bottom-[3px] left-1/2 -translate-x-1/2 w-[5px] h-[5px] rounded-full bg-[#e0a458]" />
-              )}
             </button>
           );
         })}
       </div>
 
-      {/* Legend */}
-      <div className="mt-4 pt-3 border-t border-[rgba(120,150,110,0.16)] flex items-center gap-4 flex-wrap">
-        <LegendDot bg="linear-gradient(135deg, #eab468, #d9973f)" label="Selected" />
-        <LegendDot border="1.5px solid rgba(224,164,88,0.6)" label="Today" />
-        <LegendDot bg="rgba(239,68,68,0.08)" border="1px solid rgba(239,68,68,0.12)" label="Blocked" />
-        <LegendDot bg="rgba(120,150,110,0.1)" label="No slots" />
+      <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[var(--line)] pt-3">
+        <Legend swatch="var(--accent)" label="Selected" />
+        <Legend border="var(--accent)" label="Today" />
+        <Legend muted label="Unavailable" />
       </div>
     </div>
   );
 }
 
-function LegendDot({ bg, border, label }: { bg?: string; border?: string; label: string }) {
+function Legend({ swatch, border, muted, label }: { swatch?: string; border?: string; muted?: boolean; label: string }) {
   return (
     <div className="flex items-center gap-1.5">
-      <div className="w-3 h-3 rounded-[4px]" style={{ background: bg, border }} />
-      <span className="text-[11px] font-medium text-[#7d8c79]">{label}</span>
+      <span
+        className="h-3 w-3 rounded-[3px]"
+        style={{
+          background: swatch ?? (muted ? "transparent" : "transparent"),
+          border: border ? `1.5px solid ${border}` : muted ? "1px solid var(--line-strong)" : undefined,
+          opacity: muted ? 0.5 : 1,
+        }}
+      />
+      <span className="font-mono text-[10px] uppercase tracking-[0.08em] text-[var(--mute)]">{label}</span>
     </div>
   );
 }

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { ArrowRight, CalendarDays, CheckCircle2, Clock, RefreshCw, XCircle } from "lucide-react";
+import { ArrowUpRight, CalendarDays, Check, Clock, RotateCcw, X } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import LoyaltyCard from "@/components/LoyaltyCard";
 import { formatPrice } from "@/lib/services";
@@ -21,37 +21,15 @@ interface Booking {
   created_at: string;
 }
 
-const STATUS_CONFIG = {
-  pending: {
-    label: "Pending",
-    icon: Clock,
-    color: "#b88a2d",
-    bg: "rgba(234,179,8,0.08)",
-    border: "rgba(234,179,8,0.2)",
-  },
-  accepted: {
-    label: "Confirmed",
-    icon: CheckCircle2,
-    color: "#16a34a",
-    bg: "rgba(34,197,94,0.08)",
-    border: "rgba(34,197,94,0.2)",
-  },
-  denied: {
-    label: "Declined",
-    icon: XCircle,
-    color: "#dc2626",
-    bg: "rgba(239,68,68,0.08)",
-    border: "rgba(239,68,68,0.2)",
-  },
+const STATUS = {
+  pending: { label: "Pending", icon: Clock, color: "#9a7b1a", bg: "rgba(154,123,26,0.1)" },
+  accepted: { label: "Confirmed", icon: Check, color: "#2f7d46", bg: "rgba(47,125,70,0.1)" },
+  denied: { label: "Declined", icon: X, color: "#c5360e", bg: "rgba(197,54,14,0.1)" },
 };
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 16 },
-  show: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.5, delay: i * 0.07, ease: "easeOut" as const },
-  }),
+  hidden: { opacity: 0, y: 14 },
+  show: (i: number) => ({ opacity: 1, y: 0, transition: { duration: 0.45, delay: i * 0.06, ease: [0.22, 1, 0.36, 1] as const } }),
 };
 
 export default function BookingsPage() {
@@ -59,7 +37,7 @@ export default function BookingsPage() {
   const router = useRouter();
   const [bookings, setBookings] = useState<Booking[] | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeFilter, setActiveFilter] = useState<"all" | "upcoming" | "past">("all");
+  const [filter, setFilter] = useState<"all" | "upcoming" | "past">("all");
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -83,18 +61,20 @@ export default function BookingsPage() {
 
   const today = new Date().toISOString().split("T")[0];
 
-  const filteredBookings = (bookings ?? []).filter((b) => {
-    if (activeFilter === "upcoming") return b.booking_date >= today;
-    if (activeFilter === "past") return b.booking_date < today;
-    return true;
-  }).sort((a, b) => b.booking_date.localeCompare(a.booking_date));
+  const filtered = (bookings ?? [])
+    .filter((b) => {
+      if (filter === "upcoming") return b.booking_date >= today;
+      if (filter === "past") return b.booking_date < today;
+      return true;
+    })
+    .sort((a, b) => b.booking_date.localeCompare(a.booking_date));
 
   const upcomingCount = (bookings ?? []).filter((b) => b.booking_date >= today).length;
 
   if (authLoading || (!user && !authLoading)) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="w-6 h-6 rounded-full border-2 border-[rgba(120,150,110,0.22)] border-t-[#e0a458] animate-spin" />
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="spin h-6 w-6 rounded-full border-2 border-[var(--line-strong)] border-t-[var(--accent)]" />
       </div>
     );
   }
@@ -102,137 +82,117 @@ export default function BookingsPage() {
   return (
     <>
       <Navigation />
-      <div className="min-h-screen pt-24 pb-28 sm:pb-16 mobile-page-pad forest-content">
-        <div className="app-shell max-w-2xl">
+      <div className="has-tabbar min-h-screen px-5 pb-28 pt-24 sm:pb-16">
+        <div className="mx-auto w-full max-w-2xl">
           <LoyaltyCard className="mb-6" />
 
-          <motion.div
-            className="mb-7"
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <p className="mobile-section-label mb-2">Account</p>
-            <h1 className="app-title font-semibold text-[#f1ece0] mb-2">My Bookings</h1>
+          <div className="mb-7">
+            <p className="idx mb-3">[ ACCOUNT ]</p>
+            <h1 className="display display--lg">My bookings</h1>
             {user && (
-              <p className="text-sm text-[#7d8c79]">
+              <p className="mt-2 text-sm text-[var(--mute)]">
                 {user.name} · {upcomingCount} upcoming
               </p>
             )}
-          </motion.div>
+          </div>
 
-          {/* Filter tabs */}
-          <div className="flex gap-2 mb-6">
-            {(["all", "upcoming", "past"] as const).map((f) => (
-              <button
-                key={f}
-                onClick={() => setActiveFilter(f)}
-                className="px-4 py-2 rounded-full text-sm font-semibold capitalize transition-all"
-                style={{
-                  background: activeFilter === f ? "linear-gradient(135deg, #eab468 0%, #d9973f 52%, #d9973f 100%)" : "rgba(120,150,110,0.08)",
-                  color: activeFilter === f ? "#0c130e" : "#b8c4b1",
-                  border: activeFilter === f ? "1px solid rgba(224,164,88,0.5)" : "1px solid rgba(120,150,110,0.18)",
-                  boxShadow: activeFilter === f ? "0 8px 20px rgba(224,164,88,0.2)" : "none",
-                }}
-              >
-                {f}
-              </button>
-            ))}
+          <div className="mb-6 flex gap-2">
+            {(["all", "upcoming", "past"] as const).map((f) => {
+              const active = filter === f;
+              return (
+                <button
+                  key={f}
+                  onClick={() => setFilter(f)}
+                  className="rounded-full border px-4 py-2 font-mono text-[12px] font-bold uppercase tracking-[0.1em] transition-colors"
+                  style={{
+                    borderColor: active ? "transparent" : "var(--line-strong)",
+                    background: active ? "var(--accent)" : "transparent",
+                    color: active ? "#1a0c05" : "var(--mute)",
+                  }}
+                >
+                  {f}
+                </button>
+              );
+            })}
           </div>
 
           {loading ? (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {[0, 1, 2].map((i) => (
-                <div key={i} className="app-card p-5">
+                <div key={i} className="panel-fill p-5">
                   <div className="space-y-3">
-                    <div className="skeleton h-4 w-32 rounded-full" />
-                    <div className="skeleton h-3 w-48 rounded-full" />
-                    <div className="skeleton h-3 w-24 rounded-full" />
+                    <div className="shimmer h-4 w-32 rounded-full" />
+                    <div className="shimmer h-3 w-48 rounded-full" />
                   </div>
                 </div>
               ))}
             </div>
-          ) : filteredBookings.length === 0 ? (
-            <motion.div
-              className="app-card p-10 text-center"
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              <div className="flex h-16 w-16 mx-auto mb-5 items-center justify-center rounded-2xl bg-[#e0a458]/12">
-                <CalendarDays size={28} className="text-[#e0a458]" />
+          ) : filtered.length === 0 ? (
+            <div className="panel-fill p-12 text-center">
+              <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-[6px] bg-[var(--accent)]/14 text-[var(--accent-deep)]">
+                <CalendarDays size={26} />
               </div>
-              <p className="font-semibold text-[#f1ece0] mb-2">
-                {activeFilter === "upcoming" ? "No upcoming bookings" : "No bookings yet"}
+              <p className="font-display text-2xl uppercase">
+                {filter === "upcoming" ? "Nothing upcoming" : "No bookings yet"}
               </p>
-              <p className="text-sm text-[#7d8c79] mb-6">
-                {activeFilter === "upcoming"
-                  ? "Ready to book your next cut?"
-                  : "Your appointments will appear here after you book."}
+              <p className="mb-6 mt-2 text-sm text-[var(--mute)]">
+                {filter === "upcoming" ? "Ready for your next cut?" : "Your appointments show up here once you book."}
               </p>
-              <Link href="/book" className="btn-primary inline-flex">
-                Book now <ArrowRight size={16} />
+              <Link href="/book" className="btn btn--accent inline-flex">
+                Book now <ArrowUpRight size={16} strokeWidth={2.5} />
               </Link>
-            </motion.div>
+            </div>
           ) : (
-            <div className="space-y-4">
-              {filteredBookings.map((booking, i) => {
-                const config = STATUS_CONFIG[booking.status];
-                const StatusIcon = config.icon;
-                const displayDate = new Date(booking.booking_date + "T00:00:00").toLocaleDateString("en-US", {
-                  weekday: "long", month: "long", day: "numeric",
+            <div className="space-y-3">
+              {filtered.map((b, i) => {
+                const cfg = STATUS[b.status];
+                const Icon = cfg.icon;
+                const displayDate = new Date(b.booking_date + "T00:00:00").toLocaleDateString("en-US", {
+                  weekday: "long",
+                  month: "long",
+                  day: "numeric",
                 });
-                const isPast = booking.booking_date < today;
+                const isPast = b.booking_date < today;
 
                 return (
                   <motion.div
-                    key={booking.id}
-                    className="app-card p-5"
+                    key={b.id}
+                    className="panel-fill p-5"
                     initial="hidden"
                     animate="show"
                     variants={fadeUp}
                     custom={i}
-                    style={{ opacity: isPast ? 0.75 : 1 }}
+                    style={{ opacity: isPast ? 0.72 : 1 }}
                   >
-                    <div className="flex items-start justify-between gap-4 mb-4">
+                    <div className="flex items-start justify-between gap-4">
                       <div>
-                        <p className="font-semibold text-[#f1ece0] text-base">{booking.service}</p>
-                        <p className="text-sm text-[#7d8c79] mt-1">{displayDate} at {booking.booking_time}</p>
+                        <p className="font-display text-xl uppercase leading-none">{b.service}</p>
+                        <p className="mt-2 font-mono text-[12px] uppercase tracking-[0.06em] text-[var(--mute)]">
+                          {displayDate} · {b.booking_time}
+                        </p>
                       </div>
-                      <div
-                        className="flex items-center gap-1.5 rounded-full px-3 py-1.5 shrink-0"
-                        style={{ background: config.bg, border: `1px solid ${config.border}` }}
+                      <span
+                        className="flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 font-mono text-[11px] font-bold uppercase tracking-[0.08em]"
+                        style={{ background: cfg.bg, color: cfg.color }}
                       >
-                        <StatusIcon size={13} style={{ color: config.color }} />
-                        <span className="text-xs font-semibold" style={{ color: config.color }}>
-                          {config.label}
-                        </span>
-                      </div>
+                        <Icon size={12} strokeWidth={3} /> {cfg.label}
+                      </span>
                     </div>
 
-                    <div className="flex items-center justify-between border-t border-[rgba(120,150,110,0.16)] pt-4">
-                      <span className="text-sm font-semibold text-[#e0a458]">
-                        {formatPrice(booking.service_price_cents)}
-                      </span>
-                      {!isPast && booking.status === "accepted" && (
-                        <Link
-                          href={`/book`}
-                          className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#7d8c79] hover:text-[#e0a458] transition-colors"
-                        >
-                          <RefreshCw size={13} /> Rebook
-                        </Link>
-                      )}
-                      {isPast && booking.status === "accepted" && (
+                    <div className="mt-4 flex items-center justify-between border-t border-[var(--line)] pt-4">
+                      <span className="spec text-[var(--accent-deep)]">{formatPrice(b.service_price_cents)}</span>
+                      {b.status === "accepted" && (
                         <Link
                           href="/book"
-                          className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#e0a458] hover:text-[#f1ece0] transition-colors"
+                          className="inline-flex items-center gap-1.5 font-mono text-[12px] font-bold uppercase tracking-[0.08em] text-[var(--mute)] transition-colors hover:text-[var(--accent-deep)]"
                         >
-                          <RefreshCw size={13} /> Book again
+                          <RotateCcw size={13} /> {isPast ? "Book again" : "Rebook"}
                         </Link>
                       )}
                     </div>
 
-                    {booking.notes && (
-                      <p className="mt-3 text-xs text-[#7d8c79] border-t border-[rgba(120,150,110,0.16)] pt-3">{booking.notes}</p>
+                    {b.notes && (
+                      <p className="mt-3 border-t border-[var(--line)] pt-3 text-xs text-[var(--mute)]">{b.notes}</p>
                     )}
                   </motion.div>
                 );
@@ -241,8 +201,8 @@ export default function BookingsPage() {
           )}
 
           <div className="mt-8 text-center">
-            <Link href="/book" className="btn-primary inline-flex">
-              Book an appointment <ArrowRight size={16} />
+            <Link href="/book" className="btn btn--accent inline-flex">
+              Book an appointment <ArrowUpRight size={16} strokeWidth={2.5} />
             </Link>
           </div>
         </div>

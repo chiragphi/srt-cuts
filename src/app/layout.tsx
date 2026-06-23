@@ -1,47 +1,54 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Hanken_Grotesk } from "next/font/google";
+import { Anton, Instrument_Sans, Space_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/auth";
 import { ToastProvider } from "@/components/Toast";
-import SiteAtmosphere from "@/components/SiteAtmosphere";
 
-// Warm editorial serif for display headings — high-contrast, optical-sized,
-// the main "art-directed, not a template" signal.
-const fraunces = Fraunces({
+// Display: condensed poster weight — the loud, confident "something to prove"
+// voice. Used uppercase, with restraint, at scale.
+const anton = Anton({
   subsets: ["latin"],
+  weight: "400",
   display: "swap",
-  variable: "--font-serif",
-  axes: ["opsz", "SOFT"],
+  variable: "--font-anton",
 });
 
-// Premium humanist grotesk for body & UI — replaces the default system sans
-// so nothing reads as a stock template.
-const hanken = Hanken_Grotesk({
+// Body & UI: a clean, current humanist grotesk.
+const instrument = Instrument_Sans({
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-grotesk",
+  variable: "--font-instrument",
+});
+
+// Functional: monospace for the spec-sheet treatment — prices, times,
+// indices, labels. The precision signal.
+const spaceMono = Space_Mono({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  display: "swap",
+  variable: "--font-mono-space",
 });
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://srtcuts.hair"),
   title: {
-    default: "SRT Cuts — Herriman, Utah Barber",
+    default: "SRT Cuts — Precision barber, Herriman UT",
     template: "%s · SRT Cuts",
   },
   description:
-    "Precision fades, clean lineups, and effortless online booking in Herriman, Utah. Book your appointment with SRT Cuts today.",
+    "One chair, by appointment, everything to prove. Precision fades and lineups in Herriman, Utah — young hands, relentless standard. Reserve the chair.",
   keywords: ["Herriman barber", "SRT Cuts", "fade", "lineup", "haircut", "Utah barber", "Herriman Utah"],
   openGraph: {
-    title: "SRT Cuts — Herriman, Utah Barber",
-    description: "Precision fades, clean lineups, and online booking in Herriman, Utah.",
+    title: "SRT Cuts — Precision barber, Herriman UT",
+    description: "One chair, by appointment, everything to prove. Precision fades and lineups in Herriman, Utah.",
     siteName: "SRT Cuts",
     type: "website",
-    images: [{ url: "/srt-logo.png", width: 512, height: 512, alt: "SRT Cuts logo" }],
+    images: [{ url: "/srt-logo.png", width: 512, height: 512, alt: "SRT Cuts" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "SRT Cuts",
-    description: "Precision barbering in Herriman, Utah.",
+    description: "Precision barbering in Herriman, Utah. One chair, by appointment.",
     images: ["/srt-logo.png"],
   },
   manifest: "/manifest.json",
@@ -53,21 +60,22 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0a0f0b",
+  themeColor: "#eceae3",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`h-full ${fraunces.variable} ${hanken.variable}`}>
-      <body className="min-h-full bg-[#0a0f0b] text-[#e7ede4]">
+    <html lang="en" className={`${anton.variable} ${instrument.variable} ${spaceMono.variable}`}>
+      <head>
+        {/* Mark JS-enabled before first paint so scroll-reveal can hide content
+            without a flash, while no-JS users still see everything. */}
+        <script dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('js')" }} />
+      </head>
+      <body>
         <AuthProvider>
-          <ToastProvider>
-            <SiteAtmosphere />
-            {children}
-          </ToastProvider>
+          <ToastProvider>{children}</ToastProvider>
         </AuthProvider>
       </body>
     </html>
