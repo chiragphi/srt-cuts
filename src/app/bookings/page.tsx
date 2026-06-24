@@ -6,7 +6,6 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { ArrowUpRight, CalendarDays, Check, Clock, RotateCcw, X } from "lucide-react";
 import Navigation from "@/components/Navigation";
-import LoyaltyCard from "@/components/LoyaltyCard";
 import { formatPrice } from "@/lib/services";
 import { useAuth } from "@/context/auth";
 
@@ -84,8 +83,6 @@ export default function BookingsPage() {
       <Navigation />
       <div className="has-tabbar min-h-screen px-5 pb-28 pt-24 sm:pb-16">
         <div className="mx-auto w-full max-w-2xl">
-          <LoyaltyCard className="mb-6" />
-
           <div className="mb-7">
             <p className="idx mb-3">[ ACCOUNT ]</p>
             <h1 className="display display--lg">My bookings</h1>
@@ -107,7 +104,7 @@ export default function BookingsPage() {
                   style={{
                     borderColor: active ? "transparent" : "var(--line-strong)",
                     background: active ? "var(--accent)" : "transparent",
-                    color: active ? "#1a0c05" : "var(--mute)",
+                    color: active ? "#ffffff" : "var(--mute)",
                   }}
                 >
                   {f}

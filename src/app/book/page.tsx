@@ -7,7 +7,6 @@ import Link from "next/link";
 import { ArrowUpRight, CalendarPlus, Check, Copy, Gift, Zap } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import CalendarPicker from "@/components/CalendarPicker";
-import LoyaltyCard from "@/components/LoyaltyCard";
 import { formatPrice } from "@/lib/services";
 import { DEFAULT_SITE_CONTENT, type SiteContent } from "@/lib/site-content";
 import { useAuth } from "@/context/auth";
@@ -189,7 +188,7 @@ function BookPageInner() {
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
           >
             <motion.div
-              className="mx-auto mb-7 flex h-16 w-16 items-center justify-center rounded-[6px] bg-[var(--accent)] text-[#1a0c05]"
+              className="mx-auto mb-7 flex h-16 w-16 items-center justify-center rounded-[6px] bg-[var(--accent)] text-[#ffffff]"
               initial={{ scale: 0.7, rotate: -8 }}
               animate={{ scale: 1, rotate: 0 }}
               transition={{ type: "spring", stiffness: 260, damping: 16, delay: 0.1 }}
@@ -262,8 +261,6 @@ function BookPageInner() {
       <Navigation />
       <div className="has-tabbar min-h-screen px-5 pb-28 pt-24 sm:pb-16">
         <div className="mx-auto w-full max-w-xl">
-          <LoyaltyCard className="mb-6" />
-
           <div className="mb-7">
             <p className="idx mb-3">[ RESERVE / STEP {step} OF 3 ]</p>
             <h1 className="display display--lg">
@@ -314,14 +311,14 @@ function BookPageInner() {
                       className="flex w-full items-center gap-4 rounded-[4px] border p-4 text-left transition-colors"
                       style={{
                         borderColor: active ? "var(--accent)" : "var(--line-strong)",
-                        background: active ? "rgba(255,74,28,0.07)" : "transparent",
+                        background: active ? "rgba(91,70,240,0.07)" : "transparent",
                       }}
                     >
                       <span
                         className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border"
                         style={{ borderColor: active ? "var(--accent)" : "var(--line-strong)", background: active ? "var(--accent)" : "transparent" }}
                       >
-                        {active && <Check size={12} strokeWidth={3} className="text-[#1a0c05]" />}
+                        {active && <Check size={12} strokeWidth={3} className="text-[#ffffff]" />}
                       </span>
                       <div className="min-w-0 flex-1">
                         <p className="font-display text-xl uppercase leading-none">{s.name}</p>
@@ -354,7 +351,7 @@ function BookPageInner() {
                   onClick={selectNextAvailable}
                   className="flex w-full items-center gap-3 rounded-[4px] border border-[var(--line-strong)] p-4 text-left transition-colors hover:border-[var(--accent)]"
                 >
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[4px] bg-[var(--accent)] text-[#1a0c05]">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[4px] bg-[var(--accent)] text-[#ffffff]">
                     <Zap size={16} fill="currentColor" />
                   </span>
                   <div className="flex-1">
@@ -398,7 +395,7 @@ function BookPageInner() {
                               style={{
                                 borderColor: active ? "var(--accent)" : "var(--line-strong)",
                                 background: active ? "var(--accent)" : "transparent",
-                                color: active ? "#1a0c05" : "var(--ink)",
+                                color: active ? "#ffffff" : "var(--ink)",
                               }}
                             >
                               {t}
@@ -478,7 +475,7 @@ function BookPageInner() {
                           className="rounded-[4px] border p-4 text-left transition-colors"
                           style={{
                             borderColor: active ? "var(--accent)" : "var(--line-strong)",
-                            background: active ? "rgba(255,74,28,0.07)" : "transparent",
+                            background: active ? "rgba(91,70,240,0.07)" : "transparent",
                           }}
                         >
                           <p className="font-display text-lg uppercase leading-none">{option.title}</p>
@@ -501,8 +498,8 @@ function BookPageInner() {
                 </div>
 
                 {error && (
-                  <div className="rounded-[4px] border border-[var(--accent)] bg-[rgba(255,74,28,0.08)] p-4">
-                    <p className="text-sm text-[var(--accent-deep)]">{error}</p>
+                  <div className="rounded-[4px] border border-[#e5484d]/45 bg-[rgba(229,72,77,0.08)] p-4">
+                    <p className="text-sm text-[#c5360e]">{error}</p>
                   </div>
                 )}
 

@@ -36,9 +36,9 @@ interface TaxSummary {
 }
 
 const STATUS_COLORS = {
-  pending: { bg: "rgba(234,179,8,0.12)", border: "rgba(234,179,8,0.3)", text: "#FCD34D" },
-  accepted: { bg: "rgba(34,197,94,0.1)", border: "rgba(34,197,94,0.28)", text: "#4ADE80" },
-  denied: { bg: "rgba(239,68,68,0.1)", border: "rgba(239,68,68,0.28)", text: "#F87171" },
+  pending: { bg: "rgba(154,123,26,0.12)", text: "#8a6d12" },
+  accepted: { bg: "rgba(47,125,70,0.12)", text: "#2f7d46" },
+  denied: { bg: "rgba(197,54,14,0.12)", text: "#c5360e" },
 };
 
 const BOOKING_TABS = ["All", "Pending", "Accepted", "Denied"] as const;
@@ -176,15 +176,17 @@ export default function AdminPage() {
   const taxSummary = useMemo(() => calculateTaxSummary(bookings, content.taxExpenses), [bookings, content.taxExpenses]);
 
   return (
-    <div className="admin-shell min-h-screen">
-      <div className="sticky top-0 z-40 bg-black/80 backdrop-blur-xl border-b border-white/10 pt-[env(safe-area-inset-top)]">
-        <div className="app-shell h-16 flex items-center justify-between">
+    <div className="min-h-screen bg-[var(--paper)]">
+      <div className="sticky top-0 z-40 border-b border-[var(--line)] bg-[var(--paper)]/85 pt-[env(safe-area-inset-top)] backdrop-blur-md">
+        <div className="shell flex h-16 items-center justify-between">
           <div className="flex items-center gap-3">
-            <Image src="/srt-logo.png" alt="SRT" width={28} height={28} className="object-contain" />
-            <span className="text-sm font-semibold tracking-wider text-white/80 uppercase">Admin</span>
+            <span className="wordmark">
+              SRT<span className="hot">.</span>CUTS
+            </span>
+            <span className="chip">Admin</span>
           </div>
           <button
-            className="text-sm text-white/35 hover:text-white/70 transition-colors bg-transparent border-none cursor-pointer font-sans"
+            className="font-mono text-[12px] font-bold uppercase tracking-[0.12em] text-[var(--mute)] transition-colors hover:text-[var(--ink)]"
             onClick={async () => {
               await fetch("/api/auth/logout", { method: "POST" });
               router.push("/");
@@ -195,52 +197,46 @@ export default function AdminPage() {
         </div>
       </div>
 
-      <main className="app-shell py-6 sm:py-10">
-        <div className="mb-6 sm:mb-8">
-          <h1 className="app-title font-semibold text-white mb-2">
-            Control Center
-          </h1>
-          <p className="text-sm" style={{ color: "#6E6E73" }}>
+      <main className="shell py-8 sm:py-12">
+        <div className="mb-8">
+          <p className="idx mb-3">[ CONTROL CENTER ]</p>
+          <h1 className="display display--lg">Control center</h1>
+          <p className="mt-2 font-mono text-[12px] uppercase tracking-[0.08em] text-[var(--mute)]">
             {counts.Pending} pending · {counts.Accepted} accepted · {customers.length} customers
           </p>
         </div>
 
         <AdminAgent onRefresh={load} />
 
-        <div className="flex gap-1 mb-6 sm:mb-8 p-1 rounded-2xl overflow-x-auto bg-white/[0.04] border border-white/10">
+        <div className="mb-8 flex gap-1.5 overflow-x-auto pb-1">
           {ADMIN_TABS.map((t) => (
-            <button
-              key={t}
-              onClick={() => setAdminTab(t)}
-              className="shrink-0 min-h-10 px-4 py-2 rounded-xl text-sm transition-all duration-200 font-sans cursor-pointer border-none"
-              style={{ background: adminTab === t ? "rgba(212,160,23,0.18)" : "transparent", color: adminTab === t ? "#e8b84b" : "#6E6E73" }}
-            >
+            <Pill key={t} active={adminTab === t} onClick={() => setAdminTab(t)}>
               {t}
-            </button>
+            </Pill>
           ))}
         </div>
 
         {loading ? (
           <div className="flex justify-center py-20">
-            <div className="w-6 h-6 rounded-full border-2 border-purple-500 border-t-transparent animate-spin" />
+            <div className="spin h-6 w-6 rounded-full border-2 border-[var(--line-strong)] border-t-[var(--accent)]" />
           </div>
         ) : (
           <>
             {adminTab === "Bookings" && (
               <section>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6 sm:mb-8">
+                <div className="mb-6 grid grid-cols-2 gap-3 sm:mb-8 md:grid-cols-4">
                   {Object.entries(counts).map(([label, value]) => (
-                    <div key={label} className="app-card p-4 sm:p-5">
-                      <p className="text-sm text-white/45">{label}</p>
-                      <p className="text-3xl font-semibold text-white mt-2">{value}</p>
+                    <div key={label} className="panel-fill p-4 sm:p-5">
+                      <p className="font-mono text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--mute)]">{label}</p>
+                      <p className="spec mt-2 text-3xl">{value}</p>
                     </div>
                   ))}
                 </div>
-                <div className="flex gap-1 mb-6 sm:mb-8 p-1 rounded-2xl overflow-x-auto bg-white/[0.04] border border-white/10">
+                <div className="mb-6 flex gap-1.5 overflow-x-auto pb-1 sm:mb-8">
                   {BOOKING_TABS.map((t) => (
-                    <button key={t} onClick={() => setBookingTab(t)} className="shrink-0 min-h-10 px-4 py-2 rounded-xl text-sm transition-all duration-200 border-none cursor-pointer" style={{ background: bookingTab === t ? "rgba(212,160,23,0.18)" : "transparent", color: bookingTab === t ? "#e8b84b" : "#6E6E73" }}>
+                    <Pill key={t} active={bookingTab === t} onClick={() => setBookingTab(t)}>
                       {t} {counts[t] > 0 ? counts[t] : ""}
-                    </button>
+                    </Pill>
                   ))}
                 </div>
                 <BookingList bookings={filtered} acting={acting} act={act} setPaymentStatus={setPaymentStatus} />
@@ -249,37 +245,23 @@ export default function AdminPage() {
 
             {adminTab === "Content" && (
               <section className="space-y-6">
-                <Panel title="Services and Prices">
+                <Panel title="Services & prices">
                   <Repeater
                     items={content.serviceConfigs}
                     empty={{ name: "Fade", amount: 3000, duration: "45 min", desc: "", detail: "" }}
                     onChange={(serviceConfigs) => setContent({ ...content, serviceConfigs })}
-                    render={(item, update) => (
-                      <ServiceEditor service={item} update={update} />
-                    )}
+                    render={(item, update) => <ServiceEditor service={item} update={update} />}
                   />
-                  <div className="rounded-xl border border-purple-400/20 bg-purple-400/10 p-4 text-sm text-purple-100">
-                    Prices are full price only. Customers can pay that full amount with Venmo or in store.
-                  </div>
+                  <Note>Prices are full price only. Customers can pay that full amount with Venmo or in store.</Note>
                 </Panel>
 
-                <Panel title="Homepage Image Links">
-                  <ImageField
-                    label="Hero image direct link"
-                    value={content.heroImageUrl}
-                    onChange={(heroImageUrl) => setContent({ ...content, heroImageUrl })}
-                  />
-                  <ImageField
-                    label="Barber photo direct link"
-                    value={content.barberPhotoUrl}
-                    onChange={(barberPhotoUrl) => setContent({ ...content, barberPhotoUrl })}
-                  />
-                  <div className="rounded-xl border border-purple-400/20 bg-purple-400/10 p-4 text-sm text-purple-100">
-                    Paste direct image URLs here. They can be uploaded image links, Supabase Storage links, or public links ending in an image file.
-                  </div>
+                <Panel title="Homepage image links">
+                  <ImageField label="Hero image direct link" value={content.heroImageUrl} onChange={(heroImageUrl) => setContent({ ...content, heroImageUrl })} />
+                  <ImageField label="Barber photo direct link" value={content.barberPhotoUrl} onChange={(barberPhotoUrl) => setContent({ ...content, barberPhotoUrl })} />
+                  <Note>Paste direct image URLs here — uploaded image links, Supabase Storage links, or public links ending in an image file.</Note>
                 </Panel>
 
-                <Panel title="Homepage Essentials">
+                <Panel title="Homepage essentials">
                   <Field label="Barber name" value={content.barberName} onChange={(barberName) => setContent({ ...content, barberName })} />
                   <Area label="Barber bio" value={content.barberBio} onChange={(barberBio) => setContent({ ...content, barberBio })} />
                   <Field label="Specialties, comma separated" value={content.specialties.join(", ")} onChange={(v) => setContent({ ...content, specialties: splitList(v) })} />
@@ -300,7 +282,7 @@ export default function AdminPage() {
                   />
                 </Panel>
 
-                <Panel title="Reviews, Location, Socials">
+                <Panel title="Reviews, location, socials">
                   <Repeater
                     items={content.testimonials}
                     empty={{ quote: "", name: "" }}
@@ -335,7 +317,7 @@ export default function AdminPage() {
                   availability={content.weeklyAvailability}
                   onChange={(weeklyAvailability) => setContent({ ...content, weeklyAvailability })}
                 />
-                <Panel title="Blocked Dates">
+                <Panel title="Blocked dates">
                   <Repeater
                     items={content.scheduleBlocks}
                     empty={{ date: "", reason: "" }}
@@ -360,12 +342,7 @@ export default function AdminPage() {
 
             {adminTab === "Taxes" && (
               <section className="space-y-6">
-                <TaxTracker
-                  bookings={bookings}
-                  content={content}
-                  taxSummary={taxSummary}
-                  setContent={setContent}
-                />
+                <TaxTracker bookings={bookings} content={content} taxSummary={taxSummary} setContent={setContent} />
                 <SaveBar saving={saving} saveMessage={saveMessage} onSave={() => saveContent()} />
               </section>
             )}
@@ -376,22 +353,22 @@ export default function AdminPage() {
                   <Area label="Loyalty offer" value={content.loyaltyOffer} onChange={(loyaltyOffer) => setContent({ ...content, loyaltyOffer })} />
                   <Area label="Referral offer" value={content.referralOffer} onChange={(referralOffer) => setContent({ ...content, referralOffer })} />
                 </Panel>
-                <Panel title="Upgrade Checklist">
-                  <div className="grid md:grid-cols-2 gap-3">
+                <Panel title="Upgrade checklist">
+                  <div className="grid gap-2 md:grid-cols-2">
                     {UPGRADE_CHECKLIST.map((item, i) => (
-                      <div key={item} className="rounded-xl border border-white/10 bg-white/[0.03] p-4 text-sm text-white/75">
-                        <span className="text-purple-300 mr-2">{String(i + 1).padStart(2, "0")}</span>
+                      <div key={item} className="flex items-start gap-3 rounded-[4px] border border-[var(--line)] p-4 text-sm">
+                        <span className="idx mt-0.5 shrink-0">{String(i + 1).padStart(2, "0")}</span>
                         {item}
                       </div>
                     ))}
                   </div>
                 </Panel>
-                <Panel title="Customer History">
-                  <div className="space-y-3">
+                <Panel title="Customer history">
+                  <div className="space-y-2">
                     {customers.map(({ phone, rows }) => (
-                      <div key={phone} className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
-                        <p className="text-white font-medium">{rows[0]?.user_name}</p>
-                        <p className="text-sm mt-1" style={{ color: "#86868B" }}>{formatPhone(phone)} · {rows.length} bookings</p>
+                      <div key={phone} className="flex items-center justify-between gap-4 rounded-[4px] border border-[var(--line)] p-4">
+                        <p className="font-display text-lg uppercase leading-none">{rows[0]?.user_name}</p>
+                        <p className="spec text-sm text-[var(--mute)]">{formatPhone(phone)} · {rows.length}</p>
                       </div>
                     ))}
                   </div>
@@ -402,6 +379,30 @@ export default function AdminPage() {
           </>
         )}
       </main>
+    </div>
+  );
+}
+
+function Pill({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      onClick={onClick}
+      className="shrink-0 rounded-full border px-4 py-2 font-mono text-[12px] font-bold uppercase tracking-[0.1em] transition-colors"
+      style={{
+        borderColor: active ? "transparent" : "var(--line-strong)",
+        background: active ? "var(--accent)" : "transparent",
+        color: active ? "#ffffff" : "var(--mute)",
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
+function Note({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="rounded-[4px] border border-[var(--accent)]/30 bg-[rgba(91,70,240,0.06)] p-4 text-sm leading-relaxed text-[var(--ink)]">
+      {children}
     </div>
   );
 }
@@ -427,51 +428,50 @@ function TaxTracker({
 
   return (
     <>
-      <Panel title="Venmo Tax Tracker">
-        <div className="grid md:grid-cols-4 gap-3">
+      <Panel title="Venmo tax tracker">
+        <div className="grid gap-3 md:grid-cols-4">
           {rows.map((row) => (
             <div
               key={row.label}
-              className="rounded-2xl border p-4"
+              className="rounded-[4px] border p-4"
               style={{
-                background: row.highlight ? "rgba(212,160,23,0.12)" : "rgba(255,255,255,0.03)",
-                borderColor: row.highlight ? "rgba(212,160,23,0.4)" : "rgba(255,255,255,0.1)",
+                background: row.highlight ? "rgba(91,70,240,0.08)" : "transparent",
+                borderColor: row.highlight ? "var(--accent)" : "var(--line)",
               }}
             >
-              <p className="text-sm text-white/45">{row.label}</p>
-              <p className="text-2xl font-semibold text-white mt-2">{row.value}</p>
+              <p className="font-mono text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--mute)]">{row.label}</p>
+              <p className="spec mt-2 text-2xl">{row.value}</p>
             </div>
           ))}
         </div>
 
-        <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4 text-sm leading-relaxed" style={{ color: "#C7C7CC" }}>
-          This only counts Venmo bookings you mark paid in admin. In-store payments are ignored.
-          The set-aside uses {TAX_YEAR} single-filer federal brackets, the standard deduction, Utah&apos;s flat income tax rate,
-          self-employment tax, and a {Math.round(SAFE_TAX_BUFFER * 100)}% safety buffer. It is an estimate for planning,
-          not tax advice.
+        <div className="rounded-[4px] border border-[var(--line)] p-4 text-sm leading-relaxed text-[var(--mute)]">
+          This only counts Venmo bookings you mark paid in admin. In-store payments are ignored. The set-aside uses {TAX_YEAR} single-filer
+          federal brackets, the standard deduction, Utah&apos;s flat income tax rate, self-employment tax, and a {Math.round(SAFE_TAX_BUFFER * 100)}%
+          safety buffer. It is an estimate for planning, not tax advice.
         </div>
       </Panel>
 
-      <Panel title="Tax Breakdown">
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      <Panel title="Tax breakdown">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <TaxLine label="Self-employment tax" value={taxSummary.selfEmploymentTax} />
           <TaxLine label="Federal income tax" value={taxSummary.federalIncomeTax} />
           <TaxLine label="Utah income tax" value={taxSummary.utahIncomeTax} />
           <TaxLine label="Effective set-aside rate" value={`${Math.round(taxSummary.effectiveRate * 100)}%`} />
         </div>
-        <div className="text-sm leading-relaxed" style={{ color: "#86868B" }}>
-          Expenses lower the profit estimate because business income is generally taxed on profit, not gross sales.
-          Keep receipts for items like chairs, lights, capes, clippers, supplies, booking software, and payment fees.
+        <div className="text-sm leading-relaxed text-[var(--mute)]">
+          Expenses lower the profit estimate because business income is generally taxed on profit, not gross sales. Keep receipts for items like
+          chairs, lights, capes, clippers, supplies, booking software, and payment fees.
         </div>
       </Panel>
 
-      <Panel title="Expense Deductions">
+      <Panel title="Expense deductions">
         <Repeater
           items={content.taxExpenses}
           empty={{ name: "", amount: 0 }}
           onChange={(taxExpenses) => setContent({ ...content, taxExpenses })}
           render={(item, update) => (
-            <div className="grid sm:grid-cols-[1fr_180px] gap-4">
+            <div className="grid gap-4 sm:grid-cols-[1fr_180px]">
               <Field label="Item" value={item.name} onChange={(name) => update({ ...item, name })} />
               <Field label="Cost" value={formatPrice(item.amount)} onChange={(value) => update({ ...item, amount: parseDollarAmount(value) })} />
             </div>
@@ -479,21 +479,23 @@ function TaxTracker({
         />
       </Panel>
 
-      <Panel title="Paid Venmo Bookings">
+      <Panel title="Paid Venmo bookings">
         {paidVenmoBookings.length ? (
-          <div className="space-y-3">
+          <div className="space-y-2">
             {paidVenmoBookings.map((b) => (
-              <div key={b.id} className="rounded-xl border border-white/10 bg-white/[0.03] p-4 flex items-center justify-between gap-4">
+              <div key={b.id} className="flex items-center justify-between gap-4 rounded-[4px] border border-[var(--line)] p-4">
                 <div className="min-w-0">
-                  <p className="text-white font-medium truncate">{b.user_name}</p>
-                  <p className="text-sm mt-1" style={{ color: "#86868B" }}>{b.service} · {new Date(b.booking_date + "T00:00:00").toLocaleDateString("en-US")}</p>
+                  <p className="font-display text-lg uppercase leading-none">{b.user_name}</p>
+                  <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.06em] text-[var(--mute)]">
+                    {b.service} · {new Date(b.booking_date + "T00:00:00").toLocaleDateString("en-US")}
+                  </p>
                 </div>
-                <p className="text-white font-semibold">{formatPrice(b.service_price_cents ?? 0)}</p>
+                <p className="spec text-[var(--accent-deep)]">{formatPrice(b.service_price_cents ?? 0)}</p>
               </div>
             ))}
           </div>
         ) : (
-          <div className="text-center py-10 text-sm" style={{ color: "#6E6E73" }}>No paid Venmo bookings yet.</div>
+          <div className="py-10 text-center text-sm text-[var(--mute)]">No paid Venmo bookings yet.</div>
         )}
       </Panel>
     </>
@@ -502,10 +504,39 @@ function TaxTracker({
 
 function TaxLine({ label, value }: { label: string; value: number | string }) {
   return (
-    <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
-      <p className="text-sm text-white/45">{label}</p>
-      <p className="text-xl font-semibold text-white mt-2">{typeof value === "number" ? formatPrice(value) : value}</p>
+    <div className="rounded-[4px] border border-[var(--line)] p-4">
+      <p className="font-mono text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--mute)]">{label}</p>
+      <p className="spec mt-2 text-xl">{typeof value === "number" ? formatPrice(value) : value}</p>
     </div>
+  );
+}
+
+function ActionButton({
+  tone,
+  disabled,
+  onClick,
+  children,
+}: {
+  tone: "accept" | "deny" | "accent";
+  disabled?: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  const colors =
+    tone === "accept"
+      ? { border: "rgba(47,125,70,0.4)", bg: "rgba(47,125,70,0.1)", text: "#2f7d46" }
+      : tone === "deny"
+      ? { border: "rgba(197,54,14,0.4)", bg: "rgba(197,54,14,0.08)", text: "#c5360e" }
+      : { border: "var(--accent)", bg: "rgba(91,70,240,0.08)", text: "var(--accent-deep)" };
+  return (
+    <button
+      disabled={disabled}
+      onClick={onClick}
+      className="min-h-11 rounded-[4px] border px-4 font-mono text-[12px] font-bold uppercase tracking-[0.08em] transition-opacity disabled:opacity-40"
+      style={{ borderColor: colors.border, background: colors.bg, color: colors.text }}
+    >
+      {children}
+    </button>
   );
 }
 
@@ -521,7 +552,7 @@ function BookingList({
   setPaymentStatus: (id: string, paymentStatus: "unpaid" | "paid" | "refunded") => void;
 }) {
   if (!bookings.length) {
-    return <div className="text-center py-20 text-sm" style={{ color: "#6E6E73" }}>No bookings here.</div>;
+    return <div className="py-20 text-center text-sm text-[var(--mute)]">No bookings here.</div>;
   }
 
   return (
@@ -531,37 +562,33 @@ function BookingList({
           const sc = STATUS_COLORS[b.status];
           const displayDate = new Date(b.booking_date + "T00:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
           return (
-            <motion.div key={b.id} layout initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.97 }} transition={{ duration: 0.3, delay: i * 0.04 }} className="app-card p-4 sm:p-5">
-              <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                <div className="flex-1 min-w-0">
-                  <div className="flex flex-wrap items-center gap-2 mb-2">
-                    <p className="font-medium text-white text-base truncate">{b.user_name}</p>
-                    <span className="shrink-0 text-xs px-2.5 py-1 rounded-full font-medium" style={{ background: sc.bg, border: `1px solid ${sc.border}`, color: sc.text }}>
-                      {b.status.charAt(0).toUpperCase() + b.status.slice(1)}
+            <motion.div key={b.id} layout initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.97 }} transition={{ duration: 0.3, delay: i * 0.04 }} className="panel-fill p-4 sm:p-5">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                <div className="min-w-0 flex-1">
+                  <div className="mb-2 flex flex-wrap items-center gap-2">
+                    <p className="truncate font-display text-xl uppercase leading-none">{b.user_name}</p>
+                    <span className="shrink-0 rounded-full px-2.5 py-1 font-mono text-[11px] font-bold uppercase tracking-[0.06em]" style={{ background: sc.bg, color: sc.text }}>
+                      {b.status}
                     </span>
                   </div>
-                  <div className="flex flex-wrap gap-x-2 gap-y-1 text-sm" style={{ color: "#86868B" }}>
+                  <div className="flex flex-wrap gap-x-2 gap-y-1 font-mono text-[12px] uppercase tracking-[0.04em] text-[var(--mute)]">
                     <span>{b.service}</span><span>·</span><span>{displayDate}</span><span>·</span><span>{b.booking_time}</span><span>·</span>
-                    <span>{formatPrice(b.service_price_cents ?? 0)}</span><span>·</span>
+                    <span className="text-[var(--accent-deep)]">{formatPrice(b.service_price_cents ?? 0)}</span><span>·</span>
                     <span>{b.payment_method === "online" ? "Venmo" : "In store"}: {b.payment_status.replace(/_/g, " ")}</span><span>·</span>
-                    <a href={`tel:${b.user_phone}`} className="hover:text-purple-400 transition-colors">{formatPhone(b.user_phone)}</a>
+                    <a href={`tel:${b.user_phone}`} className="transition-colors hover:text-[var(--accent-deep)]">{formatPhone(b.user_phone)}</a>
                   </div>
-                  {b.notes && <p className="text-sm mt-2 italic" style={{ color: "#6E6E73" }}>&ldquo;{b.notes}&rdquo;</p>}
+                  {b.notes && <p className="mt-2 text-sm italic text-[var(--mute)]">&ldquo;{b.notes}&rdquo;</p>}
                 </div>
-                <div className="grid grid-cols-2 gap-2 shrink-0 sm:flex">
+                <div className="grid shrink-0 grid-cols-2 gap-2 sm:flex">
                   {b.payment_method === "online" && (
-                    <button
-                      className="min-h-11 px-4 py-2 rounded-xl text-sm font-medium cursor-pointer border border-purple-400/25 bg-purple-400/10 text-purple-200"
-                      disabled={!!acting}
-                      onClick={() => setPaymentStatus(b.id, b.payment_status === "paid" ? "unpaid" : "paid")}
-                    >
-                      {acting === b.id + "paid" || acting === b.id + "unpaid" ? "..." : b.payment_status === "paid" ? "Mark unpaid" : "Mark paid"}
-                    </button>
+                    <ActionButton tone="accent" disabled={!!acting} onClick={() => setPaymentStatus(b.id, b.payment_status === "paid" ? "unpaid" : "paid")}>
+                      {acting === b.id + "paid" || acting === b.id + "unpaid" ? "…" : b.payment_status === "paid" ? "Mark unpaid" : "Mark paid"}
+                    </ActionButton>
                   )}
                   {b.status === "pending" && (
                     <>
-                      <button className="min-h-11 px-4 py-2 rounded-xl text-sm font-medium cursor-pointer border border-green-400/25 bg-green-400/10 text-green-300" disabled={!!acting} onClick={() => act(b.id, "accepted")}>{acting === b.id + "accepted" ? "..." : "Accept"}</button>
-                      <button className="min-h-11 px-4 py-2 rounded-xl text-sm font-medium cursor-pointer border border-red-400/25 bg-red-400/10 text-red-300" disabled={!!acting} onClick={() => act(b.id, "denied")}>{acting === b.id + "denied" ? "..." : "Deny"}</button>
+                      <ActionButton tone="accept" disabled={!!acting} onClick={() => act(b.id, "accepted")}>{acting === b.id + "accepted" ? "…" : "Accept"}</ActionButton>
+                      <ActionButton tone="deny" disabled={!!acting} onClick={() => act(b.id, "denied")}>{acting === b.id + "denied" ? "…" : "Deny"}</ActionButton>
                     </>
                   )}
                 </div>
@@ -571,6 +598,32 @@ function BookingList({
         })}
       </AnimatePresence>
     </div>
+  );
+}
+
+function SlotChip({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="rounded-full border px-3 py-1.5 font-mono text-[11px] font-bold transition-all duration-150 active:scale-95"
+      style={{
+        background: active ? "var(--accent)" : "transparent",
+        borderColor: active ? "transparent" : "var(--line-strong)",
+        color: active ? "#ffffff" : "var(--mute)",
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
+function MiniAction({ tone, onClick, children }: { tone: "accent" | "deny" | "mute"; onClick: () => void; children: React.ReactNode }) {
+  const color = tone === "accent" ? "var(--accent-deep)" : tone === "deny" ? "#c5360e" : "var(--mute)";
+  return (
+    <button type="button" onClick={onClick} className="font-mono text-[11px] font-bold uppercase tracking-[0.08em] transition-opacity hover:opacity-70" style={{ color }}>
+      {children}
+    </button>
   );
 }
 
@@ -616,15 +669,13 @@ function DateAvailabilityEditor({
   }
 
   return (
-    <section className="app-card p-4 sm:p-6 space-y-4">
+    <section className="panel-fill space-y-4 p-4 sm:p-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-white">Date-Specific Availability</h2>
-        <p className="text-xs text-white/40">Next 18 days</p>
+        <h2 className="font-display text-2xl uppercase">Date-specific availability</h2>
+        <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--mute)]">Next 18 days</p>
       </div>
 
-      <div className="rounded-xl border border-purple-400/20 bg-purple-400/10 p-4 text-sm text-purple-100">
-        Override availability for specific dates. These take priority over the weekly schedule. Dates without an override use the weekly default.
-      </div>
+      <Note>Override availability for specific dates. These take priority over the weekly schedule. Dates without an override use the weekly default.</Note>
 
       <div className="space-y-2">
         {dates.map((iso) => {
@@ -638,73 +689,50 @@ function DateAvailabilityEditor({
           const label = d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
           const badge = hasOverride
             ? displaySlots!.length === 0
-              ? "CLOSED (override)"
+              ? "Closed (override)"
               : `${displaySlots!.length} slots (override)`
             : slots.length === 0
             ? "Closed (weekly)"
             : `${slots.length} slots (weekly)`;
+          const badgeAccent = hasOverride && displaySlots!.length > 0;
+          const badgeClosed = hasOverride && displaySlots!.length === 0;
 
           return (
-            <div key={iso} className="rounded-xl border border-white/10 bg-white/[0.03] overflow-hidden">
+            <div key={iso} className="overflow-hidden rounded-[4px] border border-[var(--line)]">
               <button
                 type="button"
-                className="w-full flex items-center justify-between px-4 py-3 text-left cursor-pointer border-none bg-transparent"
+                className="flex w-full items-center justify-between px-4 py-3 text-left"
                 onClick={() => setExpanded(isOpen ? null : iso)}
               >
                 <div className="flex items-center gap-3">
-                  <span className="text-sm font-semibold text-white/90">{label}</span>
+                  <span className="font-mono text-[13px] font-bold uppercase tracking-[0.04em]">{label}</span>
                   <span
-                    className="text-xs px-2.5 py-0.5 rounded-full font-medium"
+                    className="rounded-full px-2.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-[0.06em]"
                     style={{
-                      background: hasOverride
-                        ? displaySlots!.length === 0
-                          ? "rgba(239,68,68,0.12)"
-                          : "rgba(212,160,23,0.16)"
-                        : "rgba(255,255,255,0.06)",
-                      color: hasOverride
-                        ? displaySlots!.length === 0
-                          ? "#F87171"
-                          : "#e8b84b"
-                        : "#6E6E73",
+                      background: badgeAccent ? "rgba(91,70,240,0.12)" : badgeClosed ? "rgba(197,54,14,0.1)" : "transparent",
+                      border: badgeAccent || badgeClosed ? "none" : "1px solid var(--line-strong)",
+                      color: badgeAccent ? "var(--accent-deep)" : badgeClosed ? "#c5360e" : "var(--mute)",
                     }}
                   >
                     {badge}
                   </span>
                 </div>
-                <span className="text-white/30 text-sm">{isOpen ? "▲" : "▼"}</span>
+                <span className="text-[var(--mute)]">{isOpen ? "▲" : "▼"}</span>
               </button>
 
               {isOpen && (
-                <div className="px-4 pb-4 space-y-3 border-t border-white/10 pt-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex gap-3">
-                      <button type="button" className="text-xs text-purple-300 hover:text-purple-100 transition-colors bg-transparent border-none cursor-pointer" onClick={() => setAll(iso)}>Select all</button>
-                      <button type="button" className="text-xs text-red-300 hover:text-red-100 transition-colors bg-transparent border-none cursor-pointer" onClick={() => clearAll(iso)}>Close day</button>
-                      {hasOverride && (
-                        <button type="button" className="text-xs text-white/40 hover:text-white/70 transition-colors bg-transparent border-none cursor-pointer" onClick={() => clearOverride(iso)}>Reset to weekly</button>
-                      )}
-                    </div>
+                <div className="space-y-3 border-t border-[var(--line)] px-4 pb-4 pt-3">
+                  <div className="flex gap-4">
+                    <MiniAction tone="accent" onClick={() => setAll(iso)}>Select all</MiniAction>
+                    <MiniAction tone="deny" onClick={() => clearAll(iso)}>Close day</MiniAction>
+                    {hasOverride && <MiniAction tone="mute" onClick={() => clearOverride(iso)}>Reset to weekly</MiniAction>}
                   </div>
                   <div className="flex flex-wrap gap-1.5">
-                    {TIME_SLOTS.map((slot) => {
-                      const active = slots.includes(slot);
-                      return (
-                        <button
-                          key={slot}
-                          type="button"
-                          onClick={() => toggle(iso, slot)}
-                          className="text-xs px-3 py-1.5 rounded-full transition-all duration-150 active:scale-95 border cursor-pointer"
-                          style={{
-                            background: active ? "rgba(212,160,23,0.18)" : "rgba(255,255,255,0.04)",
-                            borderColor: active ? "rgba(212,160,23,0.5)" : "rgba(255,255,255,0.1)",
-                            color: active ? "#e8b84b" : "#6E6E73",
-                            fontWeight: active ? 600 : 400,
-                          }}
-                        >
-                          {slot}
-                        </button>
-                      );
-                    })}
+                    {TIME_SLOTS.map((slot) => (
+                      <SlotChip key={slot} active={slots.includes(slot)} onClick={() => toggle(iso, slot)}>
+                        {slot}
+                      </SlotChip>
+                    ))}
                   </div>
                 </div>
               )}
@@ -740,15 +768,13 @@ function AvailabilityEditor({
   }
 
   return (
-    <section className="app-card p-4 sm:p-6 space-y-6">
+    <section className="panel-fill space-y-6 p-4 sm:p-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-white">Weekly Availability</h2>
-        <p className="text-xs text-white/40">Tap slots to toggle on/off</p>
+        <h2 className="font-display text-2xl uppercase">Weekly availability</h2>
+        <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--mute)]">Tap to toggle</p>
       </div>
 
-      <div className="rounded-xl border border-purple-400/20 bg-purple-400/10 p-4 text-sm text-purple-100">
-        Only the times you enable here will appear for customers to book. Days with no slots set will be grayed out in the calendar.
-      </div>
+      <Note>Only the times you enable here appear for customers to book. Days with no slots set are grayed out in the calendar.</Note>
 
       <div className="space-y-5">
         {DAYS_OF_WEEK.map((dayName, dow) => {
@@ -757,38 +783,18 @@ function AvailabilityEditor({
           const allOn = active.length === TIME_SLOTS.length;
           return (
             <div key={key}>
-              <div className="flex items-center justify-between mb-2.5">
-                <p className="text-sm font-semibold text-white/80">{dayName}</p>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    className="text-xs text-purple-300 hover:text-purple-100 transition-colors bg-transparent border-none cursor-pointer"
-                    onClick={() => allOn ? clearAll(key) : setAll(key)}
-                  >
-                    {allOn ? "Clear all" : "Select all"}
-                  </button>
-                </div>
+              <div className="mb-2.5 flex items-center justify-between">
+                <p className="font-mono text-[13px] font-bold uppercase tracking-[0.06em]">{dayName}</p>
+                <MiniAction tone="accent" onClick={() => (allOn ? clearAll(key) : setAll(key))}>
+                  {allOn ? "Clear all" : "Select all"}
+                </MiniAction>
               </div>
               <div className="flex flex-wrap gap-1.5">
-                {TIME_SLOTS.map((slot) => {
-                  const on = active.includes(slot);
-                  return (
-                    <button
-                      key={slot}
-                      type="button"
-                      onClick={() => toggle(key, slot)}
-                      className="text-xs px-3 py-1.5 rounded-full transition-all duration-150 active:scale-95 border cursor-pointer"
-                      style={{
-                        background: on ? "rgba(212,160,23,0.18)" : "rgba(255,255,255,0.04)",
-                        borderColor: on ? "rgba(212,160,23,0.5)" : "rgba(255,255,255,0.1)",
-                        color: on ? "#e8b84b" : "#6E6E73",
-                        fontWeight: on ? 600 : 400,
-                      }}
-                    >
-                      {slot}
-                    </button>
-                  );
-                })}
+                {TIME_SLOTS.map((slot) => (
+                  <SlotChip key={slot} active={active.includes(slot)} onClick={() => toggle(key, slot)}>
+                    {slot}
+                  </SlotChip>
+                ))}
               </div>
             </div>
           );
@@ -800,8 +806,8 @@ function AvailabilityEditor({
 
 function Panel({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="app-card p-4 sm:p-6 space-y-5">
-      <h2 className="text-xl font-semibold text-white">{title}</h2>
+    <section className="panel-fill space-y-5 p-4 sm:p-6">
+      <h2 className="font-display text-2xl uppercase">{title}</h2>
       {children}
     </section>
   );
@@ -810,8 +816,8 @@ function Panel({ title, children }: { title: string; children: React.ReactNode }
 function Field({ label, value, onChange, type = "text" }: { label: string; value: string; onChange: (value: string) => void; type?: string }) {
   return (
     <label className="block">
-      <span className="block text-xs text-white/40 mb-2 tracking-wide uppercase">{label}</span>
-      <input className="input-field" type={type} value={value} onChange={(e) => onChange(e.target.value)} />
+      <span className="field-label">{label}</span>
+      <input className="field" type={type} value={value} onChange={(e) => onChange(e.target.value)} />
     </label>
   );
 }
@@ -819,8 +825,8 @@ function Field({ label, value, onChange, type = "text" }: { label: string; value
 function Area({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
   return (
     <label className="block">
-      <span className="block text-xs text-white/40 mb-2 tracking-wide uppercase">{label}</span>
-      <textarea className="input-field resize-none" rows={3} value={value} onChange={(e) => onChange(e.target.value)} />
+      <span className="field-label">{label}</span>
+      <textarea className="field resize-none" rows={3} value={value} onChange={(e) => onChange(e.target.value)} />
     </label>
   );
 }
@@ -831,13 +837,13 @@ function ImageField({ label, value, onChange }: { label: string; value: string; 
   return (
     <div className="grid gap-3 sm:grid-cols-[1fr_140px] sm:items-end">
       <Field label={label} value={value} onChange={onChange} />
-      <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03]">
+      <div className="overflow-hidden rounded-[4px] border border-[var(--line)]">
         <div className="relative aspect-[4/3]">
           {src ? (
-            <Image src={src} alt={label} fill sizes="140px" className="object-cover" />
+            <Image src={src} alt={label} fill sizes="140px" className="object-cover" unoptimized />
           ) : (
-            <div className="flex h-full items-center justify-center px-4 text-center text-xs text-white/40">
-              No image link
+            <div className="flex h-full items-center justify-center px-4 text-center font-mono text-[10px] uppercase tracking-[0.08em] text-[var(--mute)]">
+              No image
             </div>
           )}
         </div>
@@ -850,14 +856,12 @@ function Repeater<T extends object>({ items, empty, onChange, render }: { items:
   return (
     <div className="space-y-4">
       {items.map((item, index) => (
-        <div key={index} className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 space-y-4">
-          {render(item, (next) => onChange(items.map((row, i) => i === index ? next : row)))}
-          <button className="text-sm text-red-300 hover:text-red-200 bg-transparent border-none cursor-pointer" onClick={() => onChange(items.filter((_, i) => i !== index))}>
-            Remove
-          </button>
+        <div key={index} className="space-y-4 rounded-[4px] border border-[var(--line)] p-4">
+          {render(item, (next) => onChange(items.map((row, i) => (i === index ? next : row))))}
+          <MiniAction tone="deny" onClick={() => onChange(items.filter((_, i) => i !== index))}>Remove</MiniAction>
         </div>
       ))}
-      <button className="btn-ghost text-sm px-4 py-2" onClick={() => onChange([...items, empty])}>
+      <button className="btn btn--ghost !min-h-[44px]" onClick={() => onChange([...items, empty])}>
         Add item
       </button>
     </div>
@@ -878,11 +882,13 @@ function ServiceEditor({ service, update }: { service: ServiceConfig; update: (s
 
 function SaveBar({ saving, saveMessage, onSave }: { saving: boolean; saveMessage: string; onSave: () => void }) {
   return (
-    <div className="sticky bottom-4 z-30 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-2xl border border-white/10 bg-black/85 backdrop-blur-xl p-4">
-      <p className="text-sm" style={{ color: saveMessage === "Saved." ? "#4ADE80" : "#F87171" }}>{saveMessage || "Remember to save changes."}</p>
-      <div className="grid gap-2 sm:flex">
-        <button className="btn-primary text-sm px-5 py-2" disabled={saving} onClick={onSave}>{saving ? "Saving..." : "Save"}</button>
-      </div>
+    <div className="sticky bottom-4 z-30 flex flex-col gap-3 rounded-[6px] border border-[var(--line-strong)] bg-[var(--paper)]/92 p-4 backdrop-blur-md sm:flex-row sm:items-center sm:justify-between">
+      <p className="font-mono text-[12px] font-bold uppercase tracking-[0.08em]" style={{ color: saveMessage === "Saved." ? "#2f7d46" : saveMessage ? "#c5360e" : "var(--mute)" }}>
+        {saveMessage || "Remember to save changes."}
+      </p>
+      <button className="btn btn--accent !min-h-[46px]" disabled={saving} onClick={onSave}>
+        {saving ? "Saving…" : "Save changes"}
+      </button>
     </div>
   );
 }

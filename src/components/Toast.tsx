@@ -58,7 +58,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                 <span
                   className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-[3px]"
                   style={{
-                    background: t.type === "error" ? "#ff4a1c" : t.type === "success" ? "#4ad07a" : "#eceae3",
+                    background: t.type === "error" ? "#e5484d" : t.type === "success" ? "#4ad07a" : "#f4f1e8",
                     color: "#16140f",
                   }}
                 >

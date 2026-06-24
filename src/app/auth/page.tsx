@@ -161,7 +161,7 @@ function AuthForm() {
                     />
                   </div>
 
-                  {error && <p className="text-sm text-[var(--accent)]">{error}</p>}
+                  {error && <p className="text-sm text-[#ff7a6e]">{error}</p>}
 
                   <button className="btn btn--accent btn--block" onClick={sendCode} disabled={loading}>
                     {loading ? "Sending…" : "Send code"}
@@ -214,7 +214,7 @@ function AuthForm() {
                   ))}
                 </div>
 
-                {error && <p className="mb-4 text-center text-sm text-[var(--accent)]">{error}</p>}
+                {error && <p className="mb-4 text-center text-sm text-[#ff7a6e]">{error}</p>}
 
                 <button className="btn btn--accent btn--block" onClick={verifyCode} disabled={loading}>
                   {loading ? "Verifying…" : "Continue"}

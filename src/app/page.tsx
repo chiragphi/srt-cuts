@@ -12,7 +12,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight, MapPin, X } from "lucide-react";
 import Navigation from "@/components/Navigation";
-import LoyaltyCard from "@/components/LoyaltyCard";
 import Reveal from "@/components/Reveal";
 import { formatPrice } from "@/lib/services";
 import {
@@ -21,12 +20,10 @@ import {
   isPlaceholderTestimonial,
   type SiteContent,
 } from "@/lib/site-content";
-import { useAuth } from "@/context/auth";
 
 const MOST_REQUESTED = "Full Service";
 
 export default function HomePage() {
-  const { user, loading: authLoading } = useAuth();
   const [content, setContent] = useState<SiteContent>(DEFAULT_SITE_CONTENT);
   const [lightbox, setLightbox] = useState<string | null>(null);
 
@@ -360,15 +357,6 @@ export default function HomePage() {
                   </Reveal>
                 ))}
               </div>
-            </div>
-          </section>
-        )}
-
-        {/* ── Loyalty (logged in) ───────────────────────────────────── */}
-        {!authLoading && user && (
-          <section className="section-tight pt-0">
-            <div className="shell max-w-2xl">
-              <LoyaltyCard />
             </div>
           </section>
         )}

@@ -4,22 +4,25 @@
    SRT CUTS — "SHARP / SPEC"
    A young barber, one chair, everything to prove. The identity is a
    precision spec-sheet: poster-scale condensed display, monospace data,
-   a cool paper canvas, and one signal-orange accent that means "go".
+   a warm cream canvas, and a blue→purple accent that means "go".
    Light/ink sections alternate for rhythm. Mobile is the primary layout.
    ════════════════════════════════════════════════════════════════════ */
 
 :root {
-  --paper: #eceae3;        /* cool warm-neutral canvas */
-  --paper-2: #e3e0d7;      /* slightly deeper panel */
-  --ink: #16140f;          /* near-black, warm */
-  --ink-2: #1d1b15;        /* raised ink surface */
-  --accent: #ff4a1c;       /* signal orange — the hungry edge */
-  --accent-deep: #c5360e;  /* AA-safe orange for small text on paper */
-  --mute: #75716a;         /* muted text on paper */
-  --mute-ink: #9c978a;     /* muted text on ink */
-  --line: rgba(22, 20, 15, 0.14);
-  --line-strong: rgba(22, 20, 15, 0.28);
-  --line-ink: rgba(236, 234, 227, 0.16);
+  --paper: #f4f1e8;        /* warm cream canvas */
+  --paper-2: #ebe7da;      /* slightly deeper panel */
+  --ink: #17151f;          /* near-black, cool indigo */
+  --ink-2: #201d2b;        /* raised ink surface */
+  --accent: #5b46f0;       /* indigo — blue→purple primary */
+  --accent-2: #9038e8;     /* purple — second tone */
+  --accent-blue: #355bf0;  /* blue — first tone */
+  --accent-deep: #4a37c9;  /* AA-safe indigo for small text on cream */
+  --accent-grad: linear-gradient(120deg, var(--accent-blue), var(--accent-2));
+  --mute: #726e7c;         /* muted text on cream */
+  --mute-ink: #9b96aa;     /* muted text on ink */
+  --line: rgba(23, 21, 31, 0.13);
+  --line-strong: rgba(23, 21, 31, 0.26);
+  --line-ink: rgba(244, 241, 232, 0.16);
 
   --font-display: var(--font-anton), "Arial Narrow", Impact, sans-serif;
   --font-sans: var(--font-instrument), -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
@@ -152,9 +155,13 @@ button {
   font-size: clamp(24px, 3vw, 40px);
 }
 
-/* The orange "go" accent inside display type */
+/* The blue→purple "go" accent inside display type */
 .display .hot {
-  color: var(--accent);
+  background: var(--accent-grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
 }
 
 /* Mono "spec" — the precision signal: labels, data, indices */
@@ -253,13 +260,13 @@ button {
 }
 
 .btn--accent {
-  --btn-bg: var(--accent);
-  --btn-fg: #1a0c05;
-  box-shadow: 0 10px 24px -10px rgba(255, 74, 28, 0.7);
+  --btn-bg: var(--accent-grad);
+  --btn-fg: #ffffff;
+  box-shadow: 0 10px 24px -10px rgba(91, 70, 240, 0.65);
 }
 
 .btn--accent:hover {
-  box-shadow: 0 16px 34px -12px rgba(255, 74, 28, 0.85);
+  box-shadow: 0 16px 34px -12px rgba(91, 70, 240, 0.8);
 }
 
 .btn--ink {
@@ -340,8 +347,8 @@ button {
 }
 
 .chip--accent {
-  background: var(--accent);
-  color: #1a0c05;
+  background: var(--accent-grad);
+  color: #ffffff;
   border-color: transparent;
 }
 
@@ -366,7 +373,7 @@ button {
 .field:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(255, 74, 28, 0.16);
+  box-shadow: 0 0 0 3px rgba(91, 70, 240, 0.18);
 }
 
 .band-ink .field {
@@ -403,7 +410,7 @@ button {
 .otp:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(255, 74, 28, 0.16);
+  box-shadow: 0 0 0 3px rgba(91, 70, 240, 0.18);
 }
 
 /* ── Tick rail (signature precision motif) ────────────────────────── */
@@ -502,7 +509,11 @@ button {
 }
 
 .wordmark .hot {
-  color: var(--accent);
+  background: var(--accent-grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
 }
 
 .menu {
@@ -598,7 +609,7 @@ button {
 
 .cal-day[data-state="selected"] {
   background: var(--accent);
-  color: #1a0c05;
+  color: #ffffff;
   border-color: transparent;
 }
 
@@ -708,83 +719,4 @@ html.js .reveal[data-show="true"] {
   .ribbon-track {
     animation: none;
   }
-}
-
-/* ════════════════════════════════════════════════════════════════════
-   ADMIN COMPATIBILITY — isolated. The /admin surface is intentionally
-   untouched (Section 4). It still references these legacy class names,
-   so we keep neutral, self-contained definitions here. Not used by any
-   customer-facing page.
-   ════════════════════════════════════════════════════════════════════ */
-
-.app-shell {
-  width: 100%;
-  max-width: 1240px;
-  margin-inline: auto;
-  padding-inline: clamp(16px, 4vw, 40px);
-}
-
-.app-card {
-  background: var(--paper);
-  border: 1px solid var(--line);
-  border-radius: 8px;
-}
-
-.app-title {
-  font-family: var(--font-display);
-  text-transform: uppercase;
-  font-size: clamp(26px, 4vw, 44px);
-  line-height: 0.92;
-  letter-spacing: 0.01em;
-}
-
-.input-field {
-  width: 100%;
-  background: var(--paper);
-  border: 1px solid var(--line-strong);
-  border-radius: 6px;
-  padding: 12px 14px;
-  font-family: var(--font-sans);
-  font-size: 15px;
-  color: var(--ink);
-}
-
-.input-field:focus {
-  outline: none;
-  border-color: var(--accent);
-}
-
-.btn-primary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  min-height: 46px;
-  padding-inline: 20px;
-  border-radius: 6px;
-  background: var(--ink);
-  color: var(--paper);
-  font-weight: 600;
-  cursor: pointer;
-  border: none;
-}
-
-.btn-primary:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-
-.btn-ghost {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  min-height: 46px;
-  padding-inline: 20px;
-  border-radius: 6px;
-  background: transparent;
-  border: 1px solid var(--line-strong);
-  color: var(--ink);
-  font-weight: 600;
-  cursor: pointer;
 }
