@@ -4,6 +4,7 @@ import { supabaseAdmin } from "@/lib/supabase";
 import { mergeSiteContent } from "@/lib/site-content";
 import { sendSMS, SMS } from "@/lib/twilio";
 import { TIME_SLOTS, DAYS_OF_WEEK } from "@/lib/schedule";
+import { clampDiscount, effectivePrice } from "@/lib/services";
 
 const MODEL = "llama-3.3-70b-versatile";
 
@@ -238,6 +239,10 @@ const TOOLS = [
           },
           duration: { type: "string", description: "Duration string, e.g. '45 min'. Omit to keep current." },
           desc: { type: "string", description: "Short description. Omit to keep current." },
+          discount_percent: {
+            type: "number",
+            description: "Site-wide discount on this service, 0–90 (%). 0 removes the sale. Omit to keep current.",
+          },
         },
         required: ["service_name"],
       },
@@ -259,6 +264,44 @@ const TOOLS = [
           value: { type: "string", description: "The new value" },
         },
         required: ["field", "value"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "set_discount",
+      description:
+        "Apply a site-wide percentage discount to one or more services (or all of them). The sale shows on the website and the customer is charged the reduced price. Use percent=0 to remove a sale.",
+      parameters: {
+        type: "object",
+        properties: {
+          services: {
+            type: "array",
+            items: { type: "string", enum: ["Fade", "Haircut", "Lineup", "Full Service", "Kids Cut", "all"] },
+            description: "Service names to discount, or [\"all\"] for every service.",
+          },
+          percent: { type: "number", description: "Discount percentage 0–90. 0 removes the discount." },
+        },
+        required: ["services", "percent"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "clear_discounts",
+      description:
+        "Remove site-wide discounts. Omit services (or pass [\"all\"]) to end every sale; pass specific names to clear just those.",
+      parameters: {
+        type: "object",
+        properties: {
+          services: {
+            type: "array",
+            items: { type: "string", enum: ["Fade", "Haircut", "Lineup", "Full Service", "Kids Cut", "all"] },
+            description: "Services to clear, or omit / [\"all\"] for every service.",
+          },
+        },
       },
     },
   },
@@ -475,6 +518,13 @@ BOOKING ACTIONS:
   ✓ "Accept all pending" → accept_all_pending (no args)
   ✓ "Raise all prices" → call update_service once per service
 
+DISCOUNTS (site-wide sales — reduce what the customer is charged):
+  ✓ "20% off the fade" → set_discount({ services: ["Fade"], percent: 20 })
+  ✓ "Put 15% off everything" → set_discount({ services: ["all"], percent: 15 })
+  ✓ "Half off lineups and kids cuts" → set_discount({ services: ["Lineup","Kids Cut"], percent: 50 })
+  ✓ "End the sale" / "remove all discounts" → clear_discounts({})
+  ✓ "Remove the fade discount" → clear_discounts({ services: ["Fade"] })
+
 TIME FORMAT: Values MUST exactly match the valid slots list. "9:00 AM" not "9am".
 
 ## DAY NUMBERS
@@ -496,8 +546,14 @@ ${bookings.slice(-10).map((b) => `- ID: ${b.id} | ${b.user_name} | ${b.service} 
 ## BLOCKED DATES:
 ${content.scheduleBlocks.length ? content.scheduleBlocks.map((b) => `- ${b.date}: ${b.reason}`).join("\n") : "None"}
 
-## SERVICES:
-${content.serviceConfigs.map((s) => `- ${s.name}: $${(s.amount / 100).toFixed(2)}, ${s.duration}`).join("\n")}
+## SERVICES (price · discount):
+${content.serviceConfigs
+  .map((s) => {
+    const pct = clampDiscount(s.discountPercent);
+    const sale = pct > 0 ? ` — ${pct}% OFF → $${(effectivePrice(s) / 100).toFixed(2)}` : " — no discount";
+    return `- ${s.name}: $${(s.amount / 100).toFixed(2)}, ${s.duration}${sale}`;
+  })
+  .join("\n")}
 
 ## WEEKLY AVAILABILITY (recurring schedule):
 ${weeklyLines.join("\n")}
@@ -674,6 +730,7 @@ async function executeTool(
     const priceCents = args.price_cents as number | undefined;
     const duration = args.duration as string | undefined;
     const desc = args.desc as string | undefined;
+    const discountPercent = args.discount_percent as number | undefined;
 
     const serviceConfigs = content.serviceConfigs.map((s) => {
       if (s.name.toLowerCase() !== serviceName) return s;
@@ -682,6 +739,7 @@ async function executeTool(
         ...(priceCents !== undefined ? { amount: Math.round(priceCents) } : {}),
         ...(duration !== undefined ? { duration } : {}),
         ...(desc !== undefined ? { desc } : {}),
+        ...(discountPercent !== undefined ? { discountPercent: clampDiscount(discountPercent) } : {}),
       };
     });
 
@@ -689,11 +747,31 @@ async function executeTool(
     const changes: string[] = [];
     if (priceCents !== undefined) changes.push(`$${(priceCents / 100).toFixed(2)}`);
     if (duration) changes.push(duration);
+    if (discountPercent !== undefined) {
+      const pct = clampDiscount(discountPercent);
+      changes.push(pct > 0 ? `${pct}% off` : "no discount");
+    }
     return {
       success: true,
       description: `Updated ${args.service_name}${changes.length ? ` → ${changes.join(", ")}` : ""}`,
       updatedContent,
     };
+  }
+
+  if (name === "set_discount" || name === "clear_discounts") {
+    const isClear = name === "clear_discounts";
+    const targets = resolveServiceTargets(args.services, content);
+    if (!targets.length) return { success: false, description: "No matching services." };
+    const percent = isClear ? 0 : clampDiscount(Number(args.percent));
+
+    const serviceConfigs = content.serviceConfigs.map((s) =>
+      targets.includes(s.name) ? { ...s, discountPercent: percent } : s
+    );
+    const updatedContent = { ...content, serviceConfigs };
+    const description = percent > 0
+      ? `${percent}% off ${targets.join(", ")} (site-wide)`
+      : `Removed discount from ${targets.join(", ")}`;
+    return { success: true, description, updatedContent };
   }
 
   if (name === "update_content") {
@@ -776,6 +854,14 @@ async function executeTool(
   }
 
   return { success: false, description: `Unknown tool: ${name}` };
+}
+
+function resolveServiceTargets(input: unknown, content: SiteContentState): string[] {
+  const names = content.serviceConfigs.map((s) => s.name);
+  if (!Array.isArray(input) || input.length === 0) return [...names];
+  const lower = input.map((x) => String(x).trim().toLowerCase());
+  if (lower.includes("all")) return [...names];
+  return names.filter((n) => lower.includes(n.toLowerCase()));
 }
 
 function normalizeDays(input: unknown): string[] {

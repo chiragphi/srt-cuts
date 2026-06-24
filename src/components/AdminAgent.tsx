@@ -13,10 +13,10 @@ interface Message {
 }
 
 const SUGGESTIONS = [
-  "Block tomorrow",
+  "Put 20% off the Fade",
   "Accept all pending bookings",
-  "What days are blocked?",
-  "Raise the Fade price to $35",
+  "Block tomorrow",
+  "End all discounts",
 ];
 
 export default function AdminAgent({ onRefresh }: { onRefresh: () => void }) {
