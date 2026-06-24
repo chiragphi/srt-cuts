@@ -10,6 +10,7 @@ export interface AuthUser {
 
 interface AuthContextValue {
   user: AuthUser | null;
+  isAdmin: boolean;
   loading: boolean;
   refresh: () => void;
   clearUser: () => void;
@@ -17,6 +18,7 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue>({
   user: null,
+  isAdmin: false,
   loading: true,
   refresh: () => {},
   clearUser: () => {},
@@ -24,6 +26,7 @@ const AuthContext = createContext<AuthContextValue>({
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const refresh = useCallback(() => {
@@ -31,10 +34,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .then((r) => r.json())
       .then((d) => {
         setUser(d.user ?? null);
+        setIsAdmin(Boolean(d.isAdmin));
         setLoading(false);
       })
       .catch(() => {
         setUser(null);
+        setIsAdmin(false);
         setLoading(false);
       });
   }, []);
@@ -43,10 +48,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     refresh();
   }, [refresh]);
 
-  const clearUser = useCallback(() => setUser(null), []);
+  const clearUser = useCallback(() => {
+    setUser(null);
+    setIsAdmin(false);
+  }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading, refresh, clearUser }}>
+    <AuthContext.Provider value={{ user, isAdmin, loading, refresh, clearUser }}>
       {children}
     </AuthContext.Provider>
   );

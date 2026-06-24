@@ -19,7 +19,7 @@ function AuthForm() {
   const router = useRouter();
   const params = useSearchParams();
   const redirect = params.get("redirect") || "/book";
-  const { user, refresh } = useAuth();
+  const { user, isAdmin, refresh } = useAuth();
 
   const [step, setStep] = useState<Step>("phone");
   const [phone, setPhone] = useState("");
@@ -32,8 +32,8 @@ function AuthForm() {
   const codeRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
-    if (user) router.replace(redirect);
-  }, [user, redirect, router]);
+    if (user) router.replace(isAdmin ? "/admin" : redirect);
+  }, [user, isAdmin, redirect, router]);
 
   async function sendCode() {
     setError("");

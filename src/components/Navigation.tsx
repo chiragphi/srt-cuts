@@ -16,7 +16,7 @@ function Wordmark() {
 }
 
 export default function Navigation() {
-  const { user, clearUser } = useAuth();
+  const { user, isAdmin, clearUser } = useAuth();
   const { toast } = useToast();
   const [accountOpen, setAccountOpen] = useState(false);
   const [confirmLogout, setConfirmLogout] = useState(false);
@@ -101,6 +101,15 @@ export default function Navigation() {
                 className="hidden font-mono text-[12px] font-bold uppercase tracking-[0.12em] text-[var(--mute)] transition-colors hover:text-[var(--ink)] sm:inline"
               >
                 Sign in
+              </Link>
+            )}
+
+            {isAdmin && (
+              <Link
+                href="/admin"
+                className="btn btn--ghost !min-h-[40px] !px-4 !text-[12px] sm:!min-h-[44px] sm:!px-5"
+              >
+                Admin
               </Link>
             )}
 
