@@ -104,6 +104,17 @@ export default function Navigation() {
               </Link>
             )}
 
+            {user && (
+              <button
+                type="button"
+                onClick={() => setConfirmLogout(true)}
+                aria-label="Sign out"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[4px] border border-[var(--line-strong)] text-[var(--ink)] transition-colors hover:border-[var(--ink)] sm:hidden"
+              >
+                <LogOut size={16} />
+              </button>
+            )}
+
             <Link href="/book" className="btn btn--accent !min-h-[40px] !px-4 !text-[12px] sm:!min-h-[44px] sm:!px-5">
               Reserve
             </Link>
@@ -113,7 +124,7 @@ export default function Navigation() {
 
       {/* Mobile sign-out sheet */}
       {confirmLogout && (
-        <div className="only-mobile fixed inset-0 z-[60] flex items-end bg-black/40" onClick={() => setConfirmLogout(false)}>
+        <div className="fixed inset-0 z-[60] flex items-end bg-black/40 sm:hidden" onClick={() => setConfirmLogout(false)}>
           <div
             className="w-full rounded-t-[14px] border-t border-[var(--line-strong)] bg-[var(--paper)] p-6"
             onClick={(e) => e.stopPropagation()}
@@ -135,7 +146,7 @@ export default function Navigation() {
       )}
 
       {/* Mobile bottom tab bar */}
-      <div className="tabbar only-mobile">
+      <div className="tabbar">
         <Link href="/" className="tab" data-active={pathname === "/"}>
           <House size={19} />
           <span>Home</span>

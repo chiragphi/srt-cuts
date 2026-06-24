@@ -67,7 +67,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${anton.variable} ${instrument.variable} ${spaceMono.variable}`}>
+    <html lang="en" suppressHydrationWarning className={`${anton.variable} ${instrument.variable} ${spaceMono.variable}`}>
       <head>
         {/* Mark JS-enabled before first paint so scroll-reveal can hide content
             without a flash, while no-JS users still see everything. */}

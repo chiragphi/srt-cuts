@@ -658,26 +658,15 @@ button {
   padding-bottom: calc(76px + env(safe-area-inset-bottom));
 }
 
-@media (min-width: 768px) {
-  .has-tabbar {
-    padding-bottom: 0;
-  }
-}
-
-.only-mobile {
-  display: block;
-}
-
-.only-desk {
-  display: none;
-}
-
-@media (min-width: 768px) {
-  .only-mobile {
+/* Hide the mobile tab bar (and reclaim its spacer) once the desktop nav
+   appears at the sm breakpoint. Visibility lives on .tabbar itself so it
+   never fights its own `display: grid`. */
+@media (min-width: 640px) {
+  .tabbar {
     display: none;
   }
-  .only-desk {
-    display: block;
+  .has-tabbar {
+    padding-bottom: 0;
   }
 }
 
