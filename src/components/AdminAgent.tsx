@@ -26,6 +26,11 @@ export default function AdminAgent({ onRefresh }: { onRefresh: () => void }) {
   const [open, setOpen] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  // Each command runs as a fresh session so stale history can never wedge the
+  // assistant (the old "works once, then you must refresh" bug). The only
+  // context carried forward is an open proposal awaiting a yes/no, so the
+  // "propose → confirm" flow still resolves. The visible chat log is untouched.
+  const proposalCtx = useRef<{ role: string; content: string }[] | null>(null);
 
   const scrollToBottom = useCallback(() => {
     if (scrollRef.current) {
@@ -51,9 +56,8 @@ export default function AdminAgent({ onRefresh }: { onRefresh: () => void }) {
     setInput("");
     if (!open) setOpen(true);
 
-    const history = messages
-      .filter((m) => !m.loading)
-      .map((m) => ({ role: m.role, content: m.content }));
+    // Fresh session by default; only an open proposal carries context.
+    const history = proposalCtx.current ?? [];
 
     setMessages((prev) => [
       ...prev.filter((m) => !m.loading),
@@ -70,6 +74,15 @@ export default function AdminAgent({ onRefresh }: { onRefresh: () => void }) {
       });
 
       const data = await res.json();
+
+      // Hold context only while a proposal is awaiting confirmation; otherwise
+      // the next command starts a clean session.
+      proposalCtx.current = data.isProposal
+        ? [
+            { role: "user", content: msg },
+            { role: "assistant", content: data.reply || "" },
+          ]
+        : null;
 
       setMessages((prev) => [
         ...prev.filter((m) => !m.loading),
