@@ -8,6 +8,7 @@ import { DEFAULT_SITE_CONTENT, type SiteContent } from "@/lib/site-content";
 import { formatPrice, parseDollarAmount, type ServiceConfig } from "@/lib/services";
 import { TIME_SLOTS, DAYS_OF_WEEK } from "@/lib/schedule";
 import AdminAgent from "@/components/AdminAgent";
+import SystemPanel from "@/components/SystemPanel";
 
 interface Booking {
   id: string;
@@ -42,7 +43,7 @@ const STATUS_COLORS = {
 };
 
 const BOOKING_TABS = ["All", "Pending", "Accepted", "Denied"] as const;
-const ADMIN_TABS = ["Bookings", "Content", "Schedule", "Taxes", "Growth"] as const;
+const ADMIN_TABS = ["Bookings", "Content", "Schedule", "Taxes", "Growth", "System"] as const;
 type BookingTab = typeof BOOKING_TABS[number];
 type AdminTab = typeof ADMIN_TABS[number];
 
@@ -376,6 +377,8 @@ export default function AdminPage() {
                 <SaveBar saving={saving} saveMessage={saveMessage} onSave={() => saveContent()} />
               </section>
             )}
+
+            {adminTab === "System" && <SystemPanel />}
           </>
         )}
       </main>
