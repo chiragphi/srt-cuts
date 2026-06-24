@@ -44,6 +44,24 @@ export interface ServiceConfig {
   duration: string;
   desc: string;
   detail: string;
+  /** Site-wide discount on this service, 0–90 (%). 0 / undefined = no sale. */
+  discountPercent?: number;
+}
+
+export function clampDiscount(value: number | undefined | null): number {
+  if (!value || !Number.isFinite(value)) return 0;
+  return Math.min(90, Math.max(0, Math.round(value)));
+}
+
+/** The price a customer actually pays after any site-wide discount. */
+export function effectivePrice(service: { amount: number; discountPercent?: number }): number {
+  const pct = clampDiscount(service.discountPercent);
+  if (!pct) return service.amount;
+  return Math.max(0, Math.round((service.amount * (100 - pct)) / 100));
+}
+
+export function hasDiscount(service: { discountPercent?: number }): boolean {
+  return clampDiscount(service.discountPercent) > 0;
 }
 
 export function formatPrice(amount: number) {
@@ -67,6 +85,7 @@ export function getServiceConfigs(overrides: Partial<ServiceConfig>[] | null | u
       ...(override ?? {}),
       name: service.name,
       amount: Math.max(0, Math.round(override?.amount ?? service.amount)),
+      discountPercent: clampDiscount(override?.discountPercent),
     };
   });
 }

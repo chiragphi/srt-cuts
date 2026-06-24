@@ -3,6 +3,7 @@ import { getSession } from "@/lib/session";
 import { supabaseAdmin } from "@/lib/supabase";
 import { sendSMS, SMS } from "@/lib/twilio";
 import { mergeSiteContent } from "@/lib/site-content";
+import { effectivePrice } from "@/lib/services";
 
 export async function GET() {
   const user = await getSession();
@@ -78,7 +79,7 @@ export async function POST(req: NextRequest) {
       booking_time: time,
       notes: notes ?? "",
       status: "pending",
-      service_price_cents: selectedService.amount,
+      service_price_cents: effectivePrice(selectedService),
       payment_method: paymentMethod,
       payment_status: paymentMethod === "online" ? "unpaid" : "pay_in_store",
     })

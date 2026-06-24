@@ -13,7 +13,7 @@ import Link from "next/link";
 import { ArrowUpRight, MapPin, X } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import Reveal from "@/components/Reveal";
-import { formatPrice } from "@/lib/services";
+import { formatPrice, effectivePrice, hasDiscount, clampDiscount } from "@/lib/services";
 import {
   DEFAULT_SITE_CONTENT,
   isPlaceholderGalleryItem,
@@ -42,6 +42,10 @@ export default function HomePage() {
   const social = content.instagramUrl || content.tiktokUrl;
   const heroImage = content.heroImageUrl || "/srt-logo.png";
   const today = new Date().toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+
+  const onSale = services.filter(hasDiscount);
+  const maxDiscount = onSale.reduce((m, s) => Math.max(m, clampDiscount(s.discountPercent)), 0);
+  const saleNames = onSale.map((s) => s.name).join(", ");
 
   return (
     <>
@@ -101,6 +105,17 @@ export default function HomePage() {
                   </a>
                 </div>
               </Reveal>
+
+              {maxDiscount > 0 && (
+                <Reveal delay={230}>
+                  <a href="#services" className="mt-6 inline-flex items-center gap-2.5">
+                    <span className="chip chip--accent animate-pulse">{maxDiscount}% OFF</span>
+                    <span className="font-mono text-[12px] font-bold uppercase tracking-[0.1em] text-[var(--ink)]">
+                      {saleNames} on sale — book now
+                    </span>
+                  </a>
+                </Reveal>
+              )}
 
               <Reveal delay={260}>
                 <dl className="mt-9 grid max-w-lg grid-cols-3 gap-px overflow-hidden rounded-[4px] border border-[var(--line)] bg-[var(--line)]">
@@ -295,11 +310,21 @@ export default function HomePage() {
             <Reveal>
               <div className="mb-12 flex flex-wrap items-end justify-between gap-6">
                 <div>
-                  <p className="idx mb-4">[ 05 — THE MENU ]</p>
-                  <h2 className="display display--xl">Pick it. Book it.</h2>
+                  <p className="idx mb-4">{maxDiscount > 0 ? `[ 05 — ON SALE · ${maxDiscount}% OFF ]` : "[ 05 — THE MENU ]"}</p>
+                  <h2 className="display display--xl">
+                    {maxDiscount > 0 ? (
+                      <>
+                        Pick it. <span className="hot">Save</span> on it.
+                      </>
+                    ) : (
+                      <>Pick it. Book it.</>
+                    )}
+                  </h2>
                 </div>
                 <p className="max-w-xs text-sm text-[var(--mute-ink)]">
-                  Flat prices, no surprises. Every service is one tap from a booking.
+                  {maxDiscount > 0
+                    ? `Limited-time pricing on ${saleNames}. Locked in the moment you book.`
+                    : "Flat prices, no surprises. Every service is one tap from a booking."}
                 </p>
               </div>
             </Reveal>
@@ -307,6 +332,8 @@ export default function HomePage() {
             <div className="overflow-hidden rounded-[6px] border border-[var(--line-ink)]">
               {services.map((s, i) => {
                 const popular = s.name === MOST_REQUESTED;
+                const sale = hasDiscount(s);
+                const pct = clampDiscount(s.discountPercent);
                 return (
                   <Reveal key={s.name}>
                     <Link
@@ -317,12 +344,20 @@ export default function HomePage() {
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-3">
                           <h3 className="font-display text-2xl uppercase leading-none sm:text-3xl">{s.name}</h3>
-                          {popular && <span className="chip chip--accent">Most requested</span>}
+                          {sale && <span className="chip chip--accent animate-pulse">{pct}% off</span>}
+                          {popular && !sale && <span className="chip chip--accent">Most requested</span>}
                         </div>
                         <p className="mt-2 text-sm text-[var(--mute-ink)]">{s.desc}</p>
                       </div>
                       <div className="shrink-0 text-right">
-                        <p className="spec text-xl text-[var(--paper)] sm:text-2xl">{formatPrice(s.amount)}</p>
+                        {sale ? (
+                          <p className="flex items-baseline justify-end gap-2">
+                            <span className="font-mono text-sm text-[var(--mute-ink)] line-through">{formatPrice(s.amount)}</span>
+                            <span className="spec text-xl text-[var(--paper)] sm:text-2xl">{formatPrice(effectivePrice(s))}</span>
+                          </p>
+                        ) : (
+                          <p className="spec text-xl text-[var(--paper)] sm:text-2xl">{formatPrice(s.amount)}</p>
+                        )}
                         <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--mute-ink)]">{s.duration}</p>
                       </div>
                       <ArrowUpRight

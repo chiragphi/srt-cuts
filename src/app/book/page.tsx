@@ -7,7 +7,7 @@ import Link from "next/link";
 import { ArrowUpRight, CalendarPlus, Check, Copy, Gift, Zap } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import CalendarPicker from "@/components/CalendarPicker";
-import { formatPrice } from "@/lib/services";
+import { formatPrice, effectivePrice, hasDiscount, clampDiscount } from "@/lib/services";
 import { DEFAULT_SITE_CONTENT, type SiteContent } from "@/lib/site-content";
 import { useAuth } from "@/context/auth";
 import { useToast } from "@/components/Toast";
@@ -205,7 +205,7 @@ function BookPageInner() {
             {service && date && time && (
               <div className="panel-fill mt-7 p-5 text-left">
                 <SummaryRow label="Service" value={service} />
-                {selectedService && <SummaryRow label="Price" value={formatPrice(selectedService.amount)} />}
+                {selectedService && <SummaryRow label="Price" value={formatPrice(effectivePrice(selectedService))} />}
                 <SummaryRow label="Date" value={displayDate} />
                 <SummaryRow label="Time" value={time} last />
               </div>
@@ -321,11 +321,19 @@ function BookPageInner() {
                         {active && <Check size={12} strokeWidth={3} className="text-[#ffffff]" />}
                       </span>
                       <div className="min-w-0 flex-1">
-                        <p className="font-display text-xl uppercase leading-none">{s.name}</p>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="font-display text-xl uppercase leading-none">{s.name}</p>
+                          {hasDiscount(s) && <span className="chip chip--accent !py-1 !text-[10px]">{clampDiscount(s.discountPercent)}% off</span>}
+                        </div>
                         <p className="mt-1.5 text-sm text-[var(--mute)]">{s.desc}</p>
                         <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--mute)]">{s.duration}</p>
                       </div>
-                      <span className="spec shrink-0 text-lg text-[var(--accent-deep)]">{formatPrice(s.amount)}</span>
+                      <span className="shrink-0 text-right">
+                        {hasDiscount(s) && (
+                          <span className="block font-mono text-xs text-[var(--mute)] line-through">{formatPrice(s.amount)}</span>
+                        )}
+                        <span className="spec text-lg text-[var(--accent-deep)]">{formatPrice(effectivePrice(s))}</span>
+                      </span>
                     </button>
                   );
                 })}
@@ -430,7 +438,7 @@ function BookPageInner() {
                 <div className="panel-fill p-5">
                   <SummaryRow label="Service" value={service} />
                   <SummaryRow label="Duration" value={selectedService?.duration ?? "Appointment"} />
-                  <SummaryRow label="Price" value={selectedService ? formatPrice(selectedService.amount) : "TBD"} />
+                  <SummaryRow label="Price" value={selectedService ? formatPrice(effectivePrice(selectedService)) : "TBD"} />
                   <SummaryRow
                     label="Date"
                     value={new Date(date + "T00:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}

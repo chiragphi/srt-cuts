@@ -57,3 +57,20 @@ export async function PATCH(
 
   return NextResponse.json({ booking });
 }
+
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const user = await getSession();
+  if (!user || !isAdmin(user.phone))
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
+  const { id } = await params;
+  const { error } = await supabaseAdmin.from("bookings").delete().eq("id", id);
+
+  if (error)
+    return NextResponse.json({ error: "Failed to delete booking" }, { status: 500 });
+
+  return NextResponse.json({ ok: true });
+}

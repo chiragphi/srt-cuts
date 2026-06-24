@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { DEFAULT_SITE_CONTENT, type SiteContent } from "@/lib/site-content";
-import { formatPrice, parseDollarAmount, type ServiceConfig } from "@/lib/services";
+import { formatPrice, parseDollarAmount, clampDiscount, effectivePrice, type ServiceConfig } from "@/lib/services";
 import { TIME_SLOTS, DAYS_OF_WEEK } from "@/lib/schedule";
 import AdminAgent from "@/components/AdminAgent";
 import SystemPanel from "@/components/SystemPanel";
@@ -132,6 +132,13 @@ export default function AdminPage() {
     await load();
   }
 
+  async function del(id: string) {
+    setActing(id + "delete");
+    await fetch(`/api/admin/bookings/${id}`, { method: "DELETE" });
+    setActing(null);
+    await load();
+  }
+
   async function saveContent(next = content) {
     setSaving(true);
     setSaveMessage("");
@@ -240,7 +247,7 @@ export default function AdminPage() {
                     </Pill>
                   ))}
                 </div>
-                <BookingList bookings={filtered} acting={acting} act={act} setPaymentStatus={setPaymentStatus} />
+                <BookingList bookings={filtered} acting={acting} act={act} del={del} setPaymentStatus={setPaymentStatus} />
               </section>
             )}
 
@@ -547,13 +554,17 @@ function BookingList({
   bookings,
   acting,
   act,
+  del,
   setPaymentStatus,
 }: {
   bookings: Booking[];
   acting: string | null;
   act: (id: string, status: "accepted" | "denied") => void;
+  del: (id: string) => void;
   setPaymentStatus: (id: string, paymentStatus: "unpaid" | "paid" | "refunded") => void;
 }) {
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+
   if (!bookings.length) {
     return <div className="py-20 text-center text-sm text-[var(--mute)]">No bookings here.</div>;
   }
@@ -583,15 +594,27 @@ function BookingList({
                   {b.notes && <p className="mt-2 text-sm italic text-[var(--mute)]">&ldquo;{b.notes}&rdquo;</p>}
                 </div>
                 <div className="grid shrink-0 grid-cols-2 gap-2 sm:flex">
-                  {b.payment_method === "online" && (
-                    <ActionButton tone="accent" disabled={!!acting} onClick={() => setPaymentStatus(b.id, b.payment_status === "paid" ? "unpaid" : "paid")}>
-                      {acting === b.id + "paid" || acting === b.id + "unpaid" ? "…" : b.payment_status === "paid" ? "Mark unpaid" : "Mark paid"}
-                    </ActionButton>
-                  )}
-                  {b.status === "pending" && (
+                  {confirmDelete === b.id ? (
                     <>
-                      <ActionButton tone="accept" disabled={!!acting} onClick={() => act(b.id, "accepted")}>{acting === b.id + "accepted" ? "…" : "Accept"}</ActionButton>
-                      <ActionButton tone="deny" disabled={!!acting} onClick={() => act(b.id, "denied")}>{acting === b.id + "denied" ? "…" : "Deny"}</ActionButton>
+                      <ActionButton tone="deny" disabled={!!acting} onClick={() => { del(b.id); setConfirmDelete(null); }}>
+                        {acting === b.id + "delete" ? "…" : "Delete for good"}
+                      </ActionButton>
+                      <ActionButton tone="accent" onClick={() => setConfirmDelete(null)}>Keep</ActionButton>
+                    </>
+                  ) : (
+                    <>
+                      {b.payment_method === "online" && (
+                        <ActionButton tone="accent" disabled={!!acting} onClick={() => setPaymentStatus(b.id, b.payment_status === "paid" ? "unpaid" : "paid")}>
+                          {acting === b.id + "paid" || acting === b.id + "unpaid" ? "…" : b.payment_status === "paid" ? "Mark unpaid" : "Mark paid"}
+                        </ActionButton>
+                      )}
+                      {b.status === "pending" && (
+                        <>
+                          <ActionButton tone="accept" disabled={!!acting} onClick={() => act(b.id, "accepted")}>{acting === b.id + "accepted" ? "…" : "Accept"}</ActionButton>
+                          <ActionButton tone="deny" disabled={!!acting} onClick={() => act(b.id, "denied")}>{acting === b.id + "denied" ? "…" : "Deny"}</ActionButton>
+                        </>
+                      )}
+                      <ActionButton tone="deny" disabled={!!acting} onClick={() => setConfirmDelete(b.id)}>Delete</ActionButton>
                     </>
                   )}
                 </div>
@@ -872,10 +895,24 @@ function Repeater<T extends object>({ items, empty, onChange, render }: { items:
 }
 
 function ServiceEditor({ service, update }: { service: ServiceConfig; update: (service: ServiceConfig) => void }) {
+  const pct = clampDiscount(service.discountPercent);
   return (
     <>
       <Field label="Service name" value={service.name} onChange={(name) => update({ ...service, name: name as ServiceConfig["name"] })} />
       <Field label="Price" value={formatPrice(service.amount)} onChange={(value) => update({ ...service, amount: parseDollarAmount(value) })} />
+      <Field
+        label="Site-wide discount % (0–90)"
+        type="number"
+        value={pct ? String(pct) : ""}
+        onChange={(value) => update({ ...service, discountPercent: clampDiscount(Number(value.replace(/[^0-9]/g, ""))) })}
+      />
+      {pct > 0 && (
+        <div className="rounded-[4px] border border-[var(--accent)]/30 bg-[rgba(91,70,240,0.06)] p-3 font-mono text-[12px] font-bold uppercase tracking-[0.06em]">
+          <span className="text-[var(--accent-deep)]">{pct}% off</span> — customers pay{" "}
+          <span className="text-[var(--ink)]">{formatPrice(effectivePrice(service))}</span>{" "}
+          <span className="text-[var(--mute)] line-through">{formatPrice(service.amount)}</span>
+        </div>
+      )}
       <Field label="Duration" value={service.duration} onChange={(duration) => update({ ...service, duration })} />
       <Area label="Short description" value={service.desc} onChange={(desc) => update({ ...service, desc })} />
       <Area label="Detail" value={service.detail} onChange={(detail) => update({ ...service, detail })} />
