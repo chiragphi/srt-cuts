@@ -21,9 +21,9 @@ interface Booking {
 }
 
 const STATUS = {
-  pending: { label: "Pending", icon: Clock, color: "#9a7b1a", bg: "rgba(154,123,26,0.1)" },
-  accepted: { label: "Confirmed", icon: Check, color: "#2f7d46", bg: "rgba(47,125,70,0.1)" },
-  denied: { label: "Declined", icon: X, color: "#c5360e", bg: "rgba(197,54,14,0.1)" },
+  pending: { label: "Pending", icon: Clock, color: "var(--warn)", bg: "var(--warn-bg)" },
+  accepted: { label: "Confirmed", icon: Check, color: "var(--ok)", bg: "var(--ok-bg)" },
+  denied: { label: "Declined", icon: X, color: "var(--danger)", bg: "var(--danger-bg)" },
 };
 
 const fadeUp = {

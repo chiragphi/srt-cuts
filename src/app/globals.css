@@ -1,28 +1,46 @@
 @import "tailwindcss";
 
 /* ════════════════════════════════════════════════════════════════════
-   SRT CUTS — "SHARP / SPEC"
+   SRT CUTS — "SHARP / SPEC" (dark)
    A young barber, one chair, everything to prove. The identity is a
    precision spec-sheet: poster-scale condensed display, monospace data,
-   a warm cream canvas, and a blue→purple accent that means "go".
-   Light/ink sections alternate for rhythm. Mobile is the primary layout.
+   a purple-black canvas, and a blue→purple accent that means "go".
+   Depth comes from elevation (lighter surfaces), not shadows.
+   Mobile is the primary layout.
+
+   Token roles (inverted from the old cream theme):
+   --paper  = the dark canvas          --ink  = light foreground/text
+   --band   = elevated section band    --ink-2 = elevated dark surface
    ════════════════════════════════════════════════════════════════════ */
 
 :root {
-  --paper: #f4f1e8;        /* warm cream canvas */
-  --paper-2: #ebe7da;      /* slightly deeper panel */
-  --ink: #17151f;          /* near-black, cool indigo */
-  --ink-2: #201d2b;        /* raised ink surface */
-  --accent: #5b46f0;       /* indigo — blue→purple primary */
-  --accent-2: #9038e8;     /* purple — second tone */
-  --accent-blue: #355bf0;  /* blue — first tone */
-  --accent-deep: #4a37c9;  /* AA-safe indigo for small text on cream */
+  --paper: #0f0d16;        /* purple-black canvas */
+  --paper-2: #17141f;      /* raised panel */
+  --ink: #ece9f6;          /* light foreground, lavender-warm */
+  --ink-2: #1d1929;        /* elevated dark surface (fields, band panels) */
+  --band: #151221;         /* full-bleed elevated band */
+  --accent: #7a63ff;       /* indigo — blue→purple primary, lifted for dark */
+  --accent-2: #a34ef5;     /* purple — second tone */
+  --accent-blue: #5b7cff;  /* blue — first tone */
+  --accent-deep: #a795ff;  /* AA-safe lavender for small text on dark */
   --accent-grad: linear-gradient(120deg, var(--accent-blue), var(--accent-2));
-  --mute: #726e7c;         /* muted text on cream */
-  --mute-ink: #9b96aa;     /* muted text on ink */
-  --line: rgba(23, 21, 31, 0.13);
-  --line-strong: rgba(23, 21, 31, 0.26);
-  --line-ink: rgba(244, 241, 232, 0.16);
+  --mute: #a19cb0;         /* muted text on canvas */
+  --mute-ink: #9b96aa;     /* muted text on elevated surfaces */
+  --line: rgba(236, 233, 246, 0.12);
+  --line-strong: rgba(236, 233, 246, 0.26);
+  --line-ink: rgba(236, 233, 246, 0.14);
+
+  /* Status + tint tokens (shared by booking/admin UI) */
+  --ok: #4ad07a;
+  --ok-bg: rgba(74, 208, 122, 0.13);
+  --ok-line: rgba(74, 208, 122, 0.4);
+  --warn: #e2b23e;
+  --warn-bg: rgba(226, 178, 62, 0.13);
+  --danger: #ff6f61;
+  --danger-bg: rgba(255, 111, 97, 0.12);
+  --danger-line: rgba(255, 111, 97, 0.4);
+  --accent-bg: rgba(122, 99, 255, 0.1);
+  --accent-bg-strong: rgba(122, 99, 255, 0.16);
 
   --font-display: var(--font-anton), "Arial Narrow", Impact, sans-serif;
   --font-sans: var(--font-instrument), -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
@@ -107,10 +125,10 @@ button {
   padding-block: clamp(40px, 6vw, 96px);
 }
 
-/* Ink (dark) sections — full-bleed bands */
+/* Elevated sections — full-bleed bands, a step lighter than the canvas */
 .band-ink {
-  background: var(--ink);
-  color: var(--paper);
+  background: var(--band);
+  color: var(--ink);
 }
 
 .band-ink .eyebrow {
@@ -262,11 +280,11 @@ button {
 .btn--accent {
   --btn-bg: var(--accent-grad);
   --btn-fg: #ffffff;
-  box-shadow: 0 10px 24px -10px rgba(91, 70, 240, 0.65);
+  box-shadow: 0 10px 28px -8px rgba(122, 99, 255, 0.55);
 }
 
 .btn--accent:hover {
-  box-shadow: 0 16px 34px -12px rgba(91, 70, 240, 0.8);
+  box-shadow: 0 14px 38px -8px rgba(122, 99, 255, 0.75);
 }
 
 .btn--ink {
@@ -290,12 +308,12 @@ button {
 }
 
 .band-ink .btn--ghost {
-  --btn-fg: var(--paper);
+  --btn-fg: var(--ink);
   border-color: var(--line-ink);
 }
 
 .band-ink .btn--ghost:hover {
-  border-color: var(--paper);
+  border-color: var(--ink);
 }
 
 .btn--block {
@@ -315,7 +333,7 @@ button {
 }
 
 .panel-fill {
-  background: var(--paper);
+  background: var(--paper-2);
   border: 1px solid var(--line);
   border-radius: var(--radius);
 }
@@ -342,7 +360,7 @@ button {
 }
 
 .band-ink .chip {
-  color: var(--paper);
+  color: var(--ink);
   border-color: var(--line-ink);
 }
 
@@ -373,12 +391,12 @@ button {
 .field:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(91, 70, 240, 0.18);
+  box-shadow: 0 0 0 3px rgba(122, 99, 255, 0.22);
 }
 
 .band-ink .field {
   background: var(--ink-2);
-  color: var(--paper);
+  color: var(--ink);
   border-color: var(--line-ink);
 }
 
@@ -410,7 +428,7 @@ button {
 .otp:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(91, 70, 240, 0.18);
+  box-shadow: 0 0 0 3px rgba(122, 99, 255, 0.22);
 }
 
 /* ── Tick rail (signature precision motif) ────────────────────────── */
@@ -448,8 +466,8 @@ button {
 .ribbon {
   overflow: hidden;
   border-block: 1px solid var(--line);
-  background: var(--ink);
-  color: var(--paper);
+  background: var(--band);
+  color: var(--ink);
 }
 
 .ribbon-track {
@@ -495,9 +513,9 @@ button {
 }
 
 .nav--ink {
-  background: color-mix(in srgb, var(--ink) 80%, transparent);
+  background: color-mix(in srgb, var(--band) 80%, transparent);
   border-bottom-color: var(--line-ink);
-  color: var(--paper);
+  color: var(--ink);
 }
 
 .wordmark {
@@ -643,7 +661,7 @@ button {
   position: absolute;
   inset: 0;
   transform: translateX(-100%);
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+  background: linear-gradient(90deg, transparent, rgba(236, 233, 246, 0.08), transparent);
   animation: shimmer 1.4s infinite;
 }
 

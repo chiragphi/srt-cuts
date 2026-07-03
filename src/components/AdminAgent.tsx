@@ -134,10 +134,10 @@ export default function AdminAgent({ onRefresh }: { onRefresh: () => void }) {
         </div>
 
         <div className="flex items-center gap-3">
-          <span className="flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.08em] text-[#2f7d46]">
+          <span className="flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--ok)]">
             <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#4ad07a] opacity-60" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-[#2f7d46]" />
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--ok)] opacity-60" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--ok)]" />
             </span>
             Live
           </span>
@@ -168,7 +168,7 @@ export default function AdminAgent({ onRefresh }: { onRefresh: () => void }) {
                         key={s}
                         type="button"
                         onClick={() => send(s)}
-                        className="rounded-full border border-[var(--accent)]/40 bg-[rgba(91,70,240,0.08)] px-3 py-1.5 font-mono text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--accent-deep)] transition-transform active:scale-95"
+                        className="rounded-full border border-[var(--accent)]/40 bg-[var(--accent-bg)] px-3 py-1.5 font-mono text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--accent-deep)] transition-transform active:scale-95"
                       >
                         {s}
                       </button>
@@ -196,7 +196,7 @@ export default function AdminAgent({ onRefresh }: { onRefresh: () => void }) {
                             <div
                               key={j}
                               className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.04em]"
-                              style={{ background: "rgba(47,125,70,0.1)", border: "1px solid rgba(47,125,70,0.3)", color: "#2f7d46" }}
+                              style={{ background: "var(--ok-bg)", border: "1px solid var(--ok-line)", color: "var(--ok)" }}
                             >
                               <Check size={10} strokeWidth={3} />
                               {action}
@@ -224,7 +224,7 @@ export default function AdminAgent({ onRefresh }: { onRefresh: () => void }) {
                                 prev.map((m, idx) => (idx === i ? { ...m, isProposal: false, content: m.content + "\n\n*(Cancelled)*" } : m))
                               )
                             }
-                            className="rounded-[4px] border border-[rgba(197,54,14,0.4)] bg-[rgba(197,54,14,0.08)] px-4 py-2 font-mono text-[11px] font-bold uppercase tracking-[0.08em] text-[#c5360e] transition-transform active:scale-95"
+                            className="rounded-[4px] border border-[var(--danger-line)] bg-[var(--danger-bg)] px-4 py-2 font-mono text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--danger)] transition-transform active:scale-95"
                           >
                             Cancel
                           </button>

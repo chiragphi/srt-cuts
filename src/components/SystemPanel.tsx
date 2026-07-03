@@ -12,9 +12,9 @@ interface MaintenanceData {
 }
 
 const STATUS = {
-  pending: { label: "Pending", icon: Clock, color: "#8a6d12", bg: "rgba(154,123,26,0.12)" },
-  accepted: { label: "Accepted", icon: Check, color: "#2f7d46", bg: "rgba(47,125,70,0.12)" },
-  denied: { label: "Denied", icon: X, color: "#c5360e", bg: "rgba(197,54,14,0.12)" },
+  pending: { label: "Pending", icon: Clock, color: "var(--warn)", bg: "var(--warn-bg)" },
+  accepted: { label: "Accepted", icon: Check, color: "var(--ok)", bg: "var(--ok-bg)" },
+  denied: { label: "Denied", icon: X, color: "var(--danger)", bg: "var(--danger-bg)" },
 };
 
 export default function SystemPanel() {

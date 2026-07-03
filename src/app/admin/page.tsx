@@ -37,9 +37,9 @@ interface TaxSummary {
 }
 
 const STATUS_COLORS = {
-  pending: { bg: "rgba(154,123,26,0.12)", text: "#8a6d12" },
-  accepted: { bg: "rgba(47,125,70,0.12)", text: "#2f7d46" },
-  denied: { bg: "rgba(197,54,14,0.12)", text: "#c5360e" },
+  pending: { bg: "var(--warn-bg)", text: "var(--warn)" },
+  accepted: { bg: "var(--ok-bg)", text: "var(--ok)" },
+  denied: { bg: "var(--danger-bg)", text: "var(--danger)" },
 };
 
 const BOOKING_TABS = ["All", "Pending", "Accepted", "Denied"] as const;
@@ -411,7 +411,7 @@ function Pill({ active, onClick, children }: { active: boolean; onClick: () => v
 
 function Note({ children }: { children: React.ReactNode }) {
   return (
-    <div className="rounded-[4px] border border-[var(--accent)]/30 bg-[rgba(91,70,240,0.06)] p-4 text-sm leading-relaxed text-[var(--ink)]">
+    <div className="rounded-[4px] border border-[var(--accent)]/30 bg-[var(--accent-bg)] p-4 text-sm leading-relaxed text-[var(--ink)]">
       {children}
     </div>
   );
@@ -445,7 +445,7 @@ function TaxTracker({
               key={row.label}
               className="rounded-[4px] border p-4"
               style={{
-                background: row.highlight ? "rgba(91,70,240,0.08)" : "transparent",
+                background: row.highlight ? "var(--accent-bg)" : "transparent",
                 borderColor: row.highlight ? "var(--accent)" : "var(--line)",
               }}
             >
@@ -534,10 +534,10 @@ function ActionButton({
 }) {
   const colors =
     tone === "accept"
-      ? { border: "rgba(47,125,70,0.4)", bg: "rgba(47,125,70,0.1)", text: "#2f7d46" }
+      ? { border: "var(--ok-line)", bg: "var(--ok-bg)", text: "var(--ok)" }
       : tone === "deny"
-      ? { border: "rgba(197,54,14,0.4)", bg: "rgba(197,54,14,0.08)", text: "#c5360e" }
-      : { border: "var(--accent)", bg: "rgba(91,70,240,0.08)", text: "var(--accent-deep)" };
+      ? { border: "var(--danger-line)", bg: "var(--danger-bg)", text: "var(--danger)" }
+      : { border: "var(--accent)", bg: "var(--accent-bg)", text: "var(--accent-deep)" };
   return (
     <button
       disabled={disabled}
@@ -645,7 +645,7 @@ function SlotChip({ active, onClick, children }: { active: boolean; onClick: () 
 }
 
 function MiniAction({ tone, onClick, children }: { tone: "accent" | "deny" | "mute"; onClick: () => void; children: React.ReactNode }) {
-  const color = tone === "accent" ? "var(--accent-deep)" : tone === "deny" ? "#c5360e" : "var(--mute)";
+  const color = tone === "accent" ? "var(--accent-deep)" : tone === "deny" ? "var(--danger)" : "var(--mute)";
   return (
     <button type="button" onClick={onClick} className="font-mono text-[11px] font-bold uppercase tracking-[0.08em] transition-opacity hover:opacity-70" style={{ color }}>
       {children}
@@ -735,9 +735,9 @@ function DateAvailabilityEditor({
                   <span
                     className="rounded-full px-2.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-[0.06em]"
                     style={{
-                      background: badgeAccent ? "rgba(91,70,240,0.12)" : badgeClosed ? "rgba(197,54,14,0.1)" : "transparent",
+                      background: badgeAccent ? "var(--accent-bg-strong)" : badgeClosed ? "var(--danger-bg)" : "transparent",
                       border: badgeAccent || badgeClosed ? "none" : "1px solid var(--line-strong)",
-                      color: badgeAccent ? "var(--accent-deep)" : badgeClosed ? "#c5360e" : "var(--mute)",
+                      color: badgeAccent ? "var(--accent-deep)" : badgeClosed ? "var(--danger)" : "var(--mute)",
                     }}
                   >
                     {badge}
@@ -907,7 +907,7 @@ function ServiceEditor({ service, update }: { service: ServiceConfig; update: (s
         onChange={(value) => update({ ...service, discountPercent: clampDiscount(Number(value.replace(/[^0-9]/g, ""))) })}
       />
       {pct > 0 && (
-        <div className="rounded-[4px] border border-[var(--accent)]/30 bg-[rgba(91,70,240,0.06)] p-3 font-mono text-[12px] font-bold uppercase tracking-[0.06em]">
+        <div className="rounded-[4px] border border-[var(--accent)]/30 bg-[var(--accent-bg)] p-3 font-mono text-[12px] font-bold uppercase tracking-[0.06em]">
           <span className="text-[var(--accent-deep)]">{pct}% off</span> — customers pay{" "}
           <span className="text-[var(--ink)]">{formatPrice(effectivePrice(service))}</span>{" "}
           <span className="text-[var(--mute)] line-through">{formatPrice(service.amount)}</span>
@@ -923,7 +923,7 @@ function ServiceEditor({ service, update }: { service: ServiceConfig; update: (s
 function SaveBar({ saving, saveMessage, onSave }: { saving: boolean; saveMessage: string; onSave: () => void }) {
   return (
     <div className="sticky bottom-4 z-30 flex flex-col gap-3 rounded-[6px] border border-[var(--line-strong)] bg-[var(--paper)]/92 p-4 backdrop-blur-md sm:flex-row sm:items-center sm:justify-between">
-      <p className="font-mono text-[12px] font-bold uppercase tracking-[0.08em]" style={{ color: saveMessage === "Saved." ? "#2f7d46" : saveMessage ? "#c5360e" : "var(--mute)" }}>
+      <p className="font-mono text-[12px] font-bold uppercase tracking-[0.08em]" style={{ color: saveMessage === "Saved." ? "var(--ok)" : saveMessage ? "var(--danger)" : "var(--mute)" }}>
         {saveMessage || "Remember to save changes."}
       </p>
       <button className="btn btn--accent !min-h-[46px]" disabled={saving} onClick={onSave}>

@@ -311,7 +311,7 @@ function BookPageInner() {
                       className="flex w-full items-center gap-4 rounded-[4px] border p-4 text-left transition-colors"
                       style={{
                         borderColor: active ? "var(--accent)" : "var(--line-strong)",
-                        background: active ? "rgba(91,70,240,0.07)" : "transparent",
+                        background: active ? "var(--accent-bg)" : "transparent",
                       }}
                     >
                       <span
@@ -483,7 +483,7 @@ function BookPageInner() {
                           className="rounded-[4px] border p-4 text-left transition-colors"
                           style={{
                             borderColor: active ? "var(--accent)" : "var(--line-strong)",
-                            background: active ? "rgba(91,70,240,0.07)" : "transparent",
+                            background: active ? "var(--accent-bg)" : "transparent",
                           }}
                         >
                           <p className="font-display text-lg uppercase leading-none">{option.title}</p>
@@ -506,8 +506,8 @@ function BookPageInner() {
                 </div>
 
                 {error && (
-                  <div className="rounded-[4px] border border-[#e5484d]/45 bg-[rgba(229,72,77,0.08)] p-4">
-                    <p className="text-sm text-[#c5360e]">{error}</p>
+                  <div className="rounded-[4px] border border-[var(--danger)]/45 bg-[var(--danger-bg)] p-4">
+                    <p className="text-sm text-[var(--danger)]">{error}</p>
                   </div>
                 )}
 

@@ -220,7 +220,7 @@ function AuthForm() {
   return (
     <div className="band-ink flex min-h-screen flex-col">
       <div className="p-5 pt-[max(20px,env(safe-area-inset-top))]">
-        <Link href="/" className="font-mono text-[12px] font-bold uppercase tracking-[0.12em] text-[var(--mute-ink)] transition-colors hover:text-[var(--paper)]">
+        <Link href="/" className="font-mono text-[12px] font-bold uppercase tracking-[0.12em] text-[var(--mute-ink)] transition-colors hover:text-[var(--ink)]">
           ← SRT.CUTS
         </Link>
       </div>
@@ -257,7 +257,7 @@ function AuthForm() {
                     />
                   </div>
 
-                  {error && <p className="text-sm text-[#ff7a6e]">{error}</p>}
+                  {error && <p className="text-sm text-[var(--danger)]">{error}</p>}
 
                   <button className="btn btn--accent btn--block" onClick={continueFromPhone} disabled={loading}>
                     {loading ? "Checking…" : "Continue"}
@@ -277,7 +277,7 @@ function AuthForm() {
                 <p className="idx mb-4">[ WELCOME BACK ]</p>
                 <h1 className="display display--lg">Enter your password</h1>
                 <p className="mb-8 mt-3 text-sm text-[var(--mute-ink)]">
-                  Signing in as <span className="spec text-[var(--paper)]">{phone}</span>
+                  Signing in as <span className="spec text-[var(--ink)]">{phone}</span>
                 </p>
 
                 <div className="space-y-4">
@@ -294,7 +294,7 @@ function AuthForm() {
                     />
                   </div>
 
-                  {error && <p className="text-sm text-[#ff7a6e]">{error}</p>}
+                  {error && <p className="text-sm text-[var(--danger)]">{error}</p>}
 
                   <button className="btn btn--accent btn--block" onClick={submitPassword} disabled={loading}>
                     {loading ? "Signing in…" : "Sign in"}
@@ -302,11 +302,11 @@ function AuthForm() {
                 </div>
 
                 <div className="mt-4 flex justify-between font-mono text-[11px] font-bold uppercase tracking-[0.08em]">
-                  <button className="text-[var(--mute-ink)] transition-colors hover:text-[var(--paper)]" onClick={backToPhone}>
+                  <button className="text-[var(--mute-ink)] transition-colors hover:text-[var(--ink)]" onClick={backToPhone}>
                     Use a different number
                   </button>
                   <button
-                    className="text-[var(--accent)] transition-colors hover:text-[var(--paper)]"
+                    className="text-[var(--accent)] transition-colors hover:text-[var(--ink)]"
                     onClick={forgotPassword}
                     disabled={loading}
                   >
@@ -331,7 +331,7 @@ function AuthForm() {
 
                 {verifyMethod === "sms" && (
                   <p className="mb-8 mt-3 text-sm text-[var(--mute-ink)]">
-                    Sent a 6-digit code to <span className="spec text-[var(--paper)]">{phone}</span>
+                    Sent a 6-digit code to <span className="spec text-[var(--ink)]">{phone}</span>
                   </p>
                 )}
 
@@ -344,7 +344,7 @@ function AuthForm() {
                     {verifyReason && <p className="text-xs text-[var(--mute-ink)]">{verifyReason}</p>}
                     <div className="rounded-md border border-[var(--rule)] p-3">
                       <p className="field-label mb-1">Manual entry key</p>
-                      <p className="spec break-all text-[13px] text-[var(--paper)]">{totpSecret}</p>
+                      <p className="spec break-all text-[13px] text-[var(--ink)]">{totpSecret}</p>
                     </div>
                     <p className="text-xs text-[var(--mute-ink)]">
                       Add this key to your authenticator app, then enter the 6-digit code it shows.
@@ -382,19 +382,19 @@ function AuthForm() {
                   ))}
                 </div>
 
-                {error && <p className="mb-4 text-center text-sm text-[#ff7a6e]">{error}</p>}
+                {error && <p className="mb-4 text-center text-sm text-[var(--danger)]">{error}</p>}
 
                 <button className="btn btn--accent btn--block" onClick={verifyCode} disabled={loading}>
                   {loading ? "Verifying…" : "Continue"}
                 </button>
 
                 <div className="mt-4 flex justify-between font-mono text-[11px] font-bold uppercase tracking-[0.08em]">
-                  <button className="text-[var(--mute-ink)] transition-colors hover:text-[var(--paper)]" onClick={backToPhone}>
+                  <button className="text-[var(--mute-ink)] transition-colors hover:text-[var(--ink)]" onClick={backToPhone}>
                     Change number
                   </button>
                   {verifyMethod === "sms" && (
                     <button
-                      className="text-[var(--accent)] transition-colors hover:text-[var(--paper)]"
+                      className="text-[var(--accent)] transition-colors hover:text-[var(--ink)]"
                       onClick={resendCode}
                       disabled={resending}
                     >
@@ -444,7 +444,7 @@ function AuthForm() {
                     />
                   </div>
 
-                  {error && <p className="text-sm text-[#ff7a6e]">{error}</p>}
+                  {error && <p className="text-sm text-[var(--danger)]">{error}</p>}
 
                   <button className="btn btn--accent btn--block" onClick={submitNewPassword} disabled={loading}>
                     {loading ? "Saving…" : "Continue"}
@@ -461,7 +461,7 @@ function AuthForm() {
 
 export default function AuthPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[var(--ink)]" />}>
+    <Suspense fallback={<div className="min-h-screen bg-[var(--paper)]" />}>
       <AuthForm />
     </Suspense>
   );

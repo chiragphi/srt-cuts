@@ -53,12 +53,12 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -12, scale: 0.98 }}
                 transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-                className="pointer-events-auto flex items-start gap-3 rounded-[4px] border border-[var(--line-ink)] bg-[var(--ink)] px-4 py-3.5 text-[var(--paper)] shadow-[0_24px_50px_-20px_rgba(0,0,0,0.6)]"
+                className="pointer-events-auto flex items-start gap-3 rounded-[4px] border border-[var(--line-ink)] bg-[var(--ink-2)] px-4 py-3.5 text-[var(--ink)] shadow-[0_24px_50px_-20px_rgba(0,0,0,0.6)]"
               >
                 <span
                   className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-[3px]"
                   style={{
-                    background: t.type === "error" ? "#e5484d" : t.type === "success" ? "#4ad07a" : "#f4f1e8",
+                    background: t.type === "error" ? "var(--danger)" : t.type === "success" ? "var(--ok)" : "var(--accent-deep)",
                     color: "#16140f",
                   }}
                 >
@@ -67,7 +67,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                 <p className="flex-1 text-sm leading-snug">{t.message}</p>
                 <button
                   onClick={() => dismiss(t.id)}
-                  className="shrink-0 text-[var(--mute-ink)] transition-colors hover:text-[var(--paper)]"
+                  className="shrink-0 text-[var(--mute-ink)] transition-colors hover:text-[var(--ink)]"
                   aria-label="Dismiss notification"
                 >
                   <X size={15} />

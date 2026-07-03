@@ -53,10 +53,10 @@ export default function HomePage() {
 
       {lightbox && (
         <div
-          className="fixed inset-0 z-[9998] flex items-center justify-center bg-[var(--ink)]/90 p-4 backdrop-blur-sm"
+          className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
           onClick={() => setLightbox(null)}
         >
-          <button className="absolute right-5 top-5 text-[var(--paper)]" aria-label="Close" onClick={() => setLightbox(null)}>
+          <button className="absolute right-5 top-5 text-[var(--ink)]" aria-label="Close" onClick={() => setLightbox(null)}>
             <X size={26} />
           </button>
           <div className="relative aspect-[4/5] w-full max-w-xl overflow-hidden rounded-[6px]" onClick={(e) => e.stopPropagation()}>
@@ -138,8 +138,8 @@ export default function HomePage() {
                 <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[6px] border border-[var(--line)]">
                   <Image src={heroImage} alt={content.barberName} fill sizes="(min-width:1024px) 440px, 90vw" className="object-cover" />
                 </div>
-                <figcaption className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-3 rounded-[4px] border border-[var(--line-ink)] bg-[var(--ink)]/85 px-3.5 py-2.5 backdrop-blur-md">
-                  <span className="flex items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--paper)]">
+                <figcaption className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-3 rounded-[4px] border border-[var(--line-ink)] bg-[var(--ink-2)]/85 px-3.5 py-2.5 backdrop-blur-md">
+                  <span className="flex items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--ink)]">
                     <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" />
                     Booking open · {today}
                   </span>
@@ -353,10 +353,10 @@ export default function HomePage() {
                         {sale ? (
                           <p className="flex items-baseline justify-end gap-2">
                             <span className="font-mono text-sm text-[var(--mute-ink)] line-through">{formatPrice(s.amount)}</span>
-                            <span className="spec text-xl text-[var(--paper)] sm:text-2xl">{formatPrice(effectivePrice(s))}</span>
+                            <span className="spec text-xl text-[var(--ink)] sm:text-2xl">{formatPrice(effectivePrice(s))}</span>
                           </p>
                         ) : (
-                          <p className="spec text-xl text-[var(--paper)] sm:text-2xl">{formatPrice(s.amount)}</p>
+                          <p className="spec text-xl text-[var(--ink)] sm:text-2xl">{formatPrice(s.amount)}</p>
                         )}
                         <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--mute-ink)]">{s.duration}</p>
                       </div>
@@ -485,7 +485,7 @@ export default function HomePage() {
           <div className="shell">
             <div className="flex flex-col justify-between gap-10 sm:flex-row">
               <div className="max-w-xs">
-                <span className="wordmark text-[var(--paper)]">
+                <span className="wordmark text-[var(--ink)]">
                   SRT<span className="hot">.</span>CUTS
                 </span>
                 <p className="mt-4 text-sm text-[var(--mute-ink)]">
@@ -493,13 +493,13 @@ export default function HomePage() {
                 </p>
               </div>
               <nav className="grid grid-cols-2 gap-x-12 gap-y-2.5 font-mono text-[12px] font-bold uppercase tracking-[0.1em]">
-                <Link href="/" className="text-[var(--mute-ink)] transition-colors hover:text-[var(--paper)]">Home</Link>
-                <Link href="/#work" className="text-[var(--mute-ink)] transition-colors hover:text-[var(--paper)]">Work</Link>
-                <Link href="/#services" className="text-[var(--mute-ink)] transition-colors hover:text-[var(--paper)]">Menu</Link>
-                <Link href="/book" className="text-[var(--mute-ink)] transition-colors hover:text-[var(--paper)]">Book</Link>
-                <Link href="/bookings" className="text-[var(--mute-ink)] transition-colors hover:text-[var(--paper)]">My bookings</Link>
+                <Link href="/" className="text-[var(--mute-ink)] transition-colors hover:text-[var(--ink)]">Home</Link>
+                <Link href="/#work" className="text-[var(--mute-ink)] transition-colors hover:text-[var(--ink)]">Work</Link>
+                <Link href="/#services" className="text-[var(--mute-ink)] transition-colors hover:text-[var(--ink)]">Menu</Link>
+                <Link href="/book" className="text-[var(--mute-ink)] transition-colors hover:text-[var(--ink)]">Book</Link>
+                <Link href="/bookings" className="text-[var(--mute-ink)] transition-colors hover:text-[var(--ink)]">My bookings</Link>
                 {social && (
-                  <a href={social} target="_blank" rel="noopener noreferrer" className="text-[var(--mute-ink)] transition-colors hover:text-[var(--paper)]">
+                  <a href={social} target="_blank" rel="noopener noreferrer" className="text-[var(--mute-ink)] transition-colors hover:text-[var(--ink)]">
                     {content.instagramUrl ? "Instagram" : "TikTok"}
                   </a>
                 )}
