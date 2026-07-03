@@ -20,7 +20,7 @@ import {
 
 // Warn well before credits actually run out (~a week of headroom at
 // current volume) so there's time to top up.
-const LOW_QUOTA_THRESHOLD = 25;
+export const LOW_QUOTA_THRESHOLD = 25;
 
 export type VerificationResult =
   | { method: "sms"; channel: string; carrier: string; code: string; expiresAt: number }
@@ -146,6 +146,28 @@ export async function notifyPhone(phone: string, message: string): Promise<void>
     if (!result.ok) console.error(`Notification to ${phone} failed: ${result.reason}`);
   } catch (error) {
     console.error(`Notification to ${phone} failed:`, error instanceof Error ? error.message : error);
+  }
+}
+
+/**
+ * Read the remaining Textbelt credit balance. Free — consumes no credits.
+ * Returns null when the key is missing or the check fails; callers should
+ * treat that as "unknown", not zero.
+ */
+export async function getSmsQuota(): Promise<number | null> {
+  const key = process.env.TEXTBELT_API_KEY;
+  if (!key) return null;
+
+  try {
+    const res = await fetch(`https://textbelt.com/quota/${encodeURIComponent(key)}`, {
+      cache: "no-store",
+      signal: AbortSignal.timeout(10_000),
+    });
+    if (!res.ok) return null;
+    const data = (await res.json()) as { success?: boolean; quotaRemaining?: number };
+    return data.success && typeof data.quotaRemaining === "number" ? data.quotaRemaining : null;
+  } catch {
+    return null;
   }
 }
 

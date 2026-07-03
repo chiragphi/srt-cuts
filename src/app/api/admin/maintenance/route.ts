@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSession, isAdmin } from "@/lib/session";
 import { getStorageStats, getRecentActivity, runCleanup } from "@/lib/maintenance";
+import { getSmsQuota, LOW_QUOTA_THRESHOLD } from "@/lib/sms-client";
 
 async function requireAdmin() {
   const user = await getSession();
@@ -12,8 +13,19 @@ export async function GET() {
   const user = await requireAdmin();
   if (!user) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-  const [stats, activity] = await Promise.all([getStorageStats(), getRecentActivity()]);
-  return NextResponse.json({ stats, activity });
+  const [stats, activity, quotaRemaining] = await Promise.all([
+    getStorageStats(),
+    getRecentActivity(),
+    getSmsQuota(),
+  ]);
+  return NextResponse.json({
+    stats,
+    activity,
+    sms: {
+      quotaRemaining,
+      low: quotaRemaining !== null && quotaRemaining <= LOW_QUOTA_THRESHOLD,
+    },
+  });
 }
 
 export async function POST() {

@@ -8,6 +8,7 @@ import type { StorageStats, ActivityItem, CleanupResult } from "@/lib/maintenanc
 interface MaintenanceData {
   stats: StorageStats;
   activity: ActivityItem[];
+  sms?: { quotaRemaining: number | null; low: boolean };
 }
 
 const STATUS = {
@@ -72,7 +73,7 @@ export default function SystemPanel() {
     return <div className="py-20 text-center text-sm text-[var(--mute)]">Couldn&apos;t load system data.</div>;
   }
 
-  const { stats, activity } = data;
+  const { stats, activity, sms } = data;
   const reclaimable = stats.otp.stale + stats.sessions.expired;
 
   return (
@@ -86,7 +87,7 @@ export default function SystemPanel() {
           <span className="font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--mute)]">Auto-cleans monthly</span>
         </div>
 
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
           <StatCard label="Login codes" value={stats.otp.total} sub={`${stats.otp.stale} stale`} flag={stats.otp.stale > 0} />
           <StatCard label="Sessions" value={stats.sessions.total} sub={`${stats.sessions.expired} expired`} flag={stats.sessions.expired > 0} />
           <StatCard
@@ -95,6 +96,13 @@ export default function SystemPanel() {
             sub={`${stats.bookings.pending} pending · ${stats.bookings.accepted} accepted`}
           />
           <StatCard label="Customers" value={stats.users.total} sub="kept forever" />
+          <StatCard
+            label="Texts left"
+            value={sms?.quotaRemaining ?? "—"}
+            sub={sms?.low ? "low — top up at textbelt.com" : "~$0.01 per text"}
+            flag={sms?.low}
+            className="col-span-2 lg:col-span-1"
+          />
         </div>
 
         <div className="flex flex-col gap-3 rounded-[4px] border border-[var(--line)] p-4 sm:flex-row sm:items-center sm:justify-between">
@@ -164,9 +172,21 @@ export default function SystemPanel() {
   );
 }
 
-function StatCard({ label, value, sub, flag }: { label: string; value: number; sub: string; flag?: boolean }) {
+function StatCard({
+  label,
+  value,
+  sub,
+  flag,
+  className = "",
+}: {
+  label: string;
+  value: number | string;
+  sub: string;
+  flag?: boolean;
+  className?: string;
+}) {
   return (
-    <div className="rounded-[4px] border border-[var(--line)] p-4">
+    <div className={`rounded-[4px] border border-[var(--line)] p-4 ${className}`}>
       <p className="font-mono text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--mute)]">{label}</p>
       <p className="spec mt-2 text-3xl">{value}</p>
       <p
