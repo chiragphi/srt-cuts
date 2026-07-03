@@ -81,7 +81,7 @@ export const DEFAULT_SITE_CONTENT: SiteContent = {
   barberBio:
     "Precision barbering in Herriman with a focus on clean blends, crisp lineups, and appointments that run smooth.",
   barberPhotoUrl: "/srt-logo.png",
-  aboutImageUrl: "/srt-logo.png",
+  aboutImageUrl: "/barber.jpg",
   specialties: ["Fades", "Lineups", "Full service cuts"],
   address: "Herriman, Utah",
   mapUrl: "https://maps.google.com/?q=Herriman%2C%20Utah",

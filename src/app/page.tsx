@@ -40,7 +40,8 @@ export default function HomePage() {
   const testimonials = content.testimonials.filter((t) => !isPlaceholderTestimonial(t));
   const services = content.serviceConfigs;
   const social = content.instagramUrl || content.tiktokUrl;
-  const aboutImage = content.aboutImageUrl || "/srt-logo.png";
+  const aboutImage = content.aboutImageUrl || "/barber.jpg";
+  const heroImage = content.heroImageUrl || "/barber.jpg";
   const aboutQuote = testimonials[0];
 
   const onSale = services.filter(hasDiscount);
@@ -78,22 +79,18 @@ export default function HomePage() {
             </Reveal>
 
             <Reveal delay={80}>
-              <div className="relative mx-auto h-44 w-72 sm:h-56 sm:w-[26rem]">
-                <Image
-                  src="/srt-logo.png"
-                  alt="SRT Cuts"
-                  fill
-                  priority
-                  sizes="(min-width:640px) 416px, 288px"
-                  className="object-contain"
-                />
-              </div>
+              <h1 className="display display--xl">
+                Your sharpest
+                <br />
+                cut <span className="hot">yet.</span>
+              </h1>
             </Reveal>
 
-            <Reveal delay={150}>
-              <h1 className="display display--lg mt-6">
-                One chair. Everything to <span className="hot">prove.</span>
-              </h1>
+            <Reveal delay={140}>
+              <p className="lede mt-6 max-w-xl">
+                Book in under a minute — confirmed by text, no deposit, pay at the chair.
+                Walk in, walk out sharper.
+              </p>
             </Reveal>
 
             <Reveal delay={210}>
@@ -132,6 +129,25 @@ export default function HomePage() {
                   </div>
                 ))}
               </dl>
+            </Reveal>
+
+            <Reveal delay={320} className="mx-auto mt-12 w-full max-w-md">
+              <figure className="relative w-full">
+                <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[6px] border border-[var(--line)]">
+                  <Image src={heroImage} alt={content.barberName} fill priority sizes="(min-width:768px) 448px, 90vw" className="object-cover" />
+                </div>
+                <figcaption className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-3 rounded-[4px] border border-[var(--line-ink)] bg-[var(--ink-2)]/85 px-3.5 py-2.5 backdrop-blur-md">
+                  <span className="flex items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--ink)]">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" />
+                    Booking open
+                  </span>
+                  <div className="tickrail w-20">
+                    {Array.from({ length: 11 }).map((_, i) => (
+                      <span key={i} />
+                    ))}
+                  </div>
+                </figcaption>
+              </figure>
             </Reveal>
           </div>
         </section>
