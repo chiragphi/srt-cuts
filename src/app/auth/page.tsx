@@ -40,12 +40,20 @@ function AuthForm() {
 
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
+  const [resendWait, setResendWait] = useState(0);
   const [error, setError] = useState("");
   const codeRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
     if (user) router.replace(isAdmin ? "/admin" : redirect);
   }, [user, isAdmin, redirect, router]);
+
+  // Tick the resend cooldown down once per second while it's running.
+  useEffect(() => {
+    if (resendWait <= 0) return;
+    const t = setTimeout(() => setResendWait((s) => s - 1), 1000);
+    return () => clearTimeout(t);
+  }, [resendWait]);
 
   const digits = phone.replace(/\D/g, "");
 
@@ -61,6 +69,8 @@ function AuthForm() {
     if (!res.ok) {
       const d = await res.json();
       setError(d.error || "Failed to send verification.");
+      // Server-enforced cooldown — sync the local countdown to it.
+      if (typeof d.retryAfter === "number") setResendWait(d.retryAfter);
       return;
     }
     const d = await res.json();
@@ -69,7 +79,10 @@ function AuthForm() {
     setVerifyReason(d.reason || "");
     setCode(["", "", "", "", "", ""]);
     setStep("verify");
-    if (d.method === "sms") setTimeout(() => codeRefs.current[0]?.focus(), 100);
+    if (d.method === "sms") {
+      setResendWait(60);
+      setTimeout(() => codeRefs.current[0]?.focus(), 100);
+    }
   }
 
   async function continueFromPhone() {
@@ -394,11 +407,11 @@ function AuthForm() {
                   </button>
                   {verifyMethod === "sms" && (
                     <button
-                      className="text-[var(--accent)] transition-colors hover:text-[var(--ink)]"
+                      className="text-[var(--accent)] transition-colors hover:text-[var(--ink)] disabled:cursor-default disabled:text-[var(--mute-ink)] disabled:hover:text-[var(--mute-ink)]"
                       onClick={resendCode}
-                      disabled={resending}
+                      disabled={resending || resendWait > 0}
                     >
-                      {resending ? "Sending…" : "Resend code"}
+                      {resending ? "Sending…" : resendWait > 0 ? `Resend in ${resendWait}s` : "Resend code"}
                     </button>
                   )}
                 </div>

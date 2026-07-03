@@ -8,11 +8,35 @@ function hashCode(code: string): string {
   return crypto.createHash("sha256").update(code).digest("hex");
 }
 
+// Minimum gap between code requests for the same phone. Server-enforced so
+// hammering the endpoint can't drain SMS credits; the client mirrors it with
+// a countdown on the resend button.
+const RESEND_COOLDOWN_MS = 60_000;
+
 export async function POST(req: NextRequest) {
   const { phone } = await req.json();
   const digits = normalizePhone(phone ?? "");
   if (digits.length !== 10)
     return NextResponse.json({ error: "Invalid phone number" }, { status: 400 });
+
+  const { data: last } = await supabaseAdmin
+    .from("otp_codes")
+    .select("created_at")
+    .eq("phone", digits)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (last?.created_at) {
+    const elapsed = Date.now() - new Date(last.created_at).getTime();
+    if (elapsed < RESEND_COOLDOWN_MS) {
+      const retryAfter = Math.ceil((RESEND_COOLDOWN_MS - elapsed) / 1000);
+      return NextResponse.json(
+        { error: `Please wait ${retryAfter}s before requesting another code.`, retryAfter },
+        { status: 429 },
+      );
+    }
+  }
 
   // Invalidate any previous unused verification attempt for this phone.
   await supabaseAdmin.from("otp_codes").update({ used: true }).eq("phone", digits).eq("used", false);
