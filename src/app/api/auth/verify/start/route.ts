@@ -3,7 +3,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { normalizePhone } from "@/lib/auth-bypass";
 import { requestPhoneVerification } from "@/lib/sms-client";
-import { generateTotpSecret, buildOtpAuthUrl } from "@/lib/sms-gateway";
 
 function hashCode(code: string): string {
   return crypto.createHash("sha256").update(code).digest("hex");
@@ -22,18 +21,11 @@ export async function POST(req: NextRequest) {
   try {
     result = await requestPhoneVerification(digits, digits);
   } catch (error) {
-    // The Windows PC / tunnel is unreachable — fall back to a locally
-    // generated TOTP secret so a down verification service can't lock
-    // people out entirely.
-    console.error("Verification service unreachable, using local TOTP:", error instanceof Error ? error.message : error);
-    const secret = generateTotpSecret();
-    result = {
-      method: "totp" as const,
-      reason: "Verification service unreachable — use an authenticator app instead.",
-      carrier: null,
-      secret,
-      otpAuthUrl: buildOtpAuthUrl(secret, digits),
-    };
+    console.error("Verification service unavailable:", error instanceof Error ? error.message : error);
+    return NextResponse.json(
+      { error: "Text verification is temporarily unavailable. Please try again in a few minutes." },
+      { status: 503 },
+    );
   }
 
   const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
