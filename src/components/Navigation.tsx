@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { CalendarDays, House, LogOut, Scissors, User } from "lucide-react";
+import { CalendarDays, House, Info, LogOut, Scissors, User } from "lucide-react";
 import { useAuth } from "@/context/auth";
 import { useToast } from "@/components/Toast";
 
@@ -56,6 +56,12 @@ export default function Navigation() {
               className="hidden font-mono text-[12px] font-bold uppercase tracking-[0.12em] text-[var(--mute)] transition-colors hover:text-[var(--ink)] sm:inline"
             >
               Services
+            </Link>
+            <Link
+              href="/#about"
+              className="hidden font-mono text-[12px] font-bold uppercase tracking-[0.12em] text-[var(--mute)] transition-colors hover:text-[var(--ink)] sm:inline"
+            >
+              About Me
             </Link>
 
             {user ? (
@@ -163,6 +169,10 @@ export default function Navigation() {
         <Link href="/#services" className="tab" data-active={false}>
           <Scissors size={19} />
           <span>Menu</span>
+        </Link>
+        <Link href="/#about" className="tab" data-active={false}>
+          <Info size={19} />
+          <span>About</span>
         </Link>
         <Link href="/book" className="tab" data-active={pathname === "/book"}>
           <CalendarDays size={19} />

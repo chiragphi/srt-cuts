@@ -40,8 +40,8 @@ export default function HomePage() {
   const testimonials = content.testimonials.filter((t) => !isPlaceholderTestimonial(t));
   const services = content.serviceConfigs;
   const social = content.instagramUrl || content.tiktokUrl;
-  const heroImage = content.heroImageUrl || "/srt-logo.png";
-  const today = new Date().toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+  const aboutImage = content.aboutImageUrl || "/srt-logo.png";
+  const aboutQuote = testimonials[0];
 
   const onSale = services.filter(hasDiscount);
   const maxDiscount = onSale.reduce((m, s) => Math.max(m, clampDiscount(s.discountPercent)), 0);
@@ -66,90 +66,72 @@ export default function HomePage() {
       )}
 
       <main className="has-tabbar">
-        {/* ── 01 · HERO / PITCH ─────────────────────────────────────── */}
-        <section className="relative overflow-hidden pt-24 sm:pt-28">
-          <div className="shell grid items-end gap-12 pb-14 lg:grid-cols-[1.15fr_0.85fr] lg:gap-10">
-            <div>
-              <Reveal>
-                <p className="mb-6 flex items-center gap-2.5 font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--mute)] sm:text-[12px]">
-                  <span className="h-0.5 w-5 shrink-0 bg-[var(--accent)]" />
-                  Herriman, UT — By appointment
-                </p>
-              </Reveal>
+        {/* ── 01 · HERO — logo-first ────────────────────────────────── */}
+        <section className="relative overflow-hidden pt-28 sm:pt-32">
+          <div className="shell flex flex-col items-center pb-16 text-center">
+            <Reveal>
+              <p className="mb-8 flex items-center justify-center gap-2.5 font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--mute)] sm:text-[12px]">
+                <span className="h-0.5 w-5 shrink-0 bg-[var(--accent)]" />
+                Herriman, UT — By appointment
+                <span className="h-0.5 w-5 shrink-0 bg-[var(--accent)]" />
+              </p>
+            </Reveal>
 
-              <Reveal delay={60}>
-                <h1 className="display display--hero">
-                  One chair.
-                  <br />
-                  Everything
-                  <br />
-                  to <span className="hot">prove.</span>
-                </h1>
-              </Reveal>
+            <Reveal delay={80}>
+              <div className="relative mx-auto h-44 w-72 sm:h-56 sm:w-[26rem]">
+                <Image
+                  src="/srt-logo.png"
+                  alt="SRT Cuts"
+                  fill
+                  priority
+                  sizes="(min-width:640px) 416px, 288px"
+                  className="object-contain"
+                />
+              </div>
+            </Reveal>
 
-              <Reveal delay={140}>
-                <p className="lede mt-8 max-w-xl">
-                  Precision fades and clean lineups, booked online and confirmed by text. Young hands,
-                  relentless standard — every cut is the one that builds the name. Sit down sharp, leave sharper.
-                </p>
-              </Reveal>
+            <Reveal delay={150}>
+              <h1 className="display display--lg mt-6">
+                One chair. Everything to <span className="hot">prove.</span>
+              </h1>
+            </Reveal>
 
-              <Reveal delay={200}>
-                <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-                  <Link href="/book" className="btn btn--accent w-full sm:w-auto">
-                    Reserve the chair
-                    <ArrowUpRight size={17} strokeWidth={2.5} />
-                  </Link>
-                  <a href="#work" className="btn btn--ghost w-full sm:w-auto">
-                    See the work
-                  </a>
-                </div>
-              </Reveal>
+            <Reveal delay={210}>
+              <div className="mt-9 flex w-full flex-col justify-center gap-3 sm:w-auto sm:flex-row">
+                <Link href="/book" className="btn btn--accent w-full sm:w-auto">
+                  Reserve the chair
+                  <ArrowUpRight size={17} strokeWidth={2.5} />
+                </Link>
+                <a href="#work" className="btn btn--ghost w-full sm:w-auto">
+                  See the work
+                </a>
+              </div>
+            </Reveal>
 
-              {maxDiscount > 0 && (
-                <Reveal delay={230}>
-                  <a href="#services" className="mt-6 inline-flex items-center gap-2.5">
-                    <span className="chip chip--accent animate-pulse">{maxDiscount}% OFF</span>
-                    <span className="font-mono text-[12px] font-bold uppercase tracking-[0.1em] text-[var(--ink)]">
-                      {saleNames} on sale — book now
-                    </span>
-                  </a>
-                </Reveal>
-              )}
-
-              <Reveal delay={260}>
-                <dl className="mt-9 grid max-w-lg grid-cols-3 gap-px overflow-hidden rounded-[4px] border border-[var(--line)] bg-[var(--line)]">
-                  {[
-                    ["No deposits", "Pay at the chair"],
-                    ["Replies fast", "Texts, not voicemail"],
-                    ["Current cuts", "What's sharp now"],
-                  ].map(([k, v]) => (
-                    <div key={k} className="bg-[var(--paper)] px-3 py-3.5 sm:px-4 sm:py-4">
-                      <dt className="font-display text-[15px] uppercase leading-none sm:text-lg">{k}</dt>
-                      <dd className="mt-1.5 font-mono text-[9px] uppercase leading-tight tracking-[0.06em] text-[var(--mute)] sm:text-[10px]">{v}</dd>
-                    </div>
-                  ))}
-                </dl>
-              </Reveal>
-            </div>
-
-            <Reveal delay={120} className="lg:pb-2">
-              <figure className="relative">
-                <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[6px] border border-[var(--line)]">
-                  <Image src={heroImage} alt={content.barberName} fill sizes="(min-width:1024px) 440px, 90vw" className="object-cover" />
-                </div>
-                <figcaption className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-3 rounded-[4px] border border-[var(--line-ink)] bg-[var(--ink-2)]/85 px-3.5 py-2.5 backdrop-blur-md">
-                  <span className="flex items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--ink)]">
-                    <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" />
-                    Booking open · {today}
+            {maxDiscount > 0 && (
+              <Reveal delay={240}>
+                <a href="#services" className="mt-6 inline-flex items-center gap-2.5">
+                  <span className="chip chip--accent animate-pulse">{maxDiscount}% OFF</span>
+                  <span className="font-mono text-[12px] font-bold uppercase tracking-[0.1em] text-[var(--ink)]">
+                    {saleNames} on sale — book now
                   </span>
-                  <div className="tickrail w-20">
-                    {Array.from({ length: 11 }).map((_, i) => (
-                      <span key={i} />
-                    ))}
+                </a>
+              </Reveal>
+            )}
+
+            <Reveal delay={270}>
+              <dl className="mt-10 grid w-full max-w-lg grid-cols-3 gap-px overflow-hidden rounded-[4px] border border-[var(--line)] bg-[var(--line)]">
+                {[
+                  ["No deposits", "Pay at the chair"],
+                  ["Replies fast", "Texts, not voicemail"],
+                  ["Current cuts", "What's sharp now"],
+                ].map(([k, v]) => (
+                  <div key={k} className="bg-[var(--paper)] px-3 py-3.5 sm:px-4 sm:py-4">
+                    <dt className="font-display text-[15px] uppercase leading-none sm:text-lg">{k}</dt>
+                    <dd className="mt-1.5 font-mono text-[9px] uppercase leading-tight tracking-[0.06em] text-[var(--mute)] sm:text-[10px]">{v}</dd>
                   </div>
-                </figcaption>
-              </figure>
+                ))}
+              </dl>
             </Reveal>
           </div>
         </section>
@@ -175,21 +157,12 @@ export default function HomePage() {
             <Reveal>
               <p className="idx mb-4">[ 02 — WHY IT&apos;S REAL ]</p>
             </Reveal>
-            {testimonials.length > 0 ? (
-              <Reveal delay={60}>
-                <blockquote className="display display--lg max-w-4xl normal-case" style={{ lineHeight: 1.05 }}>
-                  &ldquo;{testimonials[0].quote}&rdquo;
-                </blockquote>
-                <p className="eyebrow mt-6">{testimonials[0].name}</p>
-              </Reveal>
-            ) : (
-              <Reveal delay={60}>
-                <p className="display display--lg max-w-4xl normal-case" style={{ lineHeight: 1.05 }}>
-                  Every head walks out a <span className="hot">reference.</span> One chair means no rushing you to
-                  the next — just the cut, done right.
-                </p>
-              </Reveal>
-            )}
+            <Reveal delay={60}>
+              <p className="display display--lg max-w-4xl normal-case" style={{ lineHeight: 1.05 }}>
+                Every head walks out a <span className="hot">reference.</span> One chair means no rushing you to
+                the next — just the cut, done right.
+              </p>
+            </Reveal>
 
             <Reveal delay={120}>
               <div className="mt-12 grid grid-cols-2 gap-px overflow-hidden rounded-[4px] border border-[var(--line)] bg-[var(--line)] sm:grid-cols-4">
@@ -452,6 +425,46 @@ export default function HomePage() {
                 />
               )}
             </div>
+          </div>
+        </section>
+
+        {/* ── ABOUT ME ──────────────────────────────────────────────── */}
+        <section id="about" className="section">
+          <div className="shell grid items-center gap-12 lg:grid-cols-[0.9fr_1.1fr]">
+            <Reveal>
+              <div className="relative aspect-[4/5] w-full max-w-md overflow-hidden rounded-[6px] border border-[var(--line)]">
+                <Image src={aboutImage} alt={content.barberName} fill sizes="(min-width:1024px) 440px, 90vw" className="object-cover" />
+              </div>
+            </Reveal>
+            <Reveal delay={80}>
+              <p className="idx mb-4">[ ABOUT ME ]</p>
+              <h2 className="display display--xl">
+                Behind the <span className="hot">chair.</span>
+              </h2>
+              <p className="lede mt-7 max-w-xl">
+                Precision fades and clean lineups, booked online and confirmed by text. Young hands,
+                relentless standard — every cut is the one that builds the name. Sit down sharp, leave sharper.
+              </p>
+              {aboutQuote && (
+                <blockquote className="mt-8 border-l-2 border-[var(--accent)] pl-5">
+                  <p className="display display--md normal-case" style={{ lineHeight: 1.1 }}>
+                    &ldquo;{aboutQuote.quote}&rdquo;
+                  </p>
+                  <p className="eyebrow mt-4">{aboutQuote.name}</p>
+                </blockquote>
+              )}
+              <div className="mt-9 flex flex-wrap gap-3">
+                <Link href="/book" className="btn btn--accent">
+                  Reserve the chair
+                  <ArrowUpRight size={16} strokeWidth={2.5} />
+                </Link>
+                {social && (
+                  <a href={social} target="_blank" rel="noopener noreferrer" className="btn btn--ghost">
+                    {content.instagramUrl ? "Instagram" : "TikTok"}
+                  </a>
+                )}
+              </div>
+            </Reveal>
           </div>
         </section>
 

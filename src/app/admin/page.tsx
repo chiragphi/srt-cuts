@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { DEFAULT_SITE_CONTENT, type SiteContent } from "@/lib/site-content";
 import { formatPrice, parseDollarAmount, clampDiscount, effectivePrice, type ServiceConfig } from "@/lib/services";
 import { TIME_SLOTS, DAYS_OF_WEEK } from "@/lib/schedule";
@@ -267,6 +268,7 @@ export default function AdminPage() {
                 <Panel title="Homepage image links">
                   <ImageField label="Hero image direct link" value={content.heroImageUrl} onChange={(heroImageUrl) => setContent({ ...content, heroImageUrl })} />
                   <ImageField label="Barber photo direct link" value={content.barberPhotoUrl} onChange={(barberPhotoUrl) => setContent({ ...content, barberPhotoUrl })} />
+                  <ImageField label="About Me photo direct link" value={content.aboutImageUrl} onChange={(aboutImageUrl) => setContent({ ...content, aboutImageUrl })} />
                   <Note>Paste direct image URLs here — uploaded image links, Supabase Storage links, or public links ending in an image file.</Note>
                 </Panel>
 
@@ -663,111 +665,195 @@ function DateAvailabilityEditor({
   weeklyAvailability: Record<string, string[]>;
   onChange: (v: Record<string, string[]>) => void;
 }) {
-  const [expanded, setExpanded] = useState<string | null>(null);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const toISO = (y: number, m: number, d: number) => `${y}-${pad(m + 1)}-${pad(d)}`;
 
-  const today = new Date();
-  const dates: string[] = [];
-  for (let i = 1; i <= 18; i++) {
-    const d = new Date(today);
-    d.setDate(today.getDate() + i);
-    dates.push(d.toISOString().split("T")[0]);
+  const now = new Date();
+  const todayISO = toISO(now.getFullYear(), now.getMonth(), now.getDate());
+
+  const [view, setView] = useState(() => new Date(now.getFullYear(), now.getMonth(), 1));
+  const [selected, setSelected] = useState<string | null>(null);
+
+  const y = view.getFullYear();
+  const m = view.getMonth();
+  const daysInMonth = new Date(y, m + 1, 0).getDate();
+  const firstDow = new Date(y, m, 1).getDay();
+  const viewYM = y * 12 + m;
+  const minYM = now.getFullYear() * 12 + now.getMonth();
+  const monthLabel = view.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+
+  const cells: (number | null)[] = [...Array(firstDow).fill(null)];
+  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+
+  function slotsFor(iso: string): string[] {
+    return iso in dateAvailability ? dateAvailability[iso] : weeklyAvailability[String(new Date(iso + "T00:00:00").getDay())] ?? [];
   }
-
   function toggle(iso: string, slot: string) {
-    const current = dateAvailability[iso] ?? weeklyAvailability[String(new Date(iso + "T00:00:00").getDay())] ?? [];
+    const current = slotsFor(iso);
     const next = current.includes(slot)
       ? current.filter((t) => t !== slot)
       : [...current, slot].sort((a, b) => TIME_SLOTS.indexOf(a) - TIME_SLOTS.indexOf(b));
     onChange({ ...dateAvailability, [iso]: next });
   }
-
   function setAll(iso: string) {
     onChange({ ...dateAvailability, [iso]: [...TIME_SLOTS] });
   }
-
   function clearAll(iso: string) {
     onChange({ ...dateAvailability, [iso]: [] });
   }
-
   function clearOverride(iso: string) {
     const next = { ...dateAvailability };
     delete next[iso];
     onChange(next);
   }
 
+  const selectedSlots = selected ? slotsFor(selected) : [];
+  const selectedHasOverride = selected ? selected in dateAvailability : false;
+  const selectedLabel = selected
+    ? new Date(selected + "T00:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })
+    : "";
+
   return (
     <section className="panel-fill space-y-4 p-4 sm:p-6">
       <div className="flex items-center justify-between">
         <h2 className="font-display text-2xl uppercase">Date-specific availability</h2>
-        <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--mute)]">Next 18 days</p>
+        <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--mute)]">Tap a day</p>
       </div>
 
-      <Note>Override availability for specific dates. These take priority over the weekly schedule. Dates without an override use the weekly default.</Note>
+      <Note>Tap any day to set its hours. Date overrides take priority over the weekly schedule; days without an override use the weekly default.</Note>
 
-      <div className="space-y-2">
-        {dates.map((iso) => {
-          const d = new Date(iso + "T00:00:00");
-          const dow = String(d.getDay());
+      {/* Month grid */}
+      <div className="mb-1 flex items-center justify-between">
+        <button
+          type="button"
+          onClick={() => setView(new Date(y, m - 1, 1))}
+          disabled={viewYM <= minYM}
+          aria-label="Previous month"
+          className="flex h-9 w-9 items-center justify-center rounded-[4px] border border-[var(--line-strong)] text-[var(--ink)] transition-transform active:scale-95 disabled:opacity-25"
+        >
+          <ChevronLeft size={16} strokeWidth={2.5} />
+        </button>
+        <span className="font-mono text-[13px] font-bold uppercase tracking-[0.12em]">{monthLabel}</span>
+        <button
+          type="button"
+          onClick={() => setView(new Date(y, m + 1, 1))}
+          aria-label="Next month"
+          className="flex h-9 w-9 items-center justify-center rounded-[4px] border border-[var(--line-strong)] text-[var(--ink)] transition-transform active:scale-95"
+        >
+          <ChevronRight size={16} strokeWidth={2.5} />
+        </button>
+      </div>
+
+      <div className="grid grid-cols-7">
+        {["S", "M", "T", "W", "T", "F", "S"].map((d, i) => (
+          <div key={i} className="py-1 text-center font-mono text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--mute)]">
+            {d}
+          </div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-7 gap-1">
+        {cells.map((day, i) => {
+          if (!day) return <div key={`e${i}`} className="aspect-square" />;
+          const iso = toISO(y, m, day);
+          const past = iso < todayISO;
           const hasOverride = iso in dateAvailability;
-          const slots = hasOverride ? dateAvailability[iso] : (weeklyAvailability[dow] ?? []);
-          const isOpen = expanded === iso;
-          const displaySlots = hasOverride ? dateAvailability[iso] : null;
+          const slots = slotsFor(iso);
+          const open = slots.length > 0;
+          const isSel = iso === selected;
 
-          const label = d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
-          const badge = hasOverride
-            ? displaySlots!.length === 0
-              ? "Closed (override)"
-              : `${displaySlots!.length} slots (override)`
-            : slots.length === 0
-            ? "Closed (weekly)"
-            : `${slots.length} slots (weekly)`;
-          const badgeAccent = hasOverride && displaySlots!.length > 0;
-          const badgeClosed = hasOverride && displaySlots!.length === 0;
+          let bg = "transparent";
+          let color = "var(--ink)";
+          let border = "1px solid var(--line)";
+          let dot = "";
+          if (past) {
+            color = "var(--mute)";
+            border = "1px solid transparent";
+          } else if (isSel) {
+            bg = "var(--accent)";
+            color = "#ffffff";
+            border = "1px solid transparent";
+          } else if (hasOverride) {
+            bg = open ? "var(--accent-bg-strong)" : "var(--danger-bg)";
+            color = open ? "var(--accent-deep)" : "var(--danger)";
+            border = "1px solid transparent";
+            dot = open ? "var(--accent)" : "var(--danger)";
+          } else if (!open) {
+            color = "var(--mute)";
+          } else {
+            dot = "var(--mute)";
+          }
 
           return (
-            <div key={iso} className="overflow-hidden rounded-[4px] border border-[var(--line)]">
-              <button
-                type="button"
-                className="flex w-full items-center justify-between px-4 py-3 text-left"
-                onClick={() => setExpanded(isOpen ? null : iso)}
-              >
-                <div className="flex items-center gap-3">
-                  <span className="font-mono text-[13px] font-bold uppercase tracking-[0.04em]">{label}</span>
-                  <span
-                    className="rounded-full px-2.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-[0.06em]"
-                    style={{
-                      background: badgeAccent ? "var(--accent-bg-strong)" : badgeClosed ? "var(--danger-bg)" : "transparent",
-                      border: badgeAccent || badgeClosed ? "none" : "1px solid var(--line-strong)",
-                      color: badgeAccent ? "var(--accent-deep)" : badgeClosed ? "var(--danger)" : "var(--mute)",
-                    }}
-                  >
-                    {badge}
-                  </span>
-                </div>
-                <span className="text-[var(--mute)]">{isOpen ? "▲" : "▼"}</span>
-              </button>
-
-              {isOpen && (
-                <div className="space-y-3 border-t border-[var(--line)] px-4 pb-4 pt-3">
-                  <div className="flex gap-4">
-                    <MiniAction tone="accent" onClick={() => setAll(iso)}>Select all</MiniAction>
-                    <MiniAction tone="deny" onClick={() => clearAll(iso)}>Close day</MiniAction>
-                    {hasOverride && <MiniAction tone="mute" onClick={() => clearOverride(iso)}>Reset to weekly</MiniAction>}
-                  </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {TIME_SLOTS.map((slot) => (
-                      <SlotChip key={slot} active={slots.includes(slot)} onClick={() => toggle(iso, slot)}>
-                        {slot}
-                      </SlotChip>
-                    ))}
-                  </div>
-                </div>
+            <button
+              key={iso}
+              type="button"
+              disabled={past}
+              onClick={() => setSelected(isSel ? null : iso)}
+              className="relative flex aspect-square items-center justify-center rounded-[4px] font-mono text-[13px] font-bold transition-transform active:scale-95 disabled:cursor-default"
+              style={{ background: bg, color, border, opacity: past ? 0.4 : 1 }}
+            >
+              {day}
+              {dot && !isSel && (
+                <span className="absolute bottom-1 h-1 w-1 rounded-full" style={{ background: dot }} />
               )}
-            </div>
+            </button>
           );
         })}
       </div>
+
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[var(--line)] pt-3">
+        <LegendDot color="var(--accent)" label="Override open" />
+        <LegendDot color="var(--danger)" label="Override closed" />
+        <LegendDot color="var(--mute)" label="Weekly default" />
+      </div>
+
+      {/* Selected-day hours drop bar */}
+      {selected && (
+        <div className="space-y-3 rounded-[4px] border border-[var(--line-strong)] p-4">
+          <div className="flex items-center justify-between">
+            <span className="font-display text-lg uppercase leading-none">{selectedLabel}</span>
+            <span
+              className="rounded-full px-2.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-[0.06em]"
+              style={{
+                background: selectedHasOverride ? (selectedSlots.length ? "var(--accent-bg-strong)" : "var(--danger-bg)") : "transparent",
+                border: selectedHasOverride ? "none" : "1px solid var(--line-strong)",
+                color: selectedHasOverride ? (selectedSlots.length ? "var(--accent-deep)" : "var(--danger)") : "var(--mute)",
+              }}
+            >
+              {selectedHasOverride
+                ? selectedSlots.length === 0
+                  ? "Closed (override)"
+                  : `${selectedSlots.length} slots (override)`
+                : selectedSlots.length === 0
+                ? "Closed (weekly)"
+                : `${selectedSlots.length} slots (weekly)`}
+            </span>
+          </div>
+          <div className="flex gap-4">
+            <MiniAction tone="accent" onClick={() => setAll(selected)}>Select all</MiniAction>
+            <MiniAction tone="deny" onClick={() => clearAll(selected)}>Close day</MiniAction>
+            {selectedHasOverride && <MiniAction tone="mute" onClick={() => clearOverride(selected)}>Reset to weekly</MiniAction>}
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {TIME_SLOTS.map((slot) => (
+              <SlotChip key={slot} active={selectedSlots.includes(slot)} onClick={() => toggle(selected, slot)}>
+                {slot}
+              </SlotChip>
+            ))}
+          </div>
+        </div>
+      )}
     </section>
+  );
+}
+
+function LegendDot({ color, label }: { color: string; label: string }) {
+  return (
+    <div className="flex items-center gap-1.5">
+      <span className="h-2 w-2 rounded-full" style={{ background: color }} />
+      <span className="font-mono text-[10px] uppercase tracking-[0.08em] text-[var(--mute)]">{label}</span>
+    </div>
   );
 }
 
