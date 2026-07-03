@@ -645,8 +645,8 @@ button {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  padding: 11px 0 9px;
+  gap: 5px;
+  padding: 13px 0 11px;
   font-family: var(--font-mono);
   font-size: 10px;
   font-weight: 700;
@@ -658,6 +658,10 @@ button {
 
 .tab[data-active="true"] {
   color: var(--accent-deep);
+}
+
+.tab[data-active="true"] svg {
+  filter: drop-shadow(0 0 10px rgba(122, 99, 255, 0.5));
 }
 
 /* ── Calendar ─────────────────────────────────────────────────────── */
