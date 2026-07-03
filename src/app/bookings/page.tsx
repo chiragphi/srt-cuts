@@ -7,6 +7,7 @@ import Link from "next/link";
 import { ArrowUpRight, CalendarDays, Check, Clock, RotateCcw, X, CalendarClock, Ban } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import CalendarPicker from "@/components/CalendarPicker";
+import { Pill } from "@/components/ui";
 import { formatPrice } from "@/lib/services";
 import { DEFAULT_SITE_CONTENT, type SiteContent } from "@/lib/site-content";
 import { useAuth } from "@/context/auth";
@@ -182,7 +183,7 @@ export default function BookingsPage() {
       <Navigation />
       <div className="has-tabbar min-h-screen px-5 pb-28 pt-24 sm:pb-16">
         <div className="mx-auto w-full max-w-2xl">
-          <div className="mb-7">
+          <div className="mb-9">
             <p className="idx mb-3">[ ACCOUNT ]</p>
             <h1 className="display display--lg">My bookings</h1>
             {user && (
@@ -192,24 +193,12 @@ export default function BookingsPage() {
             )}
           </div>
 
-          <div className="mb-6 flex gap-2">
-            {(["all", "upcoming", "past"] as const).map((f) => {
-              const active = filter === f;
-              return (
-                <button
-                  key={f}
-                  onClick={() => setFilter(f)}
-                  className="rounded-full border px-4 py-2 font-mono text-[12px] font-bold uppercase tracking-[0.1em] transition-colors"
-                  style={{
-                    borderColor: active ? "transparent" : "var(--line-strong)",
-                    background: active ? "var(--accent)" : "transparent",
-                    color: active ? "#ffffff" : "var(--mute)",
-                  }}
-                >
-                  {f}
-                </button>
-              );
-            })}
+          <div className="mb-8 flex gap-2">
+            {(["all", "upcoming", "past"] as const).map((f) => (
+              <Pill key={f} active={filter === f} onClick={() => setFilter(f)}>
+                {f}
+              </Pill>
+            ))}
           </div>
 
           {loading ? (
@@ -239,7 +228,7 @@ export default function BookingsPage() {
               </Link>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-4">
               {filtered.map((b, i) => {
                 const cfg = STATUS[b.status];
                 const Icon = cfg.icon;
