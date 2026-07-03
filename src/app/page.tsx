@@ -259,7 +259,7 @@ export default function HomePage() {
         {testimonials.length > 0 && (
           <Section band>
             <Reveal>
-              <SectionHeader idx="[ 05 — IN THEIR WORDS ]" title="Regulars, not one-offs" />
+              <SectionHeader idx="[ 04 — IN THEIR WORDS ]" title="Regulars, not one-offs" />
             </Reveal>
             <div className="grid gap-5 sm:grid-cols-2">
               {testimonials.slice(0, 2).map((t, i) => (
@@ -278,7 +278,7 @@ export default function HomePage() {
         {/* ── 06 · THE FINE PRINT ──────────────────────────────────── */}
         <Section tight>
           <Reveal>
-            <SectionHeader idx="[ 06 — THE FINE PRINT ]" title="No surprises before you sit" />
+            <SectionHeader idx="[ 05 — THE FINE PRINT ]" title="No surprises before you sit" />
           </Reveal>
           <Card>
             <StatList>
@@ -315,7 +315,7 @@ export default function HomePage() {
             <Reveal>
               <div className="flex flex-col items-start justify-between gap-8 lg:flex-row lg:items-end">
                 <div>
-                  <p className="idx mb-5">[ 07 — YOUR MOVE ]</p>
+                  <p className="idx mb-5">[ 06 — YOUR MOVE ]</p>
                   <h2 className="display display--hero" style={{ fontSize: "clamp(48px,9vw,128px)" }}>
                     Claim the
                     <br />

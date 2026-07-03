@@ -74,7 +74,7 @@ const DEFAULT_TESTIMONIALS: Testimonial[] = [
 ];
 
 export const DEFAULT_SITE_CONTENT: SiteContent = {
-  heroImageUrl: "/srt-logo.png",
+  heroImageUrl: "/barber.jpg",
   gallery: DEFAULT_GALLERY,
   testimonials: DEFAULT_TESTIMONIALS,
   barberName: "SRT Cuts",
