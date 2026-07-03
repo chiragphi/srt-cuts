@@ -49,6 +49,16 @@
   --shell: 1240px;
   --radius: 4px;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Spacing scale — 4px base. Cluster tightly, gap generously. */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4.5rem;
 }
 
 @theme inline {
@@ -118,11 +128,11 @@ button {
 }
 
 .section {
-  padding-block: clamp(56px, 9vw, 160px);
+  padding-block: clamp(64px, 9vw, 160px);
 }
 
 .section-tight {
-  padding-block: clamp(40px, 6vw, 96px);
+  padding-block: clamp(48px, 6vw, 96px);
 }
 
 /* Elevated sections — full-bleed bands, a step lighter than the canvas */
@@ -341,6 +351,57 @@ button {
 .band-ink .panel-fill {
   background: var(--ink-2);
   border-color: var(--line-ink);
+}
+
+/* ── Calm card: the single elevated surface (replaces gap-px box grids) ── */
+.card {
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: var(--space-5);
+}
+
+.card--raised {
+  background: var(--paper-2);
+}
+
+.band-ink .card {
+  border-color: var(--line-ink);
+}
+
+.band-ink .card--raised {
+  background: var(--ink-2);
+}
+
+/* Open, divider-separated list — no per-cell borders */
+.statlist > * + * {
+  border-top: 1px solid var(--line);
+}
+
+.band-ink .statlist > * + * {
+  border-top-color: var(--line-ink);
+}
+
+.inforow {
+  display: block;
+  padding-block: var(--space-5);
+}
+
+.inforow:first-child {
+  padding-top: 0;
+}
+
+.inforow:last-child {
+  padding-bottom: 0;
+}
+
+/* Layout helpers */
+.cluster > * + * {
+  margin-top: var(--space-3);
+}
+
+.stack-lg > * + * {
+  margin-top: var(--space-6);
 }
 
 /* Chips / tags */
