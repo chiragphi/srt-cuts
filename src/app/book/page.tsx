@@ -7,6 +7,7 @@ import Link from "next/link";
 import { ArrowUpRight, CalendarPlus, Check, Copy, Gift, Zap } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import CalendarPicker from "@/components/CalendarPicker";
+import { Card, SummaryRow } from "@/components/ui";
 import { formatPrice, effectivePrice, hasDiscount, clampDiscount } from "@/lib/services";
 import { DEFAULT_SITE_CONTENT, type SiteContent } from "@/lib/site-content";
 import { useAuth } from "@/context/auth";
@@ -203,15 +204,15 @@ function BookPageInner() {
             <p className="mt-4 text-[var(--mute)]">A text confirmation lands once it&apos;s approved. Keep your phone close.</p>
 
             {service && date && time && (
-              <div className="panel-fill mt-7 p-5 text-left">
+              <Card raised className="mt-7 text-left">
                 <SummaryRow label="Service" value={service} />
                 {selectedService && <SummaryRow label="Price" value={formatPrice(effectivePrice(selectedService))} />}
                 <SummaryRow label="Date" value={displayDate} />
                 <SummaryRow label="Time" value={time} last />
-              </div>
+              </Card>
             )}
 
-            <div className="panel-fill mt-4 flex items-start gap-3 p-4 text-left">
+            <Card raised className="mt-4 flex items-start gap-3 text-left">
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[4px] bg-[var(--accent)]/14 text-[var(--accent-deep)]">
                 <Gift size={16} />
               </span>
@@ -219,7 +220,7 @@ function BookPageInner() {
                 <p className="font-display text-lg uppercase leading-none">Refer a friend, get $5 off</p>
                 <p className="mt-1.5 text-xs text-[var(--mute)]">Share SRT Cuts. When they book, you both save.</p>
               </div>
-            </div>
+            </Card>
 
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
               {calUrl && (
@@ -261,7 +262,7 @@ function BookPageInner() {
       <Navigation />
       <div className="has-tabbar min-h-screen px-5 pb-28 pt-24 sm:pb-16">
         <div className="mx-auto w-full max-w-xl">
-          <div className="mb-7">
+          <div className="mb-9">
             <p className="idx mb-3">[ RESERVE / STEP {step} OF 3 ]</p>
             <h1 className="display display--lg">
               {step === 1 ? "Choose your cut" : step === 2 ? "Pick a time" : "Lock it in"}
@@ -270,7 +271,7 @@ function BookPageInner() {
           </div>
 
           {/* Progress */}
-          <div className="mb-8 grid grid-cols-3 gap-2">
+          <div className="mb-10 grid grid-cols-3 gap-2">
             {STEPS.map((label, i) => {
               const s = i + 1;
               return (
@@ -433,9 +434,9 @@ function BookPageInner() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -18 }}
                 transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-                className="space-y-5"
+                className="space-y-7"
               >
-                <div className="panel-fill p-5">
+                <Card raised>
                   <SummaryRow label="Service" value={service} />
                   <SummaryRow label="Duration" value={selectedService?.duration ?? "Appointment"} />
                   <SummaryRow label="Price" value={selectedService ? formatPrice(effectivePrice(selectedService)) : "TBD"} />
@@ -444,7 +445,7 @@ function BookPageInner() {
                     value={new Date(date + "T00:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
                   />
                   <SummaryRow label="Time" value={time} last />
-                </div>
+                </Card>
 
                 <div>
                   <label className="field-label">Notes (optional)</label>
@@ -470,7 +471,7 @@ function BookPageInner() {
 
                 <div>
                   <label className="field-label">Payment</label>
-                  <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="grid gap-3">
                     {[
                       { id: "in_store", title: "Pay in store", desc: "Full price at your appointment — cash or Venmo." },
                       { id: "online", title: "Pay with Venmo", desc: "Send payment on Venmo right after booking." },
@@ -499,11 +500,11 @@ function BookPageInner() {
                   </div>
                 </div>
 
-                <div className="panel-fill space-y-2 p-5">
+                <Card raised className="space-y-2">
                   <p className="text-sm">No deposits. Choose Venmo full payment or pay in store.</p>
                   <p className="text-sm text-[var(--mute)]">{content.cancellationPolicy}</p>
                   <p className="text-sm text-[var(--mute)]">{content.reminderPolicy}</p>
-                </div>
+                </Card>
 
                 {error && (
                   <div className="rounded-[4px] border border-[var(--danger)]/45 bg-[var(--danger-bg)] p-4">
@@ -527,18 +528,6 @@ function BookPageInner() {
         </div>
       </div>
     </>
-  );
-}
-
-function SummaryRow({ label, value, last }: { label: string; value: string; last?: boolean }) {
-  return (
-    <div
-      className="flex items-center justify-between gap-4 py-2.5"
-      style={last ? undefined : { borderBottom: "1px solid var(--line)" }}
-    >
-      <span className="font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--mute)]">{label}</span>
-      <span className="spec text-right text-sm">{value}</span>
-    </div>
   );
 }
 
