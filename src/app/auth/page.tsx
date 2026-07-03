@@ -255,7 +255,7 @@ function AuthForm() {
                 </h1>
                 <p className="mb-8 mt-3 text-sm text-[var(--mute-ink)]">Enter your phone number to get started.</p>
 
-                <div className="space-y-4">
+                <div className="space-y-5">
                   <div>
                     <label className="field-label">Phone number</label>
                     <input
@@ -293,7 +293,7 @@ function AuthForm() {
                   Signing in as <span className="spec text-[var(--ink)]">{phone}</span>
                 </p>
 
-                <div className="space-y-4">
+                <div className="space-y-5">
                   <div>
                     <label className="field-label">Password</label>
                     <input
@@ -433,7 +433,7 @@ function AuthForm() {
                   device, you&apos;ll sign in with this password.
                 </p>
 
-                <div className="space-y-4">
+                <div className="space-y-5">
                   <div>
                     <label className="field-label">New password</label>
                     <input
