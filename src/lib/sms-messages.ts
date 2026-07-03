@@ -1,3 +1,8 @@
+// NOTE: Textbelt rejects texts containing URLs on unverified keys ("ability to
+// send URLs via text is limited to verified accounts"). Keep every message
+// link-free — no https://, no bare domains like "srtcuts.hair" — or the send
+// fails silently. To restore links, whitelist the key at textbelt.com/whitelist.
+
 export const SMS = {
   otp: (code: string) =>
     `Your SRT Cuts verification code is: ${code}. Expires in 10 minutes.`,
@@ -6,16 +11,16 @@ export const SMS = {
     `Hey ${name}! Your SRT Cuts booking for a ${service} on ${date} at ${time} is pending confirmation. We'll let you know soon. — SRT`,
 
   bookingCreatedAdmin: (name: string, phone: string, service: string, date: string, time: string) =>
-    `New booking request!\n${name} (${phone}) wants ${service} on ${date} at ${time}.\nManage: ${process.env.NEXT_PUBLIC_SITE_URL}/admin`,
+    `New booking request!\n${name} (${phone}) wants ${service} on ${date} at ${time}.\nOpen your admin panel to respond.`,
 
   bookingAccepted: (name: string, service: string, date: string, time: string) =>
     `You're confirmed! Your SRT Cuts ${service} is set for ${date} at ${time}. See you then! — SRT`,
 
   bookingDenied: (name: string, service: string, date: string, time: string) =>
-    `Hi ${name}, we can't accommodate your ${service} on ${date} at ${time}. Please rebook at ${process.env.NEXT_PUBLIC_SITE_URL}. Sorry for the inconvenience! — SRT`,
+    `Hi ${name}, we can't accommodate your ${service} on ${date} at ${time}. Please rebook another time — sorry for the inconvenience! — SRT`,
 
   bookingCancelledAdmin: (name: string, phone: string, service: string, date: string, time: string) =>
-    `Booking cancelled.\n${name} (${phone}) cancelled their ${service} on ${date} at ${time}.\nManage: ${process.env.NEXT_PUBLIC_SITE_URL}/admin`,
+    `Booking cancelled.\n${name} (${phone}) cancelled their ${service} on ${date} at ${time}.\nOpen your admin panel to review.`,
 
   bookingRescheduledAdmin: (
     name: string,
@@ -26,5 +31,5 @@ export const SMS = {
     newDate: string,
     newTime: string
   ) =>
-    `Booking moved.\n${name} (${phone}): ${service} was ${oldDate} at ${oldTime} → now ${newDate} at ${newTime}. Needs re-confirm.\nManage: ${process.env.NEXT_PUBLIC_SITE_URL}/admin`,
+    `Booking moved.\n${name} (${phone}): ${service} was ${oldDate} at ${oldTime} → now ${newDate} at ${newTime}. Needs re-confirm.\nOpen your admin panel to respond.`,
 };
