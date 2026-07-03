@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession, isAdmin } from "@/lib/session";
 import { supabaseAdmin } from "@/lib/supabase";
 import { mergeSiteContent } from "@/lib/site-content";
-import { sendSMS, SMS } from "@/lib/twilio";
+import { notifyPhone } from "@/lib/sms-client";
+import { SMS } from "@/lib/sms-messages";
 import { TIME_SLOTS, DAYS_OF_WEEK } from "@/lib/schedule";
 import { clampDiscount, effectivePrice } from "@/lib/services";
 
@@ -820,11 +821,7 @@ async function executeTool(
     for (const booking of pendingBookings) {
       await supabaseAdmin.from("bookings").update({ status: "accepted" }).eq("id", booking.id);
       const displayDate = new Date(booking.booking_date + "T00:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
-      try {
-        await sendSMS(booking.user_phone, SMS.bookingAccepted(booking.user_name, booking.service, displayDate, booking.booking_time));
-      } catch (err) {
-        console.error("SMS failed for", booking.id, err instanceof Error ? err.message : err);
-      }
+      await notifyPhone(booking.user_phone, SMS.bookingAccepted(booking.user_name, booking.service, displayDate, booking.booking_time));
       results.push(booking.user_name);
     }
     return { success: true, description: `Accepted ${results.length} booking${results.length !== 1 ? "s" : ""}: ${results.join(", ")}` };
@@ -841,14 +838,10 @@ async function executeTool(
     await supabaseAdmin.from("bookings").update({ status }).eq("id", bookingId);
 
     const displayDate = new Date(booking.booking_date + "T00:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
-    try {
-      const msg = status === "accepted"
-        ? SMS.bookingAccepted(booking.user_name, booking.service, displayDate, booking.booking_time)
-        : SMS.bookingDenied(booking.user_name, booking.service, displayDate, booking.booking_time);
-      await sendSMS(booking.user_phone, msg);
-    } catch (err) {
-      console.error("AI SMS failed:", err instanceof Error ? err.message : err);
-    }
+    const msg = status === "accepted"
+      ? SMS.bookingAccepted(booking.user_name, booking.service, displayDate, booking.booking_time)
+      : SMS.bookingDenied(booking.user_name, booking.service, displayDate, booking.booking_time);
+    await notifyPhone(booking.user_phone, msg);
 
     return { success: true, description: `${status === "accepted" ? "Accepted" : "Denied"} booking for ${booking.user_name}` };
   }

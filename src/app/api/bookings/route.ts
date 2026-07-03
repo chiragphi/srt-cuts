@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
 import { supabaseAdmin } from "@/lib/supabase";
-import { sendSMS, SMS } from "@/lib/twilio";
+import { notifyPhone } from "@/lib/sms-client";
+import { SMS } from "@/lib/sms-messages";
 import { mergeSiteContent } from "@/lib/site-content";
 import { effectivePrice } from "@/lib/services";
 
@@ -96,26 +97,12 @@ export async function POST(req: NextRequest) {
   });
 
   // Notify customer
-  try {
-    await sendSMS(
-      user.phone,
-      SMS.bookingCreatedCustomer(user.name, service, displayDate, time)
-    );
-  } catch (error) {
-    console.error("Customer booking SMS failed:", error instanceof Error ? error.message : error);
-  }
+  await notifyPhone(user.phone, SMS.bookingCreatedCustomer(user.name, service, displayDate, time));
 
   // Notify admin
   const adminPhone = process.env.ADMIN_PHONE;
   if (adminPhone) {
-    try {
-      await sendSMS(
-        adminPhone,
-        SMS.bookingCreatedAdmin(user.name, user.phone, service, displayDate, time)
-      );
-    } catch (error) {
-      console.error("Admin booking SMS failed:", error instanceof Error ? error.message : error);
-    }
+    await notifyPhone(adminPhone, SMS.bookingCreatedAdmin(user.name, user.phone, service, displayDate, time));
   }
 
   if (paymentMethod === "online") {

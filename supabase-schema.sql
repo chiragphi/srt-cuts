@@ -73,3 +73,24 @@ CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(token);
 CREATE INDEX IF NOT EXISTS idx_otp_phone ON otp_codes(phone, used);
 CREATE INDEX IF NOT EXISTS idx_bookings_date ON bookings(booking_date, booking_time);
 CREATE INDEX IF NOT EXISTS idx_bookings_user ON bookings(user_id);
+
+-- Password + device-trust login (2026-07-02)
+-- `otp_codes.code` now stores a SHA-256 hash of the code, not the raw code.
+ALTER TABLE users ADD COLUMN IF NOT EXISTS password_hash TEXT;
+
+ALTER TABLE otp_codes ADD COLUMN IF NOT EXISTS method TEXT NOT NULL DEFAULT 'sms'
+  CHECK (method IN ('sms', 'totp'));
+ALTER TABLE otp_codes ADD COLUMN IF NOT EXISTS totp_secret TEXT;
+-- TOTP rows have no code; SMS rows have no totp_secret.
+ALTER TABLE otp_codes ALTER COLUMN code DROP NOT NULL;
+
+CREATE TABLE IF NOT EXISTS trusted_devices (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  token_hash TEXT UNIQUE NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  last_used_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_trusted_devices_token_hash ON trusted_devices(token_hash);
+CREATE INDEX IF NOT EXISTS idx_trusted_devices_user ON trusted_devices(user_id);

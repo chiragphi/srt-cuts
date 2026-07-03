@@ -1,37 +1,3 @@
-import twilio from "twilio";
-
-function getClient() {
-  const accountSid = process.env.TWILIO_ACCOUNT_SID;
-  const authToken = process.env.TWILIO_AUTH_TOKEN;
-  if (!accountSid || !authToken) {
-    throw new Error("Twilio account SID or auth token is missing.");
-  }
-
-  return twilio(accountSid, authToken);
-}
-
-export function formatSmsPhone(phone: string) {
-  const digits = phone.replace(/\D/g, "").slice(-10);
-  return digits.length === 10 ? `+1${digits}` : phone;
-}
-
-export async function sendSMS(to: string, body: string) {
-  const from = process.env.TWILIO_PHONE_NUMBER;
-  if (!from) throw new Error("Twilio phone number is missing.");
-
-  const formattedFrom = formatSmsPhone(from);
-  const formattedTo = formatSmsPhone(to);
-  if (formattedFrom === formattedTo) {
-    throw new Error("Twilio cannot send an SMS from your Twilio number to that same number.");
-  }
-
-  return getClient().messages.create({
-    to: formattedTo,
-    from: formattedFrom,
-    body,
-  });
-}
-
 export const SMS = {
   otp: (code: string) =>
     `Your SRT Cuts verification code is: ${code}. Expires in 10 minutes.`,

@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession, isAdmin } from "@/lib/session";
 import { supabaseAdmin } from "@/lib/supabase";
-import { sendSMS, SMS } from "@/lib/twilio";
+import { notifyPhone } from "@/lib/sms-client";
+import { SMS } from "@/lib/sms-messages";
 
 export async function PATCH(
   req: NextRequest,
@@ -44,15 +45,11 @@ export async function PATCH(
       { weekday: "long", month: "long", day: "numeric" }
     );
 
-    try {
-      const msg =
-        status === "accepted"
-          ? SMS.bookingAccepted(booking.user_name, booking.service, displayDate, booking.booking_time)
-          : SMS.bookingDenied(booking.user_name, booking.service, displayDate, booking.booking_time);
-      await sendSMS(booking.user_phone, msg);
-    } catch (error) {
-      console.error("Booking status SMS failed:", error instanceof Error ? error.message : error);
-    }
+    const msg =
+      status === "accepted"
+        ? SMS.bookingAccepted(booking.user_name, booking.service, displayDate, booking.booking_time)
+        : SMS.bookingDenied(booking.user_name, booking.service, displayDate, booking.booking_time);
+    await notifyPhone(booking.user_phone, msg);
   }
 
   return NextResponse.json({ booking });
