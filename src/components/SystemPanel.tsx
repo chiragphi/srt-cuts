@@ -8,7 +8,7 @@ import type { StorageStats, ActivityItem, CleanupResult } from "@/lib/maintenanc
 interface MaintenanceData {
   stats: StorageStats;
   activity: ActivityItem[];
-  sms?: { quotaRemaining: number | null; low: boolean };
+  sms?: { quotaRemaining: number | null; low: boolean; adminAlerts?: boolean };
 }
 
 const STATUS = {
@@ -87,7 +87,7 @@ export default function SystemPanel() {
           <span className="font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--mute)]">Auto-cleans monthly</span>
         </div>
 
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-6">
           <StatCard label="Login codes" value={stats.otp.total} sub={`${stats.otp.stale} stale`} flag={stats.otp.stale > 0} />
           <StatCard label="Sessions" value={stats.sessions.total} sub={`${stats.sessions.expired} expired`} flag={stats.sessions.expired > 0} />
           <StatCard
@@ -101,7 +101,12 @@ export default function SystemPanel() {
             value={sms?.quotaRemaining ?? "—"}
             sub={sms?.low ? "low — top up at textbelt.com" : "~$0.01 per text"}
             flag={sms?.low}
-            className="col-span-2 lg:col-span-1"
+          />
+          <StatCard
+            label="Admin alerts"
+            value={sms?.adminAlerts ? "On" : "Off"}
+            sub={sms?.adminAlerts ? "ADMIN_PHONE set" : "set ADMIN_PHONE + redeploy"}
+            flag={sms?.adminAlerts === false}
           />
         </div>
 

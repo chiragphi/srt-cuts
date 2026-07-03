@@ -24,6 +24,9 @@ export async function GET() {
     sms: {
       quotaRemaining,
       low: quotaRemaining !== null && quotaRemaining <= LOW_QUOTA_THRESHOLD,
+      // Whether the deployed runtime actually sees ADMIN_PHONE. When false,
+      // booking/cancel/reschedule alerts to the owner are silently skipped.
+      adminAlerts: Boolean(process.env.ADMIN_PHONE?.trim()),
     },
   });
 }

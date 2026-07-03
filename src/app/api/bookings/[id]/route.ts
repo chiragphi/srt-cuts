@@ -57,7 +57,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       { status: 409 }
     );
 
-  const adminPhone = process.env.ADMIN_PHONE;
+  const adminPhone = process.env.ADMIN_PHONE?.trim();
+  if (!adminPhone)
+    console.error("ADMIN_PHONE not set — skipping admin alert for booking change. Set it in the deployment env and redeploy.");
 
   // ── Cancel ────────────────────────────────────────────────────────
   if (action === "cancel") {

@@ -100,9 +100,11 @@ export async function POST(req: NextRequest) {
   await notifyPhone(user.phone, SMS.bookingCreatedCustomer(user.name, service, displayDate, time));
 
   // Notify admin
-  const adminPhone = process.env.ADMIN_PHONE;
+  const adminPhone = process.env.ADMIN_PHONE?.trim();
   if (adminPhone) {
     await notifyPhone(adminPhone, SMS.bookingCreatedAdmin(user.name, user.phone, service, displayDate, time));
+  } else {
+    console.error("ADMIN_PHONE not set — skipping new-booking admin alert. Set it in the deployment env and redeploy.");
   }
 
   if (paymentMethod === "online") {
