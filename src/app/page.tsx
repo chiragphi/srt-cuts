@@ -10,11 +10,11 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight, MapPin, X } from "lucide-react";
+import { ArrowUpRight, X } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import Reveal from "@/components/Reveal";
-import { Section, SectionHeader } from "@/components/ui";
-import { formatPrice, effectivePrice, hasDiscount, clampDiscount } from "@/lib/services";
+import { Section, SectionHeader, Card, StatList, InfoRow, ServiceRow } from "@/components/ui";
+import { hasDiscount, clampDiscount } from "@/lib/services";
 import {
   DEFAULT_SITE_CONTENT,
   isPlaceholderGalleryItem,
@@ -187,219 +187,51 @@ export default function HomePage() {
           </Section>
         )}
 
-        {/* ── 04 · THE EDGE (age as advantage) ──────────────────────── */}
-        <section id="barber" className="section">
-          <div className="shell grid items-center gap-12 lg:grid-cols-[0.85fr_1.15fr]">
-            <Reveal>
-              <div className="relative aspect-[4/5] w-full max-w-sm overflow-hidden rounded-[6px] border border-[var(--line)]">
-                <Image src={content.barberPhotoUrl || "/srt-logo.png"} alt={content.barberName} fill sizes="400px" className="object-cover" />
-              </div>
-            </Reveal>
-            <Reveal delay={80}>
-              <p className="idx mb-4">[ 04 — THE EDGE ]</p>
-              <h2 className="display display--xl">
-                Young hands.
-                <br />
-                <span className="hot">Relentless</span> standard.
-              </h2>
-              <p className="lede mt-7 max-w-xl">
-                {content.barberBio}
-              </p>
-              <p className="mt-5 max-w-xl text-[var(--mute)]">
-                Hungrier means more reps, later hours, faster replies, and someone treating every single head
-                like it&apos;s the one that makes the reputation. Up to date on the cuts people actually want right
-                now — not the ones that were sharp five years ago.
-              </p>
-              <div className="mt-7 flex flex-wrap gap-2.5">
-                {content.specialties.map((s) => (
-                  <span key={s} className="chip">
-                    {s}
-                  </span>
-                ))}
-              </div>
-              <div className="mt-9 flex flex-wrap gap-3">
-                <Link href="/book" className="btn btn--ink">
-                  Book the chair
-                  <ArrowUpRight size={16} strokeWidth={2.5} />
-                </Link>
-                {social && (
-                  <a href={social} target="_blank" rel="noopener noreferrer" className="btn btn--ghost">
-                    {content.instagramUrl ? "Instagram" : "TikTok"}
-                  </a>
-                )}
-              </div>
-            </Reveal>
-          </div>
-        </section>
-
-        {/* ── 05 · SERVICES / MENU ──────────────────────────────────── */}
-        <section id="services" className="section band-ink">
-          <div className="shell">
-            <Reveal>
-              <div className="mb-12 flex flex-wrap items-end justify-between gap-6">
-                <div>
-                  <p className="idx mb-4">{maxDiscount > 0 ? `[ 05 — ON SALE · ${maxDiscount}% OFF ]` : "[ 05 — THE MENU ]"}</p>
-                  <h2 className="display display--xl">
-                    {maxDiscount > 0 ? (
-                      <>
-                        Pick it. <span className="hot">Save</span> on it.
-                      </>
-                    ) : (
-                      <>Pick it. Book it.</>
-                    )}
-                  </h2>
-                </div>
-                <p className="max-w-xs text-sm text-[var(--mute-ink)]">
-                  {maxDiscount > 0
-                    ? `Limited-time pricing on ${saleNames}. Locked in the moment you book.`
-                    : "Flat prices, no surprises. Every service is one tap from a booking."}
-                </p>
-              </div>
-            </Reveal>
-
-            <div className="overflow-hidden rounded-[6px] border border-[var(--line-ink)]">
-              {services.map((s, i) => {
-                const popular = s.name === MOST_REQUESTED;
-                const sale = hasDiscount(s);
-                const pct = clampDiscount(s.discountPercent);
-                return (
-                  <Reveal key={s.name}>
-                    <Link
-                      href="/book"
-                      className="group flex items-center gap-4 border-b border-[var(--line-ink)] px-5 py-6 transition-colors last:border-b-0 hover:bg-[var(--ink-2)] sm:px-7"
-                    >
-                      <span className="idx hidden w-10 shrink-0 sm:block">{String(i + 1).padStart(2, "0")}</span>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex flex-wrap items-center gap-3">
-                          <h3 className="font-display text-2xl uppercase leading-none sm:text-3xl">{s.name}</h3>
-                          {sale && <span className="chip chip--accent animate-pulse">{pct}% off</span>}
-                          {popular && !sale && <span className="chip chip--accent">Most requested</span>}
-                        </div>
-                        <p className="mt-2 text-sm text-[var(--mute-ink)]">{s.desc}</p>
-                      </div>
-                      <div className="shrink-0 text-right">
-                        {sale ? (
-                          <p className="flex items-baseline justify-end gap-2">
-                            <span className="font-mono text-sm text-[var(--mute-ink)] line-through">{formatPrice(s.amount)}</span>
-                            <span className="spec text-xl text-[var(--ink)] sm:text-2xl">{formatPrice(effectivePrice(s))}</span>
-                          </p>
-                        ) : (
-                          <p className="spec text-xl text-[var(--ink)] sm:text-2xl">{formatPrice(s.amount)}</p>
-                        )}
-                        <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--mute-ink)]">{s.duration}</p>
-                      </div>
-                      <ArrowUpRight
-                        size={20}
-                        strokeWidth={2.5}
-                        className="hidden shrink-0 text-[var(--mute-ink)] transition-all duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-[var(--accent)] sm:block"
-                      />
-                    </Link>
-                  </Reveal>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-
-        {/* ── 06 · VOICES ───────────────────────────────────────────── */}
-        {testimonials.length > 0 && (
-          <section className="section">
-            <div className="shell">
-              <Reveal>
-                <p className="idx mb-4">[ 06 — IN THEIR WORDS ]</p>
-                <h2 className="display display--xl mb-12">Regulars, not one-offs</h2>
+        {/* ── 03 · MENU ────────────────────────────────────────────── */}
+        <Section id="services" band>
+          <Reveal>
+            <SectionHeader
+              idx={maxDiscount > 0 ? `[ 03 — ON SALE · ${maxDiscount}% OFF ]` : "[ 03 — THE MENU ]"}
+              title={maxDiscount > 0 ? <>Pick it. <span className="hot">Save</span> on it.</> : <>Pick it. Book it.</>}
+              sub={
+                maxDiscount > 0
+                  ? `Limited-time pricing on ${saleNames}. Locked in the moment you book.`
+                  : "Flat prices, no surprises. Every service is one tap from a booking."
+              }
+            />
+          </Reveal>
+          <div className="border-t border-[var(--line-ink)]">
+            {services.map((s, i) => (
+              <Reveal key={s.name}>
+                <ServiceRow service={s} index={i} popular={s.name === MOST_REQUESTED} />
               </Reveal>
-              <div className="grid gap-4 md:grid-cols-3">
-                {testimonials.map((t, i) => (
-                  <Reveal key={`${t.name}-${i}`} delay={(i % 3) * 60}>
-                    <figure className="panel-fill flex h-full flex-col p-6">
-                      <span className="font-display text-4xl leading-none text-[var(--accent)]">&ldquo;</span>
-                      <blockquote className="mt-3 flex-1 text-[17px] leading-snug">{t.quote}</blockquote>
-                      <figcaption className="eyebrow mt-6">{t.name}</figcaption>
-                    </figure>
-                  </Reveal>
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
-
-        {/* ── 07 · LOGISTICS (kill objections) ──────────────────────── */}
-        <section className="section-tight">
-          <div className="shell">
-            <Reveal>
-              <p className="idx mb-4">[ 07 — THE FINE PRINT, MADE EASY ]</p>
-              <h2 className="display display--lg mb-10">No surprises before you sit</h2>
-            </Reveal>
-            <div className="grid gap-px overflow-hidden rounded-[6px] border border-[var(--line)] bg-[var(--line)] sm:grid-cols-2 lg:grid-cols-3">
-              <InfoCell
-                label="Location"
-                title={content.address}
-                body={content.parkingNote}
-                href={content.mapUrl}
-                action="Open map"
-                icon
-                external
-              />
-              <InfoCell
-                label="Payment"
-                title="Pay at the chair or Venmo"
-                body={content.depositNote}
-                href="/book"
-                action="Start booking"
-              />
-              <InfoCell
-                label="Changes"
-                title="Reschedule by text"
-                body={content.cancellationPolicy}
-                href="/book"
-                action="Book now"
-              />
-              <InfoCell
-                label="Confirmation"
-                title="You'll get a text"
-                body={content.reminderPolicy}
-                href="/book"
-                action="Reserve"
-              />
-              <InfoCell
-                label="Rewards"
-                title={content.loyaltyOffer}
-                body={content.referralOffer}
-                href="/book"
-                action="Earn it"
-              />
-              {social && (
-                <InfoCell
-                  label="Latest"
-                  title={`Follow on ${content.instagramUrl ? "Instagram" : "TikTok"}`}
-                  body="Fresh work and open slots as they drop."
-                  href={social}
-                  action={content.instagramUrl ? "Instagram" : "TikTok"}
-                  external
-                />
-              )}
-            </div>
+            ))}
           </div>
-        </section>
+        </Section>
 
-        {/* ── ABOUT ME ──────────────────────────────────────────────── */}
-        <section id="about" className="section">
-          <div className="shell grid items-center gap-12 lg:grid-cols-[0.9fr_1.1fr]">
+        {/* ── 04 · ABOUT — the one barber section ──────────────────── */}
+        <Section id="about">
+          <div className="grid items-center gap-10 lg:grid-cols-[0.9fr_1.1fr]">
             <Reveal>
               <div className="relative aspect-[4/5] w-full max-w-md overflow-hidden rounded-[6px] border border-[var(--line)]">
                 <Image src={aboutImage} alt={content.barberName} fill sizes="(min-width:1024px) 440px, 90vw" className="object-cover" />
               </div>
             </Reveal>
             <Reveal delay={80}>
-              <p className="idx mb-4">[ ABOUT ME ]</p>
+              <p className="idx mb-4">[ ABOUT ]</p>
               <h2 className="display display--xl">
-                Behind the <span className="hot">chair.</span>
+                Young hands.
+                <br />
+                <span className="hot">Relentless</span> standard.
               </h2>
-              <p className="lede mt-7 max-w-xl">
-                Precision fades and clean lineups, booked online and confirmed by text. Young hands,
-                relentless standard — every cut is the one that builds the name. Sit down sharp, leave sharper.
-              </p>
+              <p className="lede mt-7 max-w-xl">{content.barberBio}</p>
+              {content.specialties.length > 0 && (
+                <div className="mt-7 flex flex-wrap gap-2.5">
+                  {content.specialties.map((s) => (
+                    <span key={s} className="chip">{s}</span>
+                  ))}
+                </div>
+              )}
               {aboutQuote && (
                 <blockquote className="mt-8 border-l-2 border-[var(--accent)] pl-5">
                   <p className="display display--md normal-case" style={{ lineHeight: 1.1 }}>
@@ -421,15 +253,69 @@ export default function HomePage() {
               </div>
             </Reveal>
           </div>
-        </section>
+        </Section>
 
-        {/* ── 08 · FINAL CTA ────────────────────────────────────────── */}
+        {/* ── 05 · VOICES ──────────────────────────────────────────── */}
+        {testimonials.length > 0 && (
+          <Section band>
+            <Reveal>
+              <SectionHeader idx="[ 05 — IN THEIR WORDS ]" title="Regulars, not one-offs" />
+            </Reveal>
+            <div className="grid gap-5 sm:grid-cols-2">
+              {testimonials.slice(0, 2).map((t, i) => (
+                <Reveal key={`${t.name}-${i}`} delay={i * 60}>
+                  <figure className="card card--raised flex h-full flex-col">
+                    <span className="font-display text-4xl leading-none text-[var(--accent)]">&ldquo;</span>
+                    <blockquote className="mt-3 flex-1 text-[17px] leading-snug">{t.quote}</blockquote>
+                    <figcaption className="eyebrow mt-6">{t.name}</figcaption>
+                  </figure>
+                </Reveal>
+              ))}
+            </div>
+          </Section>
+        )}
+
+        {/* ── 06 · THE FINE PRINT ──────────────────────────────────── */}
+        <Section tight>
+          <Reveal>
+            <SectionHeader idx="[ 06 — THE FINE PRINT ]" title="No surprises before you sit" />
+          </Reveal>
+          <Card>
+            <StatList>
+              <InfoRow
+                label="Location"
+                title={content.address}
+                body={content.parkingNote}
+                href={content.mapUrl}
+                action="Open map"
+                external
+                icon
+              />
+              <InfoRow label="Payment" title="Pay at the chair or Venmo" body={content.depositNote} />
+              <InfoRow label="Changes" title="Reschedule by text" body={content.cancellationPolicy} />
+              <InfoRow label="Confirmation" title="You'll get a text" body={content.reminderPolicy} />
+              <InfoRow label="Rewards" title={content.loyaltyOffer} body={content.referralOffer} />
+              {social && (
+                <InfoRow
+                  label="Latest"
+                  title={`Follow on ${content.instagramUrl ? "Instagram" : "TikTok"}`}
+                  body="Fresh work and open slots as they drop."
+                  href={social}
+                  action={content.instagramUrl ? "Instagram" : "TikTok"}
+                  external
+                />
+              )}
+            </StatList>
+          </Card>
+        </Section>
+
+        {/* ── 07 · FINAL CTA ────────────────────────────────────────── */}
         <section className="section band-ink">
           <div className="shell">
             <Reveal>
               <div className="flex flex-col items-start justify-between gap-8 lg:flex-row lg:items-end">
                 <div>
-                  <p className="idx mb-5">[ 08 — YOUR MOVE ]</p>
+                  <p className="idx mb-5">[ 07 — YOUR MOVE ]</p>
                   <h2 className="display display--hero" style={{ fontSize: "clamp(48px,9vw,128px)" }}>
                     Claim the
                     <br />
@@ -485,47 +371,5 @@ export default function HomePage() {
         </footer>
       </main>
     </>
-  );
-}
-
-function InfoCell({
-  label,
-  title,
-  body,
-  href,
-  action,
-  external,
-  icon,
-}: {
-  label: string;
-  title: string;
-  body: string;
-  href: string;
-  action: string;
-  external?: boolean;
-  icon?: boolean;
-}) {
-  const inner = (
-    <>
-      <p className="eyebrow mb-4">{label}</p>
-      <h3 className="flex items-start gap-2 font-display text-xl uppercase leading-tight">
-        {icon && <MapPin size={16} className="mt-0.5 shrink-0 text-[var(--accent-deep)]" />}
-        {title}
-      </h3>
-      <p className="mt-2.5 flex-1 text-sm text-[var(--mute)]">{body}</p>
-      <span className="mt-5 inline-flex items-center gap-1.5 font-mono text-[12px] font-bold uppercase tracking-[0.1em] text-[var(--accent-deep)]">
-        {action} <ArrowUpRight size={14} strokeWidth={2.5} />
-      </span>
-    </>
-  );
-  const cls = "flex min-h-[180px] flex-col bg-[var(--paper)] p-6 transition-colors hover:bg-[var(--paper-2)]";
-  return external ? (
-    <a href={href} target="_blank" rel="noopener noreferrer" className={cls}>
-      {inner}
-    </a>
-  ) : (
-    <Link href={href} className={cls}>
-      {inner}
-    </Link>
   );
 }
