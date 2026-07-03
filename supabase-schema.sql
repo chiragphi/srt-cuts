@@ -94,3 +94,12 @@ CREATE TABLE IF NOT EXISTS trusted_devices (
 
 CREATE INDEX IF NOT EXISTS idx_trusted_devices_token_hash ON trusted_devices(token_hash);
 CREATE INDEX IF NOT EXISTS idx_trusted_devices_user ON trusted_devices(user_id);
+
+-- In-app cancel / reschedule (2026-07-03)
+-- Customers can now cancel bookings, which sets status to 'cancelled'.
+DO $$
+BEGIN
+  ALTER TABLE bookings DROP CONSTRAINT IF EXISTS bookings_status_check;
+  ALTER TABLE bookings ADD CONSTRAINT bookings_status_check
+    CHECK (status IN ('pending', 'accepted', 'denied', 'cancelled'));
+END $$;

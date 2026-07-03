@@ -18,7 +18,7 @@ interface Booking {
   booking_date: string;
   booking_time: string;
   notes: string;
-  status: "pending" | "accepted" | "denied";
+  status: "pending" | "accepted" | "denied" | "cancelled";
   service_price_cents: number;
   payment_method: "in_store" | "online";
   payment_status: "pay_in_store" | "unpaid" | "paid" | "refunded";
@@ -40,6 +40,7 @@ const STATUS_COLORS = {
   pending: { bg: "var(--warn-bg)", text: "var(--warn)" },
   accepted: { bg: "var(--ok-bg)", text: "var(--ok)" },
   denied: { bg: "var(--danger-bg)", text: "var(--danger)" },
+  cancelled: { bg: "transparent", text: "var(--mute)" },
 };
 
 const BOOKING_TABS = ["All", "Pending", "Accepted", "Denied"] as const;
