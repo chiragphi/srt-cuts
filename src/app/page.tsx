@@ -13,6 +13,7 @@ import Link from "next/link";
 import { ArrowUpRight, MapPin, X } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import Reveal from "@/components/Reveal";
+import { Section, SectionHeader } from "@/components/ui";
 import { formatPrice, effectivePrice, hasDiscount, clampDiscount } from "@/lib/services";
 import {
   DEFAULT_SITE_CONTENT,
@@ -67,11 +68,11 @@ export default function HomePage() {
       )}
 
       <main className="has-tabbar">
-        {/* ── 01 · HERO — logo-first ────────────────────────────────── */}
+        {/* ── 01 · HERO — focused ──────────────────────────────────── */}
         <section className="relative overflow-hidden pt-28 sm:pt-32">
-          <div className="shell flex flex-col items-center pb-16 text-center">
+          <div className="shell flex flex-col items-center pb-14 text-center">
             <Reveal>
-              <p className="mb-8 flex items-center justify-center gap-2.5 font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--mute)] sm:text-[12px]">
+              <p className="mb-7 flex items-center justify-center gap-2.5 font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--mute)] sm:text-[12px]">
                 <span className="h-0.5 w-5 shrink-0 bg-[var(--accent)]" />
                 Herriman, UT — By appointment
                 <span className="h-0.5 w-5 shrink-0 bg-[var(--accent)]" />
@@ -87,20 +88,22 @@ export default function HomePage() {
             </Reveal>
 
             <Reveal delay={140}>
-              <p className="lede mt-6 max-w-xl">
+              <p className="lede mt-6 max-w-md">
                 Book in under a minute — confirmed by text, no deposit, pay at the chair.
-                Walk in, walk out sharper.
               </p>
             </Reveal>
 
             <Reveal delay={210}>
-              <div className="mt-9 flex w-full flex-col justify-center gap-3 sm:w-auto sm:flex-row">
+              <div className="mt-9 flex w-full flex-col items-center gap-4 sm:w-auto">
                 <Link href="/book" className="btn btn--accent w-full sm:w-auto">
                   Reserve the chair
                   <ArrowUpRight size={17} strokeWidth={2.5} />
                 </Link>
-                <a href="#work" className="btn btn--ghost w-full sm:w-auto">
-                  See the work
+                <a
+                  href="#work"
+                  className="inline-flex items-center gap-1.5 font-mono text-[12px] font-bold uppercase tracking-[0.12em] text-[var(--mute)] transition-colors hover:text-[var(--ink)]"
+                >
+                  See the work <ArrowUpRight size={13} strokeWidth={2.5} />
                 </a>
               </div>
             </Reveal>
@@ -108,44 +111,22 @@ export default function HomePage() {
             {maxDiscount > 0 && (
               <Reveal delay={240}>
                 <a href="#services" className="mt-6 inline-flex items-center gap-2.5">
-                  <span className="chip chip--accent animate-pulse">{maxDiscount}% OFF</span>
+                  <span className="chip chip--accent">{maxDiscount}% OFF</span>
                   <span className="font-mono text-[12px] font-bold uppercase tracking-[0.1em] text-[var(--ink)]">
-                    {saleNames} on sale — book now
+                    {saleNames} on sale
                   </span>
                 </a>
               </Reveal>
             )}
 
-            <Reveal delay={270}>
-              <dl className="mt-10 grid w-full max-w-lg grid-cols-3 gap-px overflow-hidden rounded-[4px] border border-[var(--line)] bg-[var(--line)]">
-                {[
-                  ["No deposits", "Pay at the chair"],
-                  ["Replies fast", "Texts, not voicemail"],
-                  ["Current cuts", "What's sharp now"],
-                ].map(([k, v]) => (
-                  <div key={k} className="bg-[var(--paper)] px-3 py-3.5 sm:px-4 sm:py-4">
-                    <dt className="font-display text-[15px] uppercase leading-none sm:text-lg">{k}</dt>
-                    <dd className="mt-1.5 font-mono text-[9px] uppercase leading-tight tracking-[0.06em] text-[var(--mute)] sm:text-[10px]">{v}</dd>
-                  </div>
-                ))}
-              </dl>
-            </Reveal>
-
-            <Reveal delay={320} className="mx-auto mt-12 w-full max-w-md">
+            <Reveal delay={300} className="mx-auto mt-12 w-full max-w-md">
               <figure className="relative w-full">
                 <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[6px] border border-[var(--line)]">
                   <Image src={heroImage} alt={content.barberName} fill priority sizes="(min-width:768px) 448px, 90vw" className="object-cover" />
                 </div>
-                <figcaption className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-3 rounded-[4px] border border-[var(--line-ink)] bg-[var(--ink-2)]/85 px-3.5 py-2.5 backdrop-blur-md">
-                  <span className="flex items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--ink)]">
-                    <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" />
-                    Booking open
-                  </span>
-                  <div className="tickrail w-20">
-                    {Array.from({ length: 11 }).map((_, i) => (
-                      <span key={i} />
-                    ))}
-                  </div>
+                <figcaption className="absolute bottom-3 left-3 flex items-center gap-2 rounded-[4px] border border-[var(--line-ink)] bg-[var(--ink-2)]/85 px-3.5 py-2.5 backdrop-blur-md">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" />
+                  <span className="font-mono text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--ink)]">Booking open</span>
                 </figcaption>
               </figure>
             </Reveal>
@@ -167,85 +148,43 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* ── 02 · PROOF ────────────────────────────────────────────── */}
-        <section className="section-tight">
-          <div className="shell">
-            <Reveal>
-              <p className="idx mb-4">[ 02 — WHY IT&apos;S REAL ]</p>
-            </Reveal>
-            <Reveal delay={60}>
-              <p className="display display--lg max-w-4xl normal-case" style={{ lineHeight: 1.05 }}>
-                Every head walks out a <span className="hot">reference.</span> One chair means no rushing you to
-                the next — just the cut, done right.
-              </p>
-            </Reveal>
-
-            <Reveal delay={120}>
-              <div className="mt-12 grid grid-cols-2 gap-px overflow-hidden rounded-[4px] border border-[var(--line)] bg-[var(--line)] sm:grid-cols-4">
-                {[
-                  ["01", "Chair", "Yours, start to finish"],
-                  ["SMS", "Confirm", "Real reply, fast"],
-                  ["$0", "Deposit", "Pay at the chair or Venmo"],
-                  ["100%", "Focus", "No double-booking"],
-                ].map(([big, label, sub]) => (
-                  <div key={label} className="bg-[var(--paper)] p-5">
-                    <p className="spec text-3xl">{big}</p>
-                    <p className="mt-2 font-display text-lg uppercase leading-none">{label}</p>
-                    <p className="mt-1.5 text-xs text-[var(--mute)]">{sub}</p>
-                  </div>
-                ))}
-              </div>
-            </Reveal>
-          </div>
-        </section>
-
-        {/* ── 03 · THE WORK ─────────────────────────────────────────── */}
+        {/* ── 02 · THE WORK ─────────────────────────────────────────── */}
         {gallery.length > 0 && (
-          <section id="work" className="section band-ink">
-            <div className="shell">
-              <Reveal>
-                <div className="mb-12 flex flex-wrap items-end justify-between gap-6">
-                  <div>
-                    <p className="idx mb-4">[ 03 — THE WORK ]</p>
-                    <h2 className="display display--xl">
-                      Receipts,
-                      <br />
-                      not <span className="hot">promises</span>
-                    </h2>
-                  </div>
-                  <p className="max-w-xs text-sm text-[var(--mute-ink)]">
-                    Edge work up close. The blends, the lines, the details that hold up in daylight.
-                  </p>
-                </div>
-              </Reveal>
+          <Section id="work" band>
+            <Reveal>
+              <SectionHeader
+                idx="[ 02 — THE WORK ]"
+                title={<>Receipts,<br />not <span className="hot">promises</span></>}
+                sub="Edge work up close — the blends, the lines, the details that hold up in daylight."
+              />
+            </Reveal>
 
-              <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3">
-                {gallery.map((item, i) => (
-                  <Reveal key={`${item.title}-${i}`} delay={(i % 3) * 60}>
-                    <button
-                      onClick={() => setLightbox(item.imageUrl)}
-                      className="group block w-full overflow-hidden rounded-[6px] border border-[var(--line-ink)] text-left"
-                    >
-                      <div className="relative aspect-[4/5] overflow-hidden bg-[var(--ink-2)]">
-                        <Image
-                          src={item.imageUrl}
-                          alt={item.title}
-                          fill
-                          sizes="(min-width:768px) 33vw, 50vw"
-                          className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
-                          unoptimized
-                        />
-                      </div>
-                      <div className="flex items-center justify-between gap-2 px-3.5 py-3">
-                        <span className="font-display text-base uppercase leading-none">{item.title}</span>
-                        <span className="idx">{String(i + 1).padStart(2, "0")}</span>
-                      </div>
-                    </button>
-                  </Reveal>
-                ))}
-              </div>
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3">
+              {gallery.map((item, i) => (
+                <Reveal key={`${item.title}-${i}`} delay={(i % 3) * 60}>
+                  <button
+                    onClick={() => setLightbox(item.imageUrl)}
+                    className="group block w-full overflow-hidden rounded-[6px] border border-[var(--line-ink)] text-left"
+                  >
+                    <div className="relative aspect-[4/5] overflow-hidden bg-[var(--ink-2)]">
+                      <Image
+                        src={item.imageUrl}
+                        alt={item.title}
+                        fill
+                        sizes="(min-width:768px) 33vw, 50vw"
+                        className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+                        unoptimized
+                      />
+                    </div>
+                    <div className="flex items-center justify-between gap-2 px-3.5 py-3">
+                      <span className="font-display text-base uppercase leading-none">{item.title}</span>
+                      <span className="idx">{String(i + 1).padStart(2, "0")}</span>
+                    </div>
+                  </button>
+                </Reveal>
+              ))}
             </div>
-          </section>
+          </Section>
         )}
 
         {/* ── 04 · THE EDGE (age as advantage) ──────────────────────── */}
