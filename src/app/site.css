@@ -526,13 +526,53 @@ body:has(.site) {
 /* ── Reveal (scroll entrance) ───────────────────────────────────────── */
 .site .cx-reveal {
   opacity: 0;
-  transform: translateY(18px);
-  transition: opacity 0.7s var(--c-ease-out), transform 0.7s var(--c-ease-out);
+  transform: translateY(22px);
+  transition: opacity 0.85s var(--c-ease), transform 0.85s var(--c-ease);
   transition-delay: var(--cx-delay, 0ms);
+  will-change: opacity, transform;
 }
 .site .cx-reveal[data-show="true"] {
   opacity: 1;
   transform: none;
+  will-change: auto;
+}
+
+/* Hero media: clearly separated from the headline + CTA on mobile, flush in
+   the two-column desktop grid. Enters with a soft zoom-out for a premium feel. */
+.site .cx-hero-media {
+  margin-top: clamp(40px, 9vw, 52px);
+  transform: translateY(24px) scale(1.035);
+  transition: opacity 1s var(--c-ease), transform 1s var(--c-ease);
+}
+.site .cx-hero-media[data-show="true"] {
+  transform: none;
+}
+@media (min-width: 1024px) {
+  .site .cx-hero-media {
+    margin-top: 0;
+  }
+}
+
+/* Anchor targets clear the fixed nav when jumping to #work / #services / … */
+.site [id] {
+  scroll-margin-top: 96px;
+}
+
+/* Interactive cards (service select, payment, gallery, next-slot) get a gentle,
+   smooth lift + press so tapping feels responsive. */
+.site a.cx-card,
+.site button.cx-card {
+  transition: transform 0.22s var(--c-ease-out), box-shadow 0.24s var(--c-ease-out),
+    border-color 0.18s var(--c-ease-out), background 0.18s var(--c-ease-out);
+}
+.site a.cx-card:hover,
+.site button.cx-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--c-shadow);
+}
+.site a.cx-card:active,
+.site button.cx-card:active {
+  transform: translateY(-1px) scale(0.994);
 }
 
 /* ── Loading ────────────────────────────────────────────────────────── */
@@ -565,7 +605,8 @@ body:has(.site) {
 
 /* ── Reduced motion ─────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
-  .site .cx-reveal {
+  .site .cx-reveal,
+  .site .cx-hero-media {
     opacity: 1;
     transform: none;
     transition: none;

@@ -113,8 +113,8 @@ export default function HomePage() {
                   )}
                 </div>
 
-                <Reveal delay={200}>
-                  <figure style={{ position: "relative", margin: "clamp(28px,5vw,0) 0 0" }}>
+                <Reveal delay={200} className="cx-hero-media">
+                  <figure style={{ position: "relative" }}>
                     <div style={{ position: "relative", aspectRatio: "4/5", width: "100%", overflow: "hidden", borderRadius: "var(--c-r-xl)", boxShadow: "var(--c-shadow)" }}>
                       <Image src={heroImage} alt={content.barberName} fill priority sizes="(min-width:1024px) 460px, 92vw" style={{ objectFit: "cover" }} />
                     </div>
