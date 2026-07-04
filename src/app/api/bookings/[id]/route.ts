@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSession } from "@/lib/session";
+import { getSession, isImpersonating } from "@/lib/session";
 import { supabaseAdmin } from "@/lib/supabase";
 import { notifyPhone } from "@/lib/sms-client";
 import { SMS } from "@/lib/sms-messages";
@@ -31,6 +31,8 @@ function displayDate(date: string): string {
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const user = await getSession();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (await isImpersonating())
+    return NextResponse.json({ error: "Read-only while viewing as a customer." }, { status: 403 });
 
   const { id } = await params;
   const body = await req.json();

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSession } from "@/lib/session";
+import { getSession, isImpersonating } from "@/lib/session";
 import { supabaseAdmin } from "@/lib/supabase";
 import { notifyPhone } from "@/lib/sms-client";
 import { SMS } from "@/lib/sms-messages";
@@ -22,6 +22,8 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   const user = await getSession();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (await isImpersonating())
+    return NextResponse.json({ error: "Read-only while viewing as a customer." }, { status: 403 });
 
   const { service, date, time, notes, paymentMethod } = await req.json();
   if (!service || !date || !time)

@@ -103,3 +103,16 @@ BEGIN
   ALTER TABLE bookings ADD CONSTRAINT bookings_status_check
     CHECK (status IN ('pending', 'accepted', 'denied', 'cancelled'));
 END $$;
+
+-- Admin cockpit rebuild (2026-07-03)
+-- OPTIONAL audit trail for "View as customer" impersonation. The feature works
+-- WITHOUT this table (writes are best-effort and swallow errors); create it only
+-- if you want a record of when the admin viewed as a customer.
+CREATE TABLE IF NOT EXISTS impersonation_log (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  admin_id UUID REFERENCES users(id) ON DELETE SET NULL,
+  target_user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+  action TEXT NOT NULL CHECK (action IN ('start', 'stop')),
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_impersonation_log_admin ON impersonation_log(admin_id);

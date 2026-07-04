@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { useAuth } from "@/context/auth";
 
 type Step = "phone" | "password" | "verify" | "set-password";
@@ -16,6 +17,13 @@ function formatPhone(raw: string) {
   return `(${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6)}`;
 }
 
+const stepAnim = {
+  initial: { opacity: 0, y: 14 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -10 },
+  transition: { duration: 0.3, ease: [0.16, 1, 0.3, 1] as const },
+};
+
 function AuthForm() {
   const router = useRouter();
   const params = useSearchParams();
@@ -27,17 +35,14 @@ function AuthForm() {
   const [name, setName] = useState("");
   const [isNewUser, setIsNewUser] = useState(true);
   const [isForgotFlow, setIsForgotFlow] = useState(false);
-
   const [password, setPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-
   const [verifyMethod, setVerifyMethod] = useState<VerifyMethod>(null);
   const [totpSecret, setTotpSecret] = useState("");
   const [verifyReason, setVerifyReason] = useState("");
   const [verifiedToken, setVerifiedToken] = useState("");
   const [code, setCode] = useState(["", "", "", "", "", ""]);
-
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
   const [resendWait, setResendWait] = useState(0);
@@ -48,7 +53,6 @@ function AuthForm() {
     if (user) router.replace(isAdmin ? "/admin" : redirect);
   }, [user, isAdmin, redirect, router]);
 
-  // Tick the resend cooldown down once per second while it's running.
   useEffect(() => {
     if (resendWait <= 0) return;
     const t = setTimeout(() => setResendWait((s) => s - 1), 1000);
@@ -60,16 +64,11 @@ function AuthForm() {
   async function startVerify() {
     setError("");
     setLoading(true);
-    const res = await fetch("/api/auth/verify/start", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phone: digits }),
-    });
+    const res = await fetch("/api/auth/verify/start", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ phone: digits }) });
     setLoading(false);
     if (!res.ok) {
       const d = await res.json();
       setError(d.error || "Failed to send verification.");
-      // Server-enforced cooldown — sync the local countdown to it.
       if (typeof d.retryAfter === "number") setResendWait(d.retryAfter);
       return;
     }
@@ -87,93 +86,40 @@ function AuthForm() {
 
   async function continueFromPhone() {
     setError("");
-    if (digits.length < 10) {
-      setError("Enter your 10-digit phone number.");
-      return;
-    }
+    if (digits.length < 10) { setError("Enter your 10-digit phone number."); return; }
     setLoading(true);
-    const res = await fetch("/api/auth/check-phone", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phone: digits }),
-    });
+    const res = await fetch("/api/auth/check-phone", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ phone: digits }) });
     setLoading(false);
-    if (!res.ok) {
-      const d = await res.json();
-      setError(d.error || "Something went wrong.");
-      return;
-    }
+    if (!res.ok) { const d = await res.json(); setError(d.error || "Something went wrong."); return; }
     const d = await res.json();
-    if (d.bypass && d.redirect) {
-      refresh();
-      router.replace(d.redirect);
-      return;
-    }
+    if (d.bypass && d.redirect) { refresh(); router.replace(d.redirect); return; }
     setIsForgotFlow(false);
-    if (d.hasPassword) {
-      setPassword("");
-      setStep("password");
-    } else {
-      setIsNewUser(!d.exists);
-      await startVerify();
-    }
+    if (d.hasPassword) { setPassword(""); setStep("password"); }
+    else { setIsNewUser(!d.exists); await startVerify(); }
   }
 
   async function submitPassword() {
-    if (!password) {
-      setError("Enter your password.");
-      return;
-    }
+    if (!password) { setError("Enter your password."); return; }
     setError("");
     setLoading(true);
-    const res = await fetch("/api/auth/login-password", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phone: digits, password }),
-    });
+    const res = await fetch("/api/auth/login-password", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ phone: digits, password }) });
     setLoading(false);
-    if (!res.ok) {
-      const d = await res.json();
-      setError(d.error || "Invalid phone or password.");
-      return;
-    }
+    if (!res.ok) { const d = await res.json(); setError(d.error || "Invalid phone or password."); return; }
     refresh();
     router.replace(redirect);
   }
 
-  async function forgotPassword() {
-    setIsForgotFlow(true);
-    setIsNewUser(false);
-    await startVerify();
-  }
-
-  async function resendCode() {
-    setResending(true);
-    await startVerify();
-    setResending(false);
-  }
+  async function forgotPassword() { setIsForgotFlow(true); setIsNewUser(false); await startVerify(); }
+  async function resendCode() { setResending(true); await startVerify(); setResending(false); }
 
   async function verifyCode() {
     const full = code.join("");
-    if (full.length !== 6) {
-      setError("Enter the full 6-digit code.");
-      return;
-    }
+    if (full.length !== 6) { setError("Enter the full 6-digit code."); return; }
     setError("");
     setLoading(true);
-    const res = await fetch("/api/auth/verify/complete", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phone: digits, code: full, name: isNewUser ? name : undefined }),
-    });
+    const res = await fetch("/api/auth/verify/complete", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ phone: digits, code: full, name: isNewUser ? name : undefined }) });
     setLoading(false);
-    if (!res.ok) {
-      const d = await res.json();
-      setError(d.error || "Invalid code.");
-      setCode(["", "", "", "", "", ""]);
-      codeRefs.current[0]?.focus();
-      return;
-    }
+    if (!res.ok) { const d = await res.json(); setError(d.error || "Invalid code."); setCode(["", "", "", "", "", ""]); codeRefs.current[0]?.focus(); return; }
     const d = await res.json();
     setVerifiedToken(d.verifiedToken);
     setNewPassword("");
@@ -183,26 +129,12 @@ function AuthForm() {
 
   async function submitNewPassword() {
     setError("");
-    if (newPassword.length < 8) {
-      setError("Password must be at least 8 characters.");
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      setError("Passwords don't match.");
-      return;
-    }
+    if (newPassword.length < 8) { setError("Password must be at least 8 characters."); return; }
+    if (newPassword !== confirmPassword) { setError("Passwords don't match."); return; }
     setLoading(true);
-    const res = await fetch("/api/auth/set-password", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phone: digits, password: newPassword, verifiedToken }),
-    });
+    const res = await fetch("/api/auth/set-password", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ phone: digits, password: newPassword, verifiedToken }) });
     setLoading(false);
-    if (!res.ok) {
-      const d = await res.json();
-      setError(d.error || "Failed to set password.");
-      return;
-    }
+    if (!res.ok) { const d = await res.json(); setError(d.error || "Failed to set password."); return; }
     refresh();
     router.replace(redirect);
   }
@@ -214,203 +146,100 @@ function AuthForm() {
     setCode(next);
     if (val && i < 5) codeRefs.current[i + 1]?.focus();
   }
-
   function handleCodeKeyDown(i: number, e: React.KeyboardEvent) {
     if (e.key === "Backspace" && !code[i] && i > 0) codeRefs.current[i - 1]?.focus();
     if (e.key === "Enter" && code.join("").length === 6) verifyCode();
   }
+  function backToPhone() { setStep("phone"); setError(""); setCode(["", "", "", "", "", ""]); }
 
-  function handlePhoneChange(e: React.ChangeEvent<HTMLInputElement>) {
-    setPhone(formatPhone(e.target.value));
-  }
-
-  function backToPhone() {
-    setStep("phone");
-    setError("");
-    setCode(["", "", "", "", "", ""]);
-  }
+  const errNode = error ? <p style={{ fontSize: 14, color: "var(--c-danger)" }}>{error}</p> : null;
 
   return (
-    <div className="band-ink flex min-h-screen flex-col">
-      <div className="p-5 pt-[max(20px,env(safe-area-inset-top))]">
-        <Link href="/" className="font-mono text-[12px] font-bold uppercase tracking-[0.12em] text-[var(--mute-ink)] transition-colors hover:text-[var(--ink)]">
-          ← SRT.CUTS
-        </Link>
+    <div className="site" style={{ minHeight: "100dvh", display: "flex", flexDirection: "column" }}>
+      <div style={{ padding: "max(20px, env(safe-area-inset-top)) 20px 0" }}>
+        <Link href="/" className="cx-textlink"><ArrowLeft size={15} /> SRT Cuts</Link>
       </div>
 
-      <div className="flex flex-1 items-center justify-center px-5 py-8">
-        <div className="w-full max-w-sm">
+      <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "32px 20px" }}>
+        <div style={{ width: "100%", maxWidth: 380 }}>
           <AnimatePresence mode="wait">
             {step === "phone" && (
-              <motion.div
-                key="phone"
-                initial={{ opacity: 0, y: 14 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-              >
-                <p className="idx mb-4">[ SIGN IN ]</p>
-                <h1 className="display display--lg">
-                  Claim your <span className="hot">chair.</span>
-                </h1>
-                <p className="mb-8 mt-3 text-sm text-[var(--mute-ink)]">Enter your phone number to get started.</p>
-
+              <motion.div key="phone" {...stepAnim}>
+                <p className="cx-eyebrow" style={{ marginBottom: 16 }}>Sign in</p>
+                <h1 className="cx-display cx-display--lg">Claim your <em>chair.</em></h1>
+                <p style={{ margin: "12px 0 30px", fontSize: 15, color: "var(--c-ink-2)" }}>Enter your phone number to get started.</p>
                 <div className="space-y-5">
                   <div>
-                    <label className="field-label">Phone number</label>
-                    <input
-                      className="field"
-                      type="tel"
-                      inputMode="numeric"
-                      placeholder="(801) 555-0100"
-                      value={phone}
-                      onChange={handlePhoneChange}
-                      onKeyDown={(e) => e.key === "Enter" && continueFromPhone()}
-                      autoFocus
-                    />
+                    <label className="cx-label">Phone number</label>
+                    <input className="cx-field" type="tel" inputMode="numeric" placeholder="(801) 555-0100" value={phone} onChange={(e) => setPhone(formatPhone(e.target.value))} onKeyDown={(e) => e.key === "Enter" && continueFromPhone()} autoFocus />
                   </div>
-
-                  {error && <p className="text-sm text-[var(--danger)]">{error}</p>}
-
-                  <button className="btn btn--accent btn--block" onClick={continueFromPhone} disabled={loading}>
-                    {loading ? "Checking…" : "Continue"}
-                  </button>
+                  {errNode}
+                  <button className="cx-btn cx-btn--accent cx-btn--block" onClick={continueFromPhone} disabled={loading}>{loading ? "Checking…" : "Continue"}</button>
                 </div>
               </motion.div>
             )}
 
             {step === "password" && (
-              <motion.div
-                key="password"
-                initial={{ opacity: 0, y: 14 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-              >
-                <p className="idx mb-4">[ WELCOME BACK ]</p>
-                <h1 className="display display--lg">Enter your password</h1>
-                <p className="mb-8 mt-3 text-sm text-[var(--mute-ink)]">
-                  Signing in as <span className="spec text-[var(--ink)]">{phone}</span>
-                </p>
-
+              <motion.div key="password" {...stepAnim}>
+                <p className="cx-eyebrow" style={{ marginBottom: 16 }}>Welcome back</p>
+                <h1 className="cx-display cx-display--lg">Enter your password</h1>
+                <p style={{ margin: "12px 0 30px", fontSize: 15, color: "var(--c-ink-2)" }}>Signing in as <span className="cx-num" style={{ color: "var(--c-ink)", fontWeight: 550 }}>{phone}</span></p>
                 <div className="space-y-5">
                   <div>
-                    <label className="field-label">Password</label>
-                    <input
-                      className="field"
-                      type="password"
-                      placeholder="••••••••"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      onKeyDown={(e) => e.key === "Enter" && submitPassword()}
-                      autoFocus
-                    />
+                    <label className="cx-label">Password</label>
+                    <input className="cx-field" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} onKeyDown={(e) => e.key === "Enter" && submitPassword()} autoFocus />
                   </div>
-
-                  {error && <p className="text-sm text-[var(--danger)]">{error}</p>}
-
-                  <button className="btn btn--accent btn--block" onClick={submitPassword} disabled={loading}>
-                    {loading ? "Signing in…" : "Sign in"}
-                  </button>
+                  {errNode}
+                  <button className="cx-btn cx-btn--accent cx-btn--block" onClick={submitPassword} disabled={loading}>{loading ? "Signing in…" : "Sign in"}</button>
                 </div>
-
-                <div className="mt-4 flex justify-between font-mono text-[11px] font-bold uppercase tracking-[0.08em]">
-                  <button className="text-[var(--mute-ink)] transition-colors hover:text-[var(--ink)]" onClick={backToPhone}>
-                    Use a different number
-                  </button>
-                  <button
-                    className="text-[var(--accent)] transition-colors hover:text-[var(--ink)]"
-                    onClick={forgotPassword}
-                    disabled={loading}
-                  >
-                    Forgot password?
-                  </button>
+                <div className="flex justify-between" style={{ marginTop: 16, fontSize: 13.5 }}>
+                  <button className="cx-textlink" onClick={backToPhone}>Use a different number</button>
+                  <button className="cx-textlink" style={{ color: "var(--c-accent-ink)" }} onClick={forgotPassword} disabled={loading}>Forgot password?</button>
                 </div>
               </motion.div>
             )}
 
             {step === "verify" && (
-              <motion.div
-                key="verify"
-                initial={{ opacity: 0, y: 14 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-              >
-                <p className="idx mb-4">[ VERIFY ]</p>
-                <h1 className="display display--lg">
-                  {isForgotFlow ? "Confirm it's you" : "Enter the code"}
-                </h1>
+              <motion.div key="verify" {...stepAnim}>
+                <p className="cx-eyebrow" style={{ marginBottom: 16 }}>Verify</p>
+                <h1 className="cx-display cx-display--lg">{isForgotFlow ? "Confirm it's you" : "Enter the code"}</h1>
 
                 {verifyMethod === "sms" && (
-                  <p className="mb-8 mt-3 text-sm text-[var(--mute-ink)]">
-                    Sent a 6-digit code to <span className="spec text-[var(--ink)]">{phone}</span>
-                  </p>
+                  <p style={{ margin: "12px 0 30px", fontSize: 15, color: "var(--c-ink-2)" }}>Sent a 6-digit code to <span className="cx-num" style={{ color: "var(--c-ink)", fontWeight: 550 }}>{phone}</span></p>
                 )}
-
                 {verifyMethod === "totp" && (
-                  <div className="mb-8 mt-3 space-y-3">
-                    <p className="text-sm text-[var(--mute-ink)]">
-                      We couldn&apos;t text a code to this number, so use an authenticator app instead
-                      (Google Authenticator, Microsoft Authenticator, or your iPhone&apos;s Passwords app).
-                    </p>
-                    {verifyReason && <p className="text-xs text-[var(--mute-ink)]">{verifyReason}</p>}
-                    <div className="rounded-md border border-[var(--rule)] p-3">
-                      <p className="field-label mb-1">Manual entry key</p>
-                      <p className="spec break-all text-[13px] text-[var(--ink)]">{totpSecret}</p>
+                  <div style={{ margin: "12px 0 26px" }} className="space-y-3">
+                    <p style={{ fontSize: 14.5, color: "var(--c-ink-2)", lineHeight: 1.55 }}>We couldn&apos;t text a code to this number, so use an authenticator app instead (Google Authenticator, Microsoft Authenticator, or your iPhone&apos;s Passwords app).</p>
+                    {verifyReason && <p style={{ fontSize: 12.5, color: "var(--c-ink-3)" }}>{verifyReason}</p>}
+                    <div style={{ borderRadius: 12, border: "1px solid var(--c-line)", padding: 14, background: "var(--c-raise)" }}>
+                      <p className="cx-label" style={{ marginBottom: 4 }}>Manual entry key</p>
+                      <p className="cx-num" style={{ wordBreak: "break-all", fontSize: 14, color: "var(--c-ink)" }}>{totpSecret}</p>
                     </div>
-                    <p className="text-xs text-[var(--mute-ink)]">
-                      Add this key to your authenticator app, then enter the 6-digit code it shows.
-                    </p>
+                    <p style={{ fontSize: 12.5, color: "var(--c-ink-3)" }}>Add this key to your authenticator app, then enter the 6-digit code it shows.</p>
                   </div>
                 )}
 
                 {isNewUser && (
-                  <div className="mb-5">
-                    <label className="field-label">Your name</label>
-                    <input
-                      className="field"
-                      type="text"
-                      placeholder="First Last"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      onKeyDown={(e) => e.key === "Enter" && code.join("").length === 6 && verifyCode()}
-                    />
+                  <div style={{ marginBottom: 20 }}>
+                    <label className="cx-label">Your name</label>
+                    <input className="cx-field" type="text" placeholder="First Last" value={name} onChange={(e) => setName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && code.join("").length === 6 && verifyCode()} />
                   </div>
                 )}
 
-                <div className="mb-6 flex justify-center gap-2">
+                <div className="flex justify-center" style={{ gap: 8, marginBottom: 22 }}>
                   {code.map((d, i) => (
-                    <input
-                      key={i}
-                      ref={(el) => { codeRefs.current[i] = el; }}
-                      className="otp"
-                      type="text"
-                      inputMode="numeric"
-                      maxLength={1}
-                      value={d}
-                      onChange={(e) => handleCodeInput(i, e.target.value)}
-                      onKeyDown={(e) => handleCodeKeyDown(i, e)}
-                    />
+                    <input key={i} ref={(el) => { codeRefs.current[i] = el; }} className="cx-otp" type="text" inputMode="numeric" maxLength={1} value={d} onChange={(e) => handleCodeInput(i, e.target.value)} onKeyDown={(e) => handleCodeKeyDown(i, e)} />
                   ))}
                 </div>
 
-                {error && <p className="mb-4 text-center text-sm text-[var(--danger)]">{error}</p>}
+                {error && <p style={{ marginBottom: 16, textAlign: "center", fontSize: 14, color: "var(--c-danger)" }}>{error}</p>}
 
-                <button className="btn btn--accent btn--block" onClick={verifyCode} disabled={loading}>
-                  {loading ? "Verifying…" : "Continue"}
-                </button>
+                <button className="cx-btn cx-btn--accent cx-btn--block" onClick={verifyCode} disabled={loading}>{loading ? "Verifying…" : "Continue"}</button>
 
-                <div className="mt-4 flex justify-between font-mono text-[11px] font-bold uppercase tracking-[0.08em]">
-                  <button className="text-[var(--mute-ink)] transition-colors hover:text-[var(--ink)]" onClick={backToPhone}>
-                    Change number
-                  </button>
+                <div className="flex justify-between" style={{ marginTop: 16, fontSize: 13.5 }}>
+                  <button className="cx-textlink" onClick={backToPhone}>Change number</button>
                   {verifyMethod === "sms" && (
-                    <button
-                      className="text-[var(--accent)] transition-colors hover:text-[var(--ink)] disabled:cursor-default disabled:text-[var(--mute-ink)] disabled:hover:text-[var(--mute-ink)]"
-                      onClick={resendCode}
-                      disabled={resending || resendWait > 0}
-                    >
+                    <button className="cx-textlink" style={{ color: resendWait > 0 ? "var(--c-ink-3)" : "var(--c-accent-ink)" }} onClick={resendCode} disabled={resending || resendWait > 0}>
                       {resending ? "Sending…" : resendWait > 0 ? `Resend in ${resendWait}s` : "Resend code"}
                     </button>
                   )}
@@ -419,49 +248,21 @@ function AuthForm() {
             )}
 
             {step === "set-password" && (
-              <motion.div
-                key="set-password"
-                initial={{ opacity: 0, y: 14 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-              >
-                <p className="idx mb-4">[ SECURE YOUR ACCOUNT ]</p>
-                <h1 className="display display--lg">{isForgotFlow ? "Set a new password" : "Set a password"}</h1>
-                <p className="mb-8 mt-3 text-sm text-[var(--mute-ink)]">
-                  This device will be remembered — you won&apos;t need to verify again here. On a new
-                  device, you&apos;ll sign in with this password.
-                </p>
-
+              <motion.div key="set-password" {...stepAnim}>
+                <p className="cx-eyebrow" style={{ marginBottom: 16 }}>Secure your account</p>
+                <h1 className="cx-display cx-display--lg">{isForgotFlow ? "Set a new password" : "Set a password"}</h1>
+                <p style={{ margin: "12px 0 30px", fontSize: 14.5, color: "var(--c-ink-2)", lineHeight: 1.55 }}>This device will be remembered — you won&apos;t need to verify again here. On a new device, you&apos;ll sign in with this password.</p>
                 <div className="space-y-5">
                   <div>
-                    <label className="field-label">New password</label>
-                    <input
-                      className="field"
-                      type="password"
-                      placeholder="At least 8 characters"
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      autoFocus
-                    />
+                    <label className="cx-label">New password</label>
+                    <input className="cx-field" type="password" placeholder="At least 8 characters" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} autoFocus />
                   </div>
                   <div>
-                    <label className="field-label">Confirm password</label>
-                    <input
-                      className="field"
-                      type="password"
-                      placeholder="••••••••"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      onKeyDown={(e) => e.key === "Enter" && submitNewPassword()}
-                    />
+                    <label className="cx-label">Confirm password</label>
+                    <input className="cx-field" type="password" placeholder="••••••••" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} onKeyDown={(e) => e.key === "Enter" && submitNewPassword()} />
                   </div>
-
-                  {error && <p className="text-sm text-[var(--danger)]">{error}</p>}
-
-                  <button className="btn btn--accent btn--block" onClick={submitNewPassword} disabled={loading}>
-                    {loading ? "Saving…" : "Continue"}
-                  </button>
+                  {errNode}
+                  <button className="cx-btn cx-btn--accent cx-btn--block" onClick={submitNewPassword} disabled={loading}>{loading ? "Saving…" : "Continue"}</button>
                 </div>
               </motion.div>
             )}
@@ -474,7 +275,7 @@ function AuthForm() {
 
 export default function AuthPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[var(--paper)]" />}>
+    <Suspense fallback={<div className="site" style={{ minHeight: "100dvh" }} />}>
       <AuthForm />
     </Suspense>
   );

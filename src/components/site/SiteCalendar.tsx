@@ -21,7 +21,7 @@ interface Props {
   dateAvailability?: Record<string, string[]>;
 }
 
-export default function CalendarPicker({
+export default function SiteCalendar({
   value,
   onChange,
   blockedDates,
@@ -43,47 +43,40 @@ export default function CalendarPicker({
 
   const today = new Date();
   const todayISO = toISO(today.getFullYear(), today.getMonth(), today.getDate());
-
   const monthLabel = view.toLocaleDateString("en-US", { month: "long", year: "numeric" });
 
   const cells: (number | null)[] = [...Array(firstDow).fill(null)];
   for (let d = 1; d <= daysInMonth; d++) cells.push(d);
 
   return (
-    <div className="panel-fill p-4 sm:p-5">
-      <div className="mb-5 flex items-center justify-between">
+    <div className="cx-card" style={{ padding: "clamp(16px, 3vw, 22px)" }}>
+      <div className="flex items-center justify-between" style={{ marginBottom: 16 }}>
         <button
           type="button"
           onClick={() => setView(new Date(y, m - 1, 1))}
           disabled={viewYM <= minYM}
           aria-label="Previous month"
-          className="flex h-10 w-10 items-center justify-center rounded-[4px] border border-[var(--line-strong)] text-[var(--ink)] transition-transform active:scale-95 disabled:opacity-25"
+          style={navBtn}
         >
-          <ChevronLeft size={16} strokeWidth={2.5} />
+          <ChevronLeft size={16} />
         </button>
-        <span className="font-mono text-[13px] font-bold uppercase tracking-[0.12em]">{monthLabel}</span>
-        <button
-          type="button"
-          onClick={() => setView(new Date(y, m + 1, 1))}
-          aria-label="Next month"
-          className="flex h-10 w-10 items-center justify-center rounded-[4px] border border-[var(--line-strong)] text-[var(--ink)] transition-transform active:scale-95"
-        >
-          <ChevronRight size={16} strokeWidth={2.5} />
+        <span style={{ fontSize: 15, fontWeight: 600 }}>{monthLabel}</span>
+        <button type="button" onClick={() => setView(new Date(y, m + 1, 1))} aria-label="Next month" style={navBtn}>
+          <ChevronRight size={16} />
         </button>
       </div>
 
-      <div className="mb-2 grid grid-cols-7">
+      <div className="grid grid-cols-7" style={{ marginBottom: 6 }}>
         {DAYS.map((d, i) => (
-          <div key={i} className="py-1 text-center font-mono text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--mute)]">
+          <div key={i} className="text-center" style={{ fontSize: 11, fontWeight: 600, color: "var(--c-ink-3)", padding: "4px 0" }}>
             {d}
           </div>
         ))}
       </div>
 
-      <div className="grid grid-cols-7 gap-1">
+      <div className="grid grid-cols-7" style={{ gap: 4 }}>
         {cells.map((day, i) => {
-          if (!day) return <div key={`e${i}`} className="aspect-square" />;
-
+          if (!day) return <div key={`e${i}`} style={{ aspectRatio: "1" }} />;
           const iso = toISO(y, m, day);
           const dow = new Date(iso + "T00:00:00").getDay();
           const sel = iso === value;
@@ -98,16 +91,7 @@ export default function CalendarPicker({
               : null;
           const noSlots = slots !== null && slots.length === 0;
           const disabled = past || blocked || noSlots;
-
-          const state = sel
-            ? "selected"
-            : blocked
-            ? "blocked"
-            : disabled
-            ? "disabled"
-            : isToday
-            ? "today"
-            : "open";
+          const state = sel ? "selected" : blocked ? "blocked" : disabled ? "disabled" : isToday ? "today" : "open";
 
           return (
             <button
@@ -116,7 +100,7 @@ export default function CalendarPicker({
               disabled={disabled}
               onClick={() => onChange(iso)}
               data-state={state}
-              className="cal-day"
+              className="cx-cal-day"
             >
               {day}
             </button>
@@ -124,27 +108,42 @@ export default function CalendarPicker({
         })}
       </div>
 
-      <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[var(--line)] pt-3">
-        <Legend swatch="var(--accent)" label="Selected" />
-        <Legend border="var(--accent)" label="Today" />
+      <div className="flex flex-wrap items-center" style={{ gap: 16, marginTop: 16, paddingTop: 14, borderTop: "1px solid var(--c-line)" }}>
+        <Legend swatch="var(--c-accent)" label="Selected" />
+        <Legend border label="Today" />
         <Legend muted label="Unavailable" />
       </div>
     </div>
   );
 }
 
-function Legend({ swatch, border, muted, label }: { swatch?: string; border?: string; muted?: boolean; label: string }) {
+const navBtn: React.CSSProperties = {
+  display: "flex",
+  height: 38,
+  width: 38,
+  alignItems: "center",
+  justifyContent: "center",
+  borderRadius: 10,
+  border: "1px solid var(--c-line-2)",
+  background: "transparent",
+  color: "var(--c-ink)",
+  cursor: "pointer",
+};
+
+function Legend({ swatch, border, muted, label }: { swatch?: string; border?: boolean; muted?: boolean; label: string }) {
   return (
-    <div className="flex items-center gap-1.5">
+    <div className="flex items-center" style={{ gap: 6 }}>
       <span
-        className="h-3 w-3 rounded-[3px]"
         style={{
-          background: swatch ?? (muted ? "transparent" : "transparent"),
-          border: border ? `1.5px solid ${border}` : muted ? "1px solid var(--line-strong)" : undefined,
-          opacity: muted ? 0.5 : 1,
+          width: 12,
+          height: 12,
+          borderRadius: 4,
+          background: swatch ?? "transparent",
+          border: border ? "1.5px solid var(--c-accent)" : muted ? "1px solid var(--c-line-2)" : undefined,
+          opacity: muted ? 0.6 : 1,
         }}
       />
-      <span className="font-mono text-[10px] uppercase tracking-[0.08em] text-[var(--mute)]">{label}</span>
+      <span style={{ fontSize: 11.5, color: "var(--c-ink-3)" }}>{label}</span>
     </div>
   );
 }

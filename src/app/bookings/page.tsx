@@ -5,13 +5,12 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { ArrowUpRight, CalendarDays, Check, Clock, RotateCcw, X, CalendarClock, Ban } from "lucide-react";
-import Navigation from "@/components/Navigation";
-import CalendarPicker from "@/components/CalendarPicker";
-import { Pill } from "@/components/ui";
+import SiteNav from "@/components/site/SiteNav";
+import SiteCalendar from "@/components/site/SiteCalendar";
 import { formatPrice } from "@/lib/services";
 import { DEFAULT_SITE_CONTENT, type SiteContent } from "@/lib/site-content";
 import { useAuth } from "@/context/auth";
-import { useToast } from "@/components/Toast";
+import { useToast } from "@/components/site/Toast";
 
 interface Booking {
   id: string;
@@ -25,36 +24,28 @@ interface Booking {
 }
 
 const STATUS = {
-  pending: { label: "Pending", icon: Clock, color: "var(--warn)", bg: "var(--warn-bg)" },
-  accepted: { label: "Confirmed", icon: Check, color: "var(--ok)", bg: "var(--ok-bg)" },
-  denied: { label: "Declined", icon: X, color: "var(--danger)", bg: "var(--danger-bg)" },
-  cancelled: { label: "Cancelled", icon: Ban, color: "var(--mute)", bg: "transparent" },
-};
+  pending: { label: "Pending", icon: Clock, cls: "cx-badge--warn" },
+  accepted: { label: "Confirmed", icon: Check, cls: "cx-badge--ok" },
+  denied: { label: "Declined", icon: X, cls: "cx-badge--danger" },
+  cancelled: { label: "Cancelled", icon: Ban, cls: "cx-badge--muted" },
+} as const;
 
 const CUTOFF_MS = 24 * 60 * 60 * 1000;
 
-/** Convert a slot label ("9:00 AM") to 24h "HH:MM:SS". */
 function slotTo24h(time: string): string {
   const [raw, period] = time.split(" ");
   const [h, m] = raw.split(":").map(Number);
   const hours = period === "PM" && h !== 12 ? h + 12 : period === "AM" && h === 12 ? 0 : h;
   return `${String(hours).padStart(2, "0")}:${String(m).padStart(2, "0")}:00`;
 }
-
 function bookingStartMs(date: string, time: string): number {
   return new Date(`${date}T${slotTo24h(time)}`).getTime();
 }
-
 function getMinDate() {
   const d = new Date();
   d.setDate(d.getDate() + 1);
   return d.toISOString().split("T")[0];
 }
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 14 },
-  show: (i: number) => ({ opacity: 1, y: 0, transition: { duration: 0.45, delay: i * 0.06, ease: [0.22, 1, 0.36, 1] as const } }),
-};
 
 export default function BookingsPage() {
   const { user, loading: authLoading } = useAuth();
@@ -64,62 +55,32 @@ export default function BookingsPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"all" | "upcoming" | "past">("all");
   const [content, setContent] = useState<SiteContent>(DEFAULT_SITE_CONTENT);
-
-  // Cancel confirmation + reschedule modal state.
   const [confirmCancel, setConfirmCancel] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [rescheduling, setRescheduling] = useState<Booking | null>(null);
-
-  // Capture "now" once at mount — render stays pure, and the 24h gate is a
-  // soft UX hint anyway (the server is authoritative).
   const [nowMs] = useState(() => Date.now());
   const minDate = useMemo(() => getMinDate(), []);
 
   useEffect(() => {
-    if (!authLoading && !user) {
-      router.replace("/auth?redirect=/bookings");
-    }
+    if (!authLoading && !user) router.replace("/auth?redirect=/bookings");
   }, [user, authLoading, router]);
 
   useEffect(() => {
     if (!user) return;
-    fetch("/api/bookings")
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d) => {
-        setBookings(d?.bookings ?? []);
-        setLoading(false);
-      })
-      .catch(() => {
-        setBookings([]);
-        setLoading(false);
-      });
-    fetch("/api/site-content")
-      .then((r) => r.json())
-      .then((d) => setContent(d.content ?? DEFAULT_SITE_CONTENT))
-      .catch(() => {});
+    fetch("/api/bookings").then((r) => (r.ok ? r.json() : null)).then((d) => { setBookings(d?.bookings ?? []); setLoading(false); }).catch(() => { setBookings([]); setLoading(false); });
+    fetch("/api/site-content").then((r) => r.json()).then((d) => setContent(d.content ?? DEFAULT_SITE_CONTENT)).catch(() => {});
   }, [user]);
 
   const today = new Date(nowMs).toISOString().split("T")[0];
-
   const filtered = (bookings ?? [])
-    .filter((b) => {
-      if (filter === "upcoming") return b.booking_date >= today;
-      if (filter === "past") return b.booking_date < today;
-      return true;
-    })
+    .filter((b) => (filter === "upcoming" ? b.booking_date >= today : filter === "past" ? b.booking_date < today : true))
     .sort((a, b) => b.booking_date.localeCompare(a.booking_date));
-
-  const upcomingCount = (bookings ?? []).filter(
-    (b) => b.booking_date >= today && b.status !== "cancelled"
-  ).length;
+  const upcomingCount = (bookings ?? []).filter((b) => b.booking_date >= today && b.status !== "cancelled").length;
 
   function patchBooking(booking: Booking) {
     setBusyId(booking.id);
     return {
-      done: (updated: Booking) => {
-        setBookings((prev) => (prev ?? []).map((b) => (b.id === updated.id ? { ...b, ...updated } : b)));
-        setBusyId(null);
-      },
+      done: (updated: Booking) => { setBookings((prev) => (prev ?? []).map((b) => (b.id === updated.id ? { ...b, ...updated } : b))); setBusyId(null); },
       fail: () => setBusyId(null),
     };
   }
@@ -127,369 +88,193 @@ export default function BookingsPage() {
   async function cancelBooking(booking: Booking) {
     const h = patchBooking(booking);
     try {
-      const res = await fetch(`/api/bookings/${booking.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "cancel" }),
-      });
+      const res = await fetch(`/api/bookings/${booking.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "cancel" }) });
       const d = await res.json();
-      if (!res.ok) {
-        toast(d.error || "Couldn't cancel. Try again.", "error");
-        h.fail();
-        return;
-      }
-      h.done(d.booking);
-      setConfirmCancel(null);
-      toast("Booking cancelled.", "success");
-    } catch {
-      toast("Network error. Try again.", "error");
-      h.fail();
-    }
+      if (!res.ok) { toast(d.error || "Couldn't cancel. Try again.", "error"); h.fail(); return; }
+      h.done(d.booking); setConfirmCancel(null); toast("Booking cancelled.", "success");
+    } catch { toast("Network error. Try again.", "error"); h.fail(); }
   }
 
   async function submitReschedule(booking: Booking, date: string, time: string) {
     const h = patchBooking(booking);
     try {
-      const res = await fetch(`/api/bookings/${booking.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "reschedule", date, time }),
-      });
+      const res = await fetch(`/api/bookings/${booking.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "reschedule", date, time }) });
       const d = await res.json();
-      if (!res.ok) {
-        toast(d.error || "Couldn't reschedule. Try again.", "error");
-        h.fail();
-        return;
-      }
-      h.done(d.booking);
-      setRescheduling(null);
-      toast("Rescheduled — pending re-confirmation.", "success");
-    } catch {
-      toast("Network error. Try again.", "error");
-      h.fail();
-    }
+      if (!res.ok) { toast(d.error || "Couldn't reschedule. Try again.", "error"); h.fail(); return; }
+      h.done(d.booking); setRescheduling(null); toast("Rescheduled — pending re-confirmation.", "success");
+    } catch { toast("Network error. Try again.", "error"); h.fail(); }
   }
 
   if (authLoading || (!user && !authLoading)) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="spin h-6 w-6 rounded-full border-2 border-[var(--line-strong)] border-t-[var(--accent)]" />
+      <div className="site" style={{ minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div className="cx-spin" style={{ width: 26, height: 26, borderRadius: "50%", border: "2px solid var(--c-line-2)", borderTopColor: "var(--c-accent)" }} />
       </div>
     );
   }
 
   return (
-    <>
-      <Navigation />
-      <div className="has-tabbar min-h-screen px-5 pb-28 pt-24 sm:pb-16">
-        <div className="mx-auto w-full max-w-2xl">
-          <div className="mb-9">
-            <p className="idx mb-3">[ ACCOUNT ]</p>
-            <h1 className="display display--lg">My bookings</h1>
-            {user && (
-              <p className="mt-2 text-sm text-[var(--mute)]">
-                {user.name} · {upcomingCount} upcoming
-              </p>
-            )}
+    <div className="site">
+      <SiteNav />
+      <div className="cx-has-tabbar" style={{ minHeight: "100dvh", padding: "clamp(104px, 14vw, 150px) 20px 120px" }}>
+        <div style={{ maxWidth: 660, margin: "0 auto", width: "100%" }}>
+          <div style={{ marginBottom: 32 }}>
+            <p className="cx-eyebrow" style={{ marginBottom: 16 }}>Account</p>
+            <h1 className="cx-display cx-display--lg">My bookings</h1>
+            {user && <p style={{ marginTop: 10, fontSize: 15, color: "var(--c-ink-2)" }}>{user.name} · {upcomingCount} upcoming</p>}
           </div>
 
-          <div className="mb-8 flex gap-2">
+          <div className="flex" style={{ gap: 8, marginBottom: 28 }}>
             {(["all", "upcoming", "past"] as const).map((f) => (
-              <Pill key={f} active={filter === f} onClick={() => setFilter(f)}>
-                {f}
-              </Pill>
+              <button key={f} onClick={() => setFilter(f)} className="cx-chip" style={{ textTransform: "capitalize", cursor: "pointer", background: filter === f ? "var(--c-ink)" : "transparent", color: filter === f ? "#fff" : "var(--c-ink-2)", borderColor: filter === f ? "transparent" : "var(--c-line-2)" }}>{f}</button>
             ))}
           </div>
 
           {loading ? (
             <div className="space-y-3">
               {[0, 1, 2].map((i) => (
-                <div key={i} className="panel-fill p-5">
-                  <div className="space-y-3">
-                    <div className="shimmer h-4 w-32 rounded-full" />
-                    <div className="shimmer h-3 w-48 rounded-full" />
-                  </div>
+                <div key={i} className="cx-card" style={{ padding: 22 }}>
+                  <div className="cx-shimmer" style={{ height: 16, width: 130, borderRadius: 999, marginBottom: 12 }} />
+                  <div className="cx-shimmer" style={{ height: 12, width: 190, borderRadius: 999 }} />
                 </div>
               ))}
             </div>
           ) : filtered.length === 0 ? (
-            <div className="panel-fill p-12 text-center">
-              <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-[6px] bg-[var(--accent)]/14 text-[var(--accent-deep)]">
-                <CalendarDays size={26} />
-              </div>
-              <p className="font-display text-2xl uppercase">
-                {filter === "upcoming" ? "Nothing upcoming" : "No bookings yet"}
-              </p>
-              <p className="mb-6 mt-2 text-sm text-[var(--mute)]">
-                {filter === "upcoming" ? "Ready for your next cut?" : "Your appointments show up here once you book."}
-              </p>
-              <Link href="/book" className="btn btn--accent inline-flex">
-                Book now <ArrowUpRight size={16} strokeWidth={2.5} />
-              </Link>
+            <div className="cx-card" style={{ padding: "clamp(36px,6vw,56px)", textAlign: "center" }}>
+              <div style={{ margin: "0 auto 18px", display: "flex", height: 54, width: 54, alignItems: "center", justifyContent: "center", borderRadius: 16, background: "var(--c-accent-soft)", color: "var(--c-accent-ink)" }}><CalendarDays size={24} /></div>
+              <p className="cx-display cx-display--md">{filter === "upcoming" ? "Nothing upcoming" : "No bookings yet"}</p>
+              <p style={{ margin: "8px 0 22px", fontSize: 14.5, color: "var(--c-ink-2)" }}>{filter === "upcoming" ? "Ready for your next cut?" : "Your appointments show up here once you book."}</p>
+              <Link href="/book" className="cx-btn cx-btn--accent" style={{ display: "inline-flex" }}>Book now <ArrowUpRight size={16} strokeWidth={2.2} /></Link>
             </div>
           ) : (
             <div className="space-y-4">
               {filtered.map((b, i) => {
                 const cfg = STATUS[b.status];
                 const Icon = cfg.icon;
-                const displayDate = new Date(b.booking_date + "T00:00:00").toLocaleDateString("en-US", {
-                  weekday: "long",
-                  month: "long",
-                  day: "numeric",
-                });
+                const displayDate = new Date(b.booking_date + "T00:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
                 const isPast = b.booking_date < today;
                 const isCancelled = b.status === "cancelled";
-                const canManage =
-                  !isPast && !isCancelled && b.status !== "denied";
+                const canManage = !isPast && !isCancelled && b.status !== "denied";
                 const withinCutoff = bookingStartMs(b.booking_date, b.booking_time) - nowMs < CUTOFF_MS;
                 const busy = busyId === b.id;
-
                 return (
                   <motion.div
                     key={b.id}
-                    className="panel-fill p-5"
-                    initial="hidden"
-                    animate="show"
-                    variants={fadeUp}
-                    custom={i}
-                    style={{ opacity: isPast || isCancelled ? 0.62 : 1 }}
+                    className="cx-card"
+                    style={{ padding: 22, opacity: isPast || isCancelled ? 0.66 : 1 }}
+                    initial={{ opacity: 0, y: 14 }}
+                    animate={{ opacity: isPast || isCancelled ? 0.66 : 1, y: 0 }}
+                    transition={{ duration: 0.45, delay: Math.min(i, 6) * 0.05, ease: [0.16, 1, 0.3, 1] }}
                   >
-                    <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-start justify-between" style={{ gap: 16 }}>
                       <div>
-                        <p className="font-display text-xl uppercase leading-none">{b.service}</p>
-                        <p className="mt-2 font-mono text-[12px] uppercase tracking-[0.06em] text-[var(--mute)]">
-                          {displayDate} · {b.booking_time}
-                        </p>
+                        <p style={{ fontFamily: "var(--c-display)", fontSize: 22, fontWeight: 520 }}>{b.service}</p>
+                        <p className="cx-num" style={{ marginTop: 6, fontSize: 13.5, color: "var(--c-ink-2)" }}>{displayDate} · {b.booking_time}</p>
                       </div>
-                      <span
-                        className="flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 font-mono text-[11px] font-bold uppercase tracking-[0.08em]"
-                        style={{
-                          background: cfg.bg,
-                          color: cfg.color,
-                          border: isCancelled ? "1px solid var(--line-strong)" : "none",
-                        }}
-                      >
-                        <Icon size={12} strokeWidth={3} /> {cfg.label}
-                      </span>
+                      <span className={`cx-badge ${cfg.cls}`}><Icon size={12} strokeWidth={3} /> {cfg.label}</span>
                     </div>
 
-                    <div className="mt-4 flex items-center justify-between gap-3 border-t border-[var(--line)] pt-4">
-                      <span className="spec text-[var(--accent-deep)]">{formatPrice(b.service_price_cents)}</span>
-
+                    <div className="flex items-center justify-between" style={{ gap: 12, marginTop: 16, paddingTop: 16, borderTop: "1px solid var(--c-line)" }}>
+                      <span className="cx-num" style={{ fontFamily: "var(--c-display)", fontSize: 18, fontWeight: 520, color: "var(--c-accent-ink)" }}>{formatPrice(b.service_price_cents)}</span>
                       {isPast && b.status === "accepted" ? (
-                        <Link
-                          href="/book"
-                          className="inline-flex items-center gap-1.5 font-mono text-[12px] font-bold uppercase tracking-[0.08em] text-[var(--mute)] transition-colors hover:text-[var(--accent-deep)]"
-                        >
-                          <RotateCcw size={13} /> Book again
-                        </Link>
+                        <Link href="/book" className="cx-textlink"><RotateCcw size={14} /> Book again</Link>
                       ) : canManage ? (
                         withinCutoff ? (
-                          <span className="text-right font-mono text-[10px] uppercase leading-tight tracking-[0.06em] text-[var(--mute)]">
-                            Under 24h — text us
-                            <br />
-                            for changes
-                          </span>
+                          <span style={{ textAlign: "right", fontSize: 12, lineHeight: 1.3, color: "var(--c-ink-3)" }}>Under 24h — text us<br />for changes</span>
                         ) : (
-                          <div className="flex items-center gap-4">
-                            <button
-                              disabled={busy}
-                              onClick={() => setRescheduling(b)}
-                              className="inline-flex items-center gap-1.5 font-mono text-[12px] font-bold uppercase tracking-[0.08em] text-[var(--mute)] transition-colors hover:text-[var(--accent-deep)] disabled:opacity-40"
-                            >
-                              <CalendarClock size={13} /> Reschedule
-                            </button>
-                            <button
-                              disabled={busy}
-                              onClick={() => setConfirmCancel(b.id)}
-                              className="inline-flex items-center gap-1.5 font-mono text-[12px] font-bold uppercase tracking-[0.08em] text-[var(--mute)] transition-colors hover:text-[var(--danger)] disabled:opacity-40"
-                            >
-                              <X size={13} /> Cancel
-                            </button>
+                          <div className="flex items-center" style={{ gap: 16 }}>
+                            <button disabled={busy} onClick={() => setRescheduling(b)} className="cx-textlink" style={{ opacity: busy ? 0.4 : 1 }}><CalendarClock size={14} /> Reschedule</button>
+                            <button disabled={busy} onClick={() => setConfirmCancel(b.id)} className="cx-textlink" style={{ opacity: busy ? 0.4 : 1 }}><X size={14} /> Cancel</button>
                           </div>
                         )
                       ) : null}
                     </div>
 
-                    {/* Inline cancel confirmation */}
                     <AnimatePresence>
                       {confirmCancel === b.id && (
-                        <motion.div
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: "auto" }}
-                          exit={{ opacity: 0, height: 0 }}
-                          className="overflow-hidden"
-                        >
-                          <div className="mt-4 rounded-[4px] border border-[var(--danger-line)] bg-[var(--danger-bg)] p-4">
-                            <p className="font-display text-lg uppercase leading-none">Cancel this appointment?</p>
-                            <p className="mt-1.5 text-sm text-[var(--mute)]">
-                              This frees the slot for others. We&apos;ll be notified.
-                            </p>
-                            <div className="mt-4 flex gap-3">
-                              <button
-                                disabled={busy}
-                                onClick={() => cancelBooking(b)}
-                                className="btn btn--accent !min-h-[42px] !bg-[var(--danger)] !shadow-none"
-                                style={{ background: "var(--danger)" }}
-                              >
-                                {busy ? "Cancelling…" : "Yes, cancel"}
-                              </button>
-                              <button
-                                disabled={busy}
-                                onClick={() => setConfirmCancel(null)}
-                                className="btn btn--ghost !min-h-[42px]"
-                              >
-                                Keep it
-                              </button>
+                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} style={{ overflow: "hidden" }}>
+                          <div style={{ marginTop: 16, borderRadius: 12, border: "1px solid rgba(207,63,52,0.3)", background: "var(--c-danger-soft)", padding: 16 }}>
+                            <p style={{ fontFamily: "var(--c-display)", fontSize: 18, fontWeight: 520 }}>Cancel this appointment?</p>
+                            <p style={{ marginTop: 4, fontSize: 14, color: "var(--c-ink-2)" }}>This frees the slot for others. We&apos;ll be notified.</p>
+                            <div className="flex" style={{ gap: 12, marginTop: 16 }}>
+                              <button disabled={busy} onClick={() => cancelBooking(b)} className="cx-btn cx-btn--sm" style={{ background: "var(--c-danger)", color: "#fff" }}>{busy ? "Cancelling…" : "Yes, cancel"}</button>
+                              <button disabled={busy} onClick={() => setConfirmCancel(null)} className="cx-btn cx-btn--ghost cx-btn--sm">Keep it</button>
                             </div>
                           </div>
                         </motion.div>
                       )}
                     </AnimatePresence>
 
-                    {b.notes && !isCancelled && (
-                      <p className="mt-3 border-t border-[var(--line)] pt-3 text-xs text-[var(--mute)]">{b.notes}</p>
-                    )}
+                    {b.notes && !isCancelled && <p style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid var(--c-line)", fontSize: 13.5, color: "var(--c-ink-2)" }}>{b.notes}</p>}
                   </motion.div>
                 );
               })}
             </div>
           )}
 
-          <div className="mt-8 text-center">
-            <Link href="/book" className="btn btn--accent inline-flex">
-              Book an appointment <ArrowUpRight size={16} strokeWidth={2.5} />
-            </Link>
+          <div style={{ marginTop: 32, textAlign: "center" }}>
+            <Link href="/book" className="cx-btn cx-btn--accent" style={{ display: "inline-flex" }}>Book an appointment <ArrowUpRight size={16} strokeWidth={2.2} /></Link>
           </div>
         </div>
       </div>
 
       <AnimatePresence>
         {rescheduling && (
-          <RescheduleModal
-            booking={rescheduling}
-            content={content}
-            minDate={minDate}
-            busy={busyId === rescheduling.id}
-            onClose={() => setRescheduling(null)}
-            onSubmit={(date, time) => submitReschedule(rescheduling, date, time)}
-          />
+          <RescheduleModal booking={rescheduling} content={content} minDate={minDate} busy={busyId === rescheduling.id} onClose={() => setRescheduling(null)} onSubmit={(date, time) => submitReschedule(rescheduling, date, time)} />
         )}
       </AnimatePresence>
-    </>
+    </div>
   );
 }
 
-function RescheduleModal({
-  booking,
-  content,
-  minDate,
-  busy,
-  onClose,
-  onSubmit,
-}: {
-  booking: Booking;
-  content: SiteContent;
-  minDate: string;
-  busy: boolean;
-  onClose: () => void;
-  onSubmit: (date: string, time: string) => void;
-}) {
+function RescheduleModal({ booking, content, minDate, busy, onClose, onSubmit }: { booking: Booking; content: SiteContent; minDate: string; busy: boolean; onClose: () => void; onSubmit: (date: string, time: string) => void }) {
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [nowMs] = useState(() => Date.now());
-
   const blockedDates = useMemo(() => content.scheduleBlocks.map((b) => b.date), [content]);
   const dow = date ? String(new Date(date + "T00:00:00").getDay()) : null;
-  const allTimes = date
-    ? date in content.dateAvailability
-      ? content.dateAvailability[date]
-      : dow
-      ? content.weeklyAvailability[dow] ?? []
-      : []
-    : [];
-  // Hide slots inside the 24h window so the server never rejects the pick.
+  const allTimes = date ? (date in content.dateAvailability ? content.dateAvailability[date] : dow ? content.weeklyAvailability[dow] ?? [] : []) : [];
   const times = allTimes.filter((t) => bookingStartMs(date, t) - nowMs >= CUTOFF_MS);
 
   return (
-    <motion.div
-      className="fixed inset-0 z-[70] flex items-end justify-center bg-black/50 p-0 sm:items-center sm:p-4"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      onClick={onClose}
-    >
+    <motion.div style={{ position: "fixed", inset: 0, zIndex: 70, display: "flex", alignItems: "flex-end", justifyContent: "center", background: "rgba(20,17,25,0.5)", backdropFilter: "blur(3px)" }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose}>
       <motion.div
-        className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-t-[14px] border-t border-[var(--line-strong)] bg-[var(--paper)] p-5 sm:rounded-[8px] sm:border"
+        onClick={(e) => e.stopPropagation()}
+        className="sm:items-center"
+        style={{ maxHeight: "90vh", width: "100%", maxWidth: 520, overflowY: "auto", borderTopLeftRadius: 22, borderTopRightRadius: 22, background: "var(--c-surface)", padding: 22, boxShadow: "var(--c-shadow)" }}
         initial={{ y: 40, opacity: 0.6 }}
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 40, opacity: 0 }}
-        transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-        onClick={(e) => e.stopPropagation()}
+        transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
       >
-        <div className="mb-4 flex items-start justify-between gap-4">
+        <div className="flex items-start justify-between" style={{ gap: 16, marginBottom: 18 }}>
           <div>
-            <p className="idx mb-2">[ RESCHEDULE ]</p>
-            <h2 className="font-display text-2xl uppercase leading-none">{booking.service}</h2>
-            <p className="mt-2 text-sm text-[var(--mute)]">Pick a new day and time. It goes back to pending for re-confirmation.</p>
+            <p className="cx-eyebrow" style={{ marginBottom: 10 }}>Reschedule</p>
+            <h2 className="cx-display cx-display--md">{booking.service}</h2>
+            <p style={{ marginTop: 8, fontSize: 14, color: "var(--c-ink-2)" }}>Pick a new day and time. It goes back to pending for re-confirmation.</p>
           </div>
-          <button
-            onClick={onClose}
-            aria-label="Close"
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[4px] border border-[var(--line-strong)] text-[var(--ink)] transition-colors hover:border-[var(--ink)]"
-          >
-            <X size={16} />
-          </button>
+          <button onClick={onClose} aria-label="Close" style={{ display: "flex", height: 38, width: 38, flex: "none", alignItems: "center", justifyContent: "center", borderRadius: 10, border: "1px solid var(--c-line-2)", background: "transparent", color: "var(--c-ink)", cursor: "pointer" }}><X size={16} /></button>
         </div>
 
-        <CalendarPicker
-          value={date}
-          onChange={(d) => {
-            setDate(d);
-            setTime("");
-          }}
-          blockedDates={blockedDates}
-          minDate={minDate}
-          weeklyAvailability={content.weeklyAvailability}
-          dateAvailability={content.dateAvailability}
-        />
+        <SiteCalendar value={date} onChange={(d) => { setDate(d); setTime(""); }} blockedDates={blockedDates} minDate={minDate} weeklyAvailability={content.weeklyAvailability} dateAvailability={content.dateAvailability} />
 
         {date && (
-          <div className="mt-4">
-            <p className="field-label">Time</p>
+          <div style={{ marginTop: 16 }}>
+            <p className="cx-label">Time</p>
             {times.length === 0 ? (
-              <p className="text-sm text-[var(--mute)]">No open times that day — pick another.</p>
+              <p style={{ fontSize: 14, color: "var(--c-ink-3)" }}>No open times that day — pick another.</p>
             ) : (
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap" style={{ gap: 8 }}>
                 {times.map((t) => {
                   const active = t === time;
-                  return (
-                    <button
-                      key={t}
-                      onClick={() => setTime(t)}
-                      className="rounded-[4px] border px-3 py-2 font-mono text-[12px] font-bold uppercase tracking-[0.06em] transition-colors"
-                      style={{
-                        borderColor: active ? "transparent" : "var(--line-strong)",
-                        background: active ? "var(--accent)" : "transparent",
-                        color: active ? "#ffffff" : "var(--ink)",
-                      }}
-                    >
-                      {t}
-                    </button>
-                  );
+                  return <button key={t} onClick={() => setTime(t)} className="cx-num" style={{ borderRadius: 10, padding: "9px 13px", fontSize: 13, fontWeight: 550, border: `1px solid ${active ? "transparent" : "var(--c-line-2)"}`, background: active ? "var(--c-accent)" : "var(--c-surface)", color: active ? "#fff" : "var(--c-ink)", cursor: "pointer" }}>{t}</button>;
                 })}
               </div>
             )}
           </div>
         )}
 
-        <button
-          disabled={!date || !time || busy}
-          onClick={() => onSubmit(date, time)}
-          className="btn btn--accent mt-6 w-full"
-        >
-          {busy ? "Rescheduling…" : "Confirm new time"}
-        </button>
+        <button disabled={!date || !time || busy} onClick={() => onSubmit(date, time)} className="cx-btn cx-btn--accent cx-btn--block" style={{ marginTop: 24 }}>{busy ? "Rescheduling…" : "Confirm new time"}</button>
       </motion.div>
     </motion.div>
   );

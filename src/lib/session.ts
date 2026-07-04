@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { supabaseAdmin } from "./supabase";
+import { getViewAsClaims, fetchUserById } from "./impersonation";
 
 const COOKIE = "srt_session";
 const EXPIRY_DAYS = 30;
@@ -10,7 +11,12 @@ export interface SessionUser {
   name: string;
 }
 
-export async function getSession(): Promise<SessionUser | null> {
+/**
+ * The real signed-in user behind `srt_session`, ignoring any impersonation.
+ * Use this whenever you need the true identity (admin gating, starting/stopping
+ * impersonation) rather than the effective/impersonated one.
+ */
+export async function getRealSession(): Promise<SessionUser | null> {
   const cookieStore = await cookies();
   const token = cookieStore.get(COOKIE)?.value;
   if (!token) return null;
@@ -23,7 +29,55 @@ export async function getSession(): Promise<SessionUser | null> {
 
   if (!data || new Date(data.expires_at) < new Date()) return null;
   const user = Array.isArray(data.users) ? data.users[0] : data.users;
-  return user as SessionUser;
+  return (user as SessionUser) ?? null;
+}
+
+/**
+ * The EFFECTIVE session used for reads across the app. Identical to the real
+ * session, except: when the real session is an admin AND a valid `srt_view_as`
+ * cookie is present, it resolves to the impersonated customer — so pages render
+ * that customer's logged-in view. A non-admin session can never activate
+ * impersonation. Admin routes gate on `isAdmin(user.phone)`, which is false for
+ * the impersonated customer, so impersonation is automatically read-only-safe.
+ */
+export async function getSession(): Promise<SessionUser | null> {
+  const real = await getRealSession();
+  if (!real || !isAdmin(real.phone)) return real;
+
+  const claims = await getViewAsClaims();
+  if (!claims) return real;
+
+  const impersonated = await fetchUserById(claims.sub);
+  return impersonated ?? real;
+}
+
+export interface SessionContext {
+  user: SessionUser | null; // effective (possibly impersonated)
+  realUser: SessionUser | null; // true admin/user behind the cookie
+  isImpersonating: boolean;
+}
+
+/** Full context for banners/guards: who you really are vs. who you're viewing as. */
+export async function getSessionContext(): Promise<SessionContext> {
+  const real = await getRealSession();
+  if (!real || !isAdmin(real.phone)) {
+    return { user: real, realUser: real, isImpersonating: false };
+  }
+  const claims = await getViewAsClaims();
+  if (!claims) return { user: real, realUser: real, isImpersonating: false };
+  const impersonated = await fetchUserById(claims.sub);
+  if (!impersonated) return { user: real, realUser: real, isImpersonating: false };
+  return { user: impersonated, realUser: real, isImpersonating: true };
+}
+
+/**
+ * True when the current request is an admin viewing as a customer. Customer
+ * mutation routes use this to stay read-only-safe during impersonation — the
+ * admin can SEE the customer's world but not create/cancel bookings (which
+ * would fire real SMS) on their behalf.
+ */
+export async function isImpersonating(): Promise<boolean> {
+  return (await getSessionContext()).isImpersonating;
 }
 
 export async function createSession(userId: string): Promise<string> {
