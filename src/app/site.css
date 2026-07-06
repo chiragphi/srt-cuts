@@ -1,17 +1,17 @@
 /* ══════════════════════════════════════════════════════════════════════
-   SRT CUTS — customer storefront design system  ("Editorial / Atelier")
-   A premium, LIGHT, editorial barber storefront. Deliberately the opposite
-   of the dark, utilitarian admin cockpit so anyone knows at a glance which
-   side they're on. Warm-neutral porcelain canvas, deep ink, an expressive
-   serif display (Fraunces) against a clean grotesque body, one violet brand
-   thread, generous negative space. Retires the old Anton/mono brutalist look
-   entirely — shares NOTHING with it. Everything scoped under `.site`.
+   SRT CUTS — customer app design system, Barbr client structure.
+   The customer surface replicates the Barbr (barbr.me) client booking
+   experience — banner → identity card → work → location → services →
+   hours → reviews, sticky Book bar, week-strip time picker, phone-first
+   auth gate — dressed in SRT's own palette (violet thread, porcelain
+   neutrals, Fraunces display / Instrument body) instead of Barbr green.
+   Everything scoped under `.site`.
 
    Layers: primitive (--n / --p)  ->  semantic (--c)  ->  component (.cx)
    ════════════════════════════════════════════════════════════════════════ */
 
 .site {
-  /* ── Primitive: neutral porcelain ramp (cool-warm balanced, not beige) ── */
+  /* ── Primitive: neutral porcelain ramp ── */
   --n-0: #ffffff;
   --n-50: #f5f4f7;
   --n-100: #ecebf0;
@@ -44,14 +44,14 @@
   --c-accent-soft: var(--p-050);
   --c-accent-soft-2: var(--p-100);
 
-  /* dark editorial band (a single dramatic dark section on a light page) */
+  /* dark chrome (header, banner, footer) */
   --c-dark: #141119;
   --c-dark-2: #1d1a26;
   --c-on-dark: #f4f2f9;
-  --c-on-dark-2: rgba(244, 242, 249, 0.6);
+  --c-on-dark-2: rgba(244, 242, 249, 0.62);
   --c-on-dark-line: rgba(244, 242, 249, 0.14);
 
-  /* status (tuned for AA on light) */
+  /* status (AA on light) */
   --c-ok: #1f9457;
   --c-ok-soft: rgba(31, 148, 87, 0.1);
   --c-warn: #a8720f;
@@ -65,15 +65,15 @@
   --c-r-sm: 10px;
   --c-r: 16px;
   --c-r-lg: 22px;
-  --c-r-xl: 30px;
   --c-r-pill: 999px;
-  --c-shell: 1140px;
+  --c-shell: 1100px;
 
   --c-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --c-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 
   --c-shadow-sm: 0 1px 2px rgba(24, 18, 44, 0.04), 0 8px 24px -16px rgba(24, 18, 44, 0.24);
   --c-shadow: 0 2px 6px rgba(24, 18, 44, 0.05), 0 26px 60px -30px rgba(24, 18, 44, 0.4);
+  --c-shadow-up: 0 -6px 30px -12px rgba(24, 18, 44, 0.25);
 
   color-scheme: light;
   background: var(--c-bg);
@@ -84,7 +84,6 @@
   min-height: 100dvh;
 }
 
-/* Keep the page body light behind the storefront (no dark overscroll peek). */
 body:has(.site) {
   background: var(--c-bg);
 }
@@ -104,69 +103,63 @@ body:has(.site) {
   width: 100%;
   max-width: var(--c-shell);
   margin-inline: auto;
-  padding-inline: clamp(20px, 5vw, 48px);
+  padding-inline: clamp(16px, 4vw, 40px);
 }
 .site .cx-section {
-  padding-block: clamp(64px, 11vw, 140px);
+  margin-top: clamp(30px, 5vw, 52px);
 }
-.site .cx-section--tight {
-  padding-block: clamp(48px, 7vw, 96px);
+.site .cx-sectiontitle {
+  font-family: var(--c-display);
+  font-optical-sizing: auto;
+  font-size: clamp(23px, 3vw, 30px);
+  font-weight: 520;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  margin: 0 0 16px;
 }
 
-/* ── Typography ─────────────────────────────────────────────────────── */
+/* Two-column desktop grid, Barbr-style */
+.site .cx-cols {
+  display: grid;
+  gap: clamp(20px, 3vw, 40px);
+  grid-template-columns: 1fr;
+  align-items: start;
+}
+@media (min-width: 900px) {
+  .site .cx-cols {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ── Typography helpers ─────────────────────────────────────────────── */
 .site .cx-display {
   font-family: var(--c-display);
   font-optical-sizing: auto;
-  font-weight: 480;
-  line-height: 0.98;
-  letter-spacing: -0.025em;
+  font-weight: 500;
+  line-height: 1.02;
+  letter-spacing: -0.024em;
   text-wrap: balance;
   margin: 0;
 }
-.site .cx-display--hero {
-  font-size: clamp(52px, 11vw, 128px);
-  font-weight: 460;
-}
-.site .cx-display--xl {
-  font-size: clamp(40px, 7vw, 84px);
-}
 .site .cx-display--lg {
-  font-size: clamp(32px, 5vw, 56px);
+  font-size: clamp(28px, 4.6vw, 42px);
 }
 .site .cx-display--md {
-  font-size: clamp(25px, 3.4vw, 38px);
+  font-size: clamp(22px, 3.2vw, 30px);
 }
 .site .cx-display em {
   font-style: italic;
   color: var(--c-accent-ink);
 }
-.site .cx-eyebrow {
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--c-ink-3);
-  display: inline-flex;
-  align-items: center;
-  gap: 0.7em;
-}
-.site .cx-eyebrow::before {
-  content: "";
-  width: 20px;
-  height: 1.5px;
-  background: var(--c-accent);
-}
-.site .cx-eyebrow--plain::before {
-  display: none;
-}
-.site .cx-lede {
-  font-size: clamp(17px, 2vw, 20px);
-  line-height: 1.55;
-  color: var(--c-ink-2);
-  text-wrap: pretty;
-}
 .site .cx-num {
   font-variant-numeric: tabular-nums;
+}
+.site .cx-kicker {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--c-ink-3);
 }
 
 /* ── Buttons ────────────────────────────────────────────────────────── */
@@ -175,22 +168,22 @@ body:has(.site) {
   align-items: center;
   justify-content: center;
   gap: 0.55em;
-  min-height: 52px;
-  padding-inline: 26px;
-  border-radius: var(--c-r-pill);
+  min-height: 50px;
+  padding-inline: 24px;
+  border-radius: var(--c-r-sm);
   border: 1px solid transparent;
   background: var(--c-ink);
   color: var(--n-0);
   font-family: var(--c-sans);
   font-size: 15px;
-  font-weight: 560;
+  font-weight: 600;
   letter-spacing: -0.01em;
   cursor: pointer;
   transition: transform 0.18s var(--c-ease-out), background 0.18s var(--c-ease-out),
     border-color 0.18s var(--c-ease-out), box-shadow 0.2s var(--c-ease-out), opacity 0.18s;
 }
 .site .cx-btn:hover {
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 .site .cx-btn:active {
   transform: translateY(0) scale(0.985);
@@ -206,7 +199,6 @@ body:has(.site) {
   box-shadow: 0 10px 26px -12px rgba(106, 75, 255, 0.7);
 }
 .site .cx-btn--accent:hover {
-  box-shadow: 0 16px 34px -12px rgba(106, 75, 255, 0.85);
   background: var(--p-400);
 }
 .site .cx-btn--ghost {
@@ -218,36 +210,30 @@ body:has(.site) {
   border-color: var(--c-ink);
   background: var(--c-surface);
 }
-.site .cx-btn--light {
+.site .cx-btn--outline {
   background: var(--c-surface);
-  color: var(--c-ink);
-  border-color: var(--c-line);
-  box-shadow: var(--c-shadow-sm);
+  color: var(--c-accent-ink);
+  border-color: var(--c-accent);
+}
+.site .cx-btn--dark {
+  background: var(--c-dark);
+  color: var(--c-on-dark);
+  border-radius: var(--c-r-sm);
 }
 .site .cx-btn--block {
   width: 100%;
 }
 .site .cx-btn--sm {
-  min-height: 42px;
-  padding-inline: 18px;
+  min-height: 40px;
+  padding-inline: 16px;
   font-size: 14px;
 }
-/* on the dark band */
-.site .cx-on-dark .cx-btn--ghost {
-  color: var(--c-on-dark);
-  border-color: var(--c-on-dark-line);
-}
-.site .cx-on-dark .cx-btn--ghost:hover {
-  border-color: var(--c-on-dark);
-  background: transparent;
-}
-
 .site .cx-textlink {
   display: inline-flex;
   align-items: center;
   gap: 0.4em;
   font-size: 14px;
-  font-weight: 560;
+  font-weight: 600;
   color: var(--c-ink-2);
   cursor: pointer;
   transition: color 0.16s var(--c-ease-out);
@@ -262,10 +248,6 @@ body:has(.site) {
   border: 1px solid var(--c-line);
   border-radius: var(--c-r);
   box-shadow: var(--c-shadow-sm);
-}
-.site .cx-card--flat {
-  box-shadow: none;
-  background: transparent;
 }
 .site .cx-hr {
   height: 1px;
@@ -282,23 +264,17 @@ body:has(.site) {
   border-radius: var(--c-r-pill);
   border: 1px solid var(--c-line-2);
   font-size: 12.5px;
-  font-weight: 550;
+  font-weight: 600;
   color: var(--c-ink-2);
   line-height: 1;
+  background: transparent;
+  cursor: pointer;
 }
 .site .cx-chip--accent {
   background: var(--c-accent);
   border-color: transparent;
   color: #fff;
-  font-weight: 600;
 }
-.site .cx-chip--soft {
-  background: var(--c-accent-soft);
-  border-color: transparent;
-  color: var(--c-accent-ink);
-}
-
-/* status badge */
 .site .cx-badge {
   display: inline-flex;
   align-items: center;
@@ -306,7 +282,7 @@ body:has(.site) {
   padding: 5px 11px;
   border-radius: var(--c-r-pill);
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 650;
   line-height: 1;
 }
 .site .cx-badge--ok { background: var(--c-ok-soft); color: var(--c-ok); }
@@ -318,7 +294,7 @@ body:has(.site) {
 .site .cx-label {
   display: block;
   font-size: 13px;
-  font-weight: 560;
+  font-weight: 600;
   color: var(--c-ink-2);
   margin-bottom: 8px;
 }
@@ -365,169 +341,456 @@ body:has(.site) {
   box-shadow: 0 0 0 3px var(--c-accent-soft-2);
 }
 
-/* ── Nav ────────────────────────────────────────────────────────────── */
-.site .cx-nav {
-  position: fixed;
-  inset: 0 0 auto 0;
-  z-index: 50;
+/* ── Chrome: dark header bar ────────────────────────────────────────── */
+.site .cx-chrome {
+  background: var(--c-dark);
+  color: var(--c-on-dark);
   padding-top: env(safe-area-inset-top);
-  background: color-mix(in srgb, var(--c-bg) 78%, transparent);
-  backdrop-filter: saturate(1.3) blur(14px);
-  border-bottom: 1px solid var(--c-line);
 }
-.site .cx-navlink {
-  font-size: 14.5px;
-  font-weight: 500;
-  color: var(--c-ink-2);
-  transition: color 0.15s var(--c-ease-out);
-}
-.site .cx-navlink:hover {
-  color: var(--c-ink);
+.site .cx-chrome-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  min-height: 62px;
 }
 .site .cx-wordmark {
   font-family: var(--c-display);
-  font-size: 25px;
+  font-size: 24px;
   font-weight: 540;
   letter-spacing: -0.03em;
-  color: var(--c-ink);
   line-height: 1;
+  color: inherit;
+  white-space: nowrap;
 }
 .site .cx-wordmark em {
   font-style: italic;
-  color: var(--c-accent-ink);
+  color: var(--p-400);
 }
-.site .cx-menu {
-  position: absolute;
-  right: 0;
-  top: calc(100% + 10px);
-  min-width: 210px;
-  background: var(--c-surface);
-  border: 1px solid var(--c-line);
-  border-radius: var(--c-r);
-  box-shadow: var(--c-shadow);
-  overflow: hidden;
-  padding: 6px;
+.site .cx-chromelink {
+  font-size: 13px;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--c-on-dark-2);
+  transition: color 0.15s var(--c-ease-out);
+  white-space: nowrap;
 }
-.site .cx-menu a,
-.site .cx-menu button {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  text-align: left;
-  padding: 11px 12px;
-  border-radius: var(--c-r-sm);
-  font-size: 14.5px;
-  color: var(--c-ink);
-  background: none;
-  border: none;
-  cursor: pointer;
-  transition: background 0.14s var(--c-ease-out);
+.site .cx-chromelink:hover {
+  color: var(--c-on-dark);
 }
-.site .cx-menu a:hover,
-.site .cx-menu button:hover {
-  background: var(--n-50);
-}
-
-/* Mobile tab bar */
-.site .cx-tabbar {
-  position: fixed;
-  inset: auto 0 0 0;
-  z-index: 50;
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  padding-bottom: env(safe-area-inset-bottom);
-  background: color-mix(in srgb, var(--c-bg) 90%, transparent);
-  backdrop-filter: saturate(1.3) blur(14px);
-  border-top: 1px solid var(--c-line);
-}
-.site .cx-tab {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  padding: 11px 0 10px;
-  font-size: 10.5px;
-  font-weight: 560;
-  color: var(--c-ink-3);
-  transition: color 0.14s var(--c-ease-out);
-}
-.site .cx-tab[data-active="true"] {
-  color: var(--c-accent-ink);
-}
-.site .cx-has-tabbar {
-  padding-bottom: calc(72px + env(safe-area-inset-bottom));
-}
-@media (min-width: 768px) {
-  .site .cx-tabbar { display: none; }
-  .site .cx-has-tabbar { padding-bottom: 0; }
-}
-
-/* ── Calendar ───────────────────────────────────────────────────────── */
-.site .cx-cal-day {
-  aspect-ratio: 1;
-  display: flex;
+.site .cx-chromebtn {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
+  min-height: 40px;
+  padding-inline: 16px;
+  border-radius: var(--c-r-sm);
+  background: var(--c-surface);
+  color: var(--c-ink);
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: transform 0.16s var(--c-ease-out);
+}
+.site .cx-chromebtn:hover {
+  transform: translateY(-1px);
+}
+
+/* ── Profile banner ─────────────────────────────────────────────────── */
+.site .cx-banner {
+  position: relative;
+  background: var(--c-dark);
+  overflow: hidden;
+}
+.site .cx-banner-media {
+  position: relative;
+  height: clamp(210px, 34vw, 300px);
+}
+.site .cx-banner-rating {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 2;
+  text-align: right;
+  color: #fff;
+  background: rgba(20, 17, 25, 0.55);
+  backdrop-filter: blur(6px);
+  border-radius: var(--c-r-sm);
+  padding: 8px 12px;
+  line-height: 1.25;
+}
+
+/* ── Identity card (overlaps banner) ────────────────────────────────── */
+.site .cx-idcard {
+  position: relative;
+  z-index: 3;
+  margin-top: -34px;
+  padding: 18px 20px;
+}
+.site .cx-avatar {
+  position: relative;
+  flex: none;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--n-100);
+  border: 2px solid var(--c-surface);
+  box-shadow: var(--c-shadow-sm);
+}
+.site .cx-social {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid var(--c-line);
+  color: var(--c-ink-2);
+  transition: color 0.15s, border-color 0.15s, transform 0.15s var(--c-ease-out);
+}
+.site .cx-social:hover {
+  color: var(--c-accent-ink);
+  border-color: var(--c-accent);
+  transform: translateY(-1px);
+}
+
+/* ── Promo banner (Barbr's green gift bar → SRT violet) ─────────────── */
+.site .cx-promo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--c-accent);
+  background: var(--c-accent-soft);
+  color: var(--c-accent-ink);
+  border-radius: var(--c-r-sm);
+  padding: 12px 14px;
   font-size: 14px;
-  font-weight: 520;
-  font-variant-numeric: tabular-nums;
-  border-radius: 11px;
-  border: 1px solid transparent;
-  background: transparent;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+/* ── Info rows (address / hours in identity area) ───────────────────── */
+.site .cx-inforow {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 0;
+  font-size: 14.5px;
+  color: var(--c-ink);
+}
+.site .cx-inforow + .cx-inforow {
+  border-top: 1px solid var(--c-line);
+}
+.site .cx-inforow-icon {
+  flex: none;
+  margin-top: 1px;
+  color: var(--c-accent-ink);
+}
+.site .cx-inforow-action {
+  margin-left: auto;
+  flex: none;
+  font-size: 13.5px;
+  font-weight: 650;
+  color: var(--c-accent-ink);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ── Work carousel ──────────────────────────────────────────────────── */
+.site .cx-carousel {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  padding-bottom: 4px;
+}
+.site .cx-carousel::-webkit-scrollbar {
+  display: none;
+}
+.site .cx-carousel-item {
+  position: relative;
+  flex: none;
+  width: clamp(200px, 56vw, 240px);
+  aspect-ratio: 4 / 5;
+  border-radius: var(--c-r-sm);
+  overflow: hidden;
+  background: var(--n-100);
+  scroll-snap-align: start;
+  cursor: pointer;
+  border: 0;
+  padding: 0;
+}
+@media (min-width: 900px) {
+  .site .cx-carousel-item {
+    width: 220px;
+  }
+}
+.site .cx-roundbtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--c-line-2);
+  background: var(--c-surface);
   color: var(--c-ink);
   cursor: pointer;
-  transition: background 0.13s var(--c-ease-out), color 0.13s, border-color 0.13s, transform 0.1s;
+  transition: border-color 0.15s, transform 0.15s var(--c-ease-out);
 }
-.site .cx-cal-day:not(:disabled):hover {
-  background: var(--c-accent-soft);
+.site .cx-roundbtn:hover {
+  border-color: var(--c-ink);
+  transform: translateY(-1px);
 }
-.site .cx-cal-day:active:not(:disabled) {
-  transform: scale(0.93);
+.site .cx-roundbtn:disabled {
+  opacity: 0.35;
+  cursor: default;
+  transform: none;
 }
-.site .cx-cal-day[data-state="selected"] {
+
+/* ── Location map card ──────────────────────────────────────────────── */
+.site .cx-mapwrap {
+  position: relative;
+  border-radius: var(--c-r);
+  overflow: hidden;
+  border: 1px solid var(--c-line);
+  background: var(--n-100);
+  min-height: 250px;
+}
+.site .cx-mapwrap iframe {
+  display: block;
+  width: 100%;
+  height: 250px;
+  border: 0;
+  filter: saturate(0.85);
+}
+.site .cx-mapcard {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--c-surface);
+  border-radius: var(--c-r-sm);
+  box-shadow: var(--c-shadow);
+  padding: 12px 14px;
+}
+
+/* ── Service cards ──────────────────────────────────────────────────── */
+.site .cx-service {
+  display: flex;
+  width: 100%;
+  align-items: stretch;
+  gap: 14px;
+  text-align: left;
+  padding: 16px;
+  cursor: pointer;
+  border-radius: var(--c-r);
+  border: 1.5px solid var(--c-line);
+  background: var(--c-surface);
+  box-shadow: var(--c-shadow-sm);
+  transition: border-color 0.16s var(--c-ease-out), transform 0.2s var(--c-ease-out),
+    box-shadow 0.2s var(--c-ease-out);
+}
+.site .cx-service:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--c-shadow);
+}
+.site .cx-service[data-selected="true"] {
+  border-color: var(--c-accent);
+}
+.site .cx-service-thumb {
+  position: relative;
+  flex: none;
+  width: 84px;
+  border-radius: var(--c-r-sm);
+  overflow: hidden;
+  background: var(--n-100);
+  align-self: stretch;
+  min-height: 84px;
+}
+
+/* ── Opening hours ──────────────────────────────────────────────────── */
+.site .cx-hourrow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 0;
+  font-size: 14.5px;
+}
+.site .cx-hourrow + .cx-hourrow {
+  border-top: 1px solid var(--c-line);
+}
+
+/* ── Reviews ────────────────────────────────────────────────────────── */
+.site .cx-avg {
+  font-family: var(--c-display);
+  font-size: clamp(50px, 8vw, 64px);
+  font-weight: 500;
+  line-height: 0.9;
+  letter-spacing: -0.03em;
+}
+.site .cx-star {
+  color: var(--c-accent);
+}
+.site .cx-star--empty {
+  color: var(--n-300);
+}
+
+/* ── Sticky Book bar ────────────────────────────────────────────────── */
+.site .cx-stickybar {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: 60;
+  background: var(--c-surface);
+  border-top: 1px solid var(--c-line);
+  box-shadow: var(--c-shadow-up);
+  padding: 12px clamp(16px, 4vw, 40px) calc(12px + env(safe-area-inset-bottom));
+}
+.site .cx-stickybar-inner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  max-width: var(--c-shell);
+  margin-inline: auto;
+}
+.site .cx-has-stickybar {
+  padding-bottom: calc(96px + env(safe-area-inset-bottom));
+}
+
+/* ── Week strip calendar ────────────────────────────────────────────── */
+.site .cx-weekstrip-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.site .cx-weekstrip-title {
+  font-size: 14px;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.site .cx-weekstrip-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  text-align: center;
+}
+.site .cx-weekstrip-dow {
+  font-size: 12.5px;
+  font-weight: 650;
+  color: var(--c-ink-2);
+  padding-bottom: 8px;
+}
+.site .cx-weekstrip-day {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  margin-inline: auto;
+  border-radius: 50%;
+  border: 0;
+  background: transparent;
+  font-size: 14.5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--c-ink);
+  cursor: pointer;
+  transition: background 0.13s var(--c-ease-out), color 0.13s, transform 0.1s;
+}
+.site .cx-weekstrip-day:not(:disabled):hover {
+  background: var(--c-accent-soft-2);
+}
+.site .cx-weekstrip-day:active:not(:disabled) {
+  transform: scale(0.92);
+}
+.site .cx-weekstrip-day[data-state="selected"] {
   background: var(--c-accent);
   color: #fff;
 }
-.site .cx-cal-day[data-state="today"] {
-  border-color: var(--c-accent);
-}
-.site .cx-cal-day[data-state="disabled"],
-.site .cx-cal-day[data-state="blocked"] {
-  color: var(--c-ink-3);
-  opacity: 0.4;
+.site .cx-weekstrip-day:disabled {
+  color: var(--n-300);
   cursor: default;
 }
-.site .cx-cal-day[data-state="blocked"] {
-  text-decoration: line-through;
+
+/* ── Slot chips ─────────────────────────────────────────────────────── */
+.site .cx-slotgroup {
+  font-size: 13px;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--c-ink);
+}
+.site .cx-slot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding-inline: 16px;
+  border-radius: var(--c-r-sm);
+  border: 1.5px solid var(--c-line-2);
+  background: var(--c-surface);
+  color: var(--c-ink);
+  font-size: 14.5px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition: border-color 0.14s var(--c-ease-out), background 0.14s, color 0.14s,
+    transform 0.1s;
+}
+.site .cx-slot:hover {
+  border-color: var(--c-accent);
+}
+.site .cx-slot:active {
+  transform: scale(0.96);
+}
+.site .cx-slot[data-selected="true"] {
+  background: var(--c-accent);
+  border-color: var(--c-accent);
+  color: #fff;
+}
+.site .cx-slot-empty {
+  font-size: 14.5px;
+  color: var(--c-ink-3);
 }
 
-/* ── Gallery + service row micro-interactions ───────────────────────── */
-.site .cx-gallery-img {
-  transition: transform 0.55s var(--c-ease-out);
+/* ── Auth gate ──────────────────────────────────────────────────────── */
+.site.cx-authpage {
+  background:
+    radial-gradient(120% 90% at 15% 100%, rgba(255, 246, 235, 0.9), transparent 55%),
+    radial-gradient(120% 90% at 90% 30%, var(--c-accent-soft-2), transparent 60%),
+    var(--c-bg);
 }
-.site .cx-card:hover .cx-gallery-img {
-  transform: scale(1.045);
+
+/* ── Dark footer ────────────────────────────────────────────────────── */
+.site .cx-footer {
+  background: var(--c-dark);
+  color: var(--c-on-dark);
+  margin-top: clamp(40px, 7vw, 72px);
+  padding: 44px 0 36px;
 }
-.site .cx-service-row {
-  transition: background 0.16s var(--c-ease-out), padding-inline 0.16s var(--c-ease-out);
+.site .cx-footer a {
+  color: var(--c-on-dark-2);
+  transition: color 0.15s var(--c-ease-out);
 }
-.site .cx-service-row:hover {
-  background: var(--c-accent-soft);
-}
-.site .cx-service-row:hover .cx-service-arrow {
-  transform: translate(2px, -2px);
-  color: var(--c-accent-ink);
-}
-.site .cx-service-arrow {
-  transition: transform 0.18s var(--c-ease-out), color 0.18s var(--c-ease-out);
+.site .cx-footer a:hover {
+  color: var(--c-on-dark);
 }
 
 /* ── Reveal (scroll entrance) ───────────────────────────────────────── */
 .site .cx-reveal {
   opacity: 0;
-  transform: translateY(22px);
-  transition: opacity 0.85s var(--c-ease), transform 0.85s var(--c-ease);
+  transform: translateY(18px);
+  transition: opacity 0.7s var(--c-ease), transform 0.7s var(--c-ease);
   transition-delay: var(--cx-delay, 0ms);
   will-change: opacity, transform;
 }
@@ -535,44 +798,6 @@ body:has(.site) {
   opacity: 1;
   transform: none;
   will-change: auto;
-}
-
-/* Hero media: clearly separated from the headline + CTA on mobile, flush in
-   the two-column desktop grid. Enters with a soft zoom-out for a premium feel. */
-.site .cx-hero-media {
-  margin-top: clamp(40px, 9vw, 52px);
-  transform: translateY(24px) scale(1.035);
-  transition: opacity 1s var(--c-ease), transform 1s var(--c-ease);
-}
-.site .cx-hero-media[data-show="true"] {
-  transform: none;
-}
-@media (min-width: 1024px) {
-  .site .cx-hero-media {
-    margin-top: 0;
-  }
-}
-
-/* Anchor targets clear the fixed nav when jumping to #work / #services / … */
-.site [id] {
-  scroll-margin-top: 96px;
-}
-
-/* Interactive cards (service select, payment, gallery, next-slot) get a gentle,
-   smooth lift + press so tapping feels responsive. */
-.site a.cx-card,
-.site button.cx-card {
-  transition: transform 0.22s var(--c-ease-out), box-shadow 0.24s var(--c-ease-out),
-    border-color 0.18s var(--c-ease-out), background 0.18s var(--c-ease-out);
-}
-.site a.cx-card:hover,
-.site button.cx-card:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--c-shadow);
-}
-.site a.cx-card:active,
-.site button.cx-card:active {
-  transform: translateY(-1px) scale(0.994);
 }
 
 /* ── Loading ────────────────────────────────────────────────────────── */
@@ -595,18 +820,9 @@ body:has(.site) {
 }
 @keyframes cx-shimmer { to { transform: translateX(100%); } }
 
-/* ── Dark editorial band ────────────────────────────────────────────── */
-.site .cx-on-dark {
-  background: var(--c-dark);
-  color: var(--c-on-dark);
-}
-.site .cx-on-dark .cx-eyebrow { color: var(--c-on-dark-2); }
-.site .cx-on-dark .cx-lede { color: var(--c-on-dark-2); }
-
 /* ── Reduced motion ─────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
-  .site .cx-reveal,
-  .site .cx-hero-media {
+  .site .cx-reveal {
     opacity: 1;
     transform: none;
     transition: none;

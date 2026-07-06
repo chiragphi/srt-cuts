@@ -1,11 +1,19 @@
 "use client";
 
+/**
+ * SRT Cuts — auth gate, Barbr client structure: back arrow, centered
+ * wordmark, "Login or Sign up", phone number first, Continue pinned to the
+ * bottom of the column. Same backend flow as before: check-phone →
+ * password, or SMS/TOTP verify → set password.
+ */
+
 import { useState, useRef, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { useAuth } from "@/context/auth";
+import { Wordmark } from "@/components/site/chrome";
 
 type Step = "phone" | "password" | "verify" | "set-password";
 type VerifyMethod = "sms" | "totp" | null;
@@ -27,7 +35,7 @@ const stepAnim = {
 function AuthForm() {
   const router = useRouter();
   const params = useSearchParams();
-  const redirect = params.get("redirect") || "/book";
+  const redirect = params.get("redirect") || "/";
   const { user, isAdmin, refresh } = useAuth();
 
   const [step, setStep] = useState<Step>("phone");
@@ -152,38 +160,63 @@ function AuthForm() {
   }
   function backToPhone() { setStep("phone"); setError(""); setCode(["", "", "", "", "", ""]); }
 
-  const errNode = error ? <p style={{ fontSize: 14, color: "var(--c-danger)" }}>{error}</p> : null;
+  const errNode = error ? <p style={{ fontSize: 14, color: "var(--c-danger)", textAlign: "center" }}>{error}</p> : null;
 
   return (
-    <div className="site" style={{ minHeight: "100dvh", display: "flex", flexDirection: "column" }}>
-      <div style={{ padding: "max(20px, env(safe-area-inset-top)) 20px 0" }}>
-        <Link href="/" className="cx-textlink"><ArrowLeft size={15} /> SRT Cuts</Link>
+    <div className="site cx-authpage" style={{ minHeight: "100dvh", display: "flex", flexDirection: "column" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "40px 1fr 40px", alignItems: "center", padding: "max(18px, env(safe-area-inset-top)) 18px 0" }}>
+        <Link href="/" aria-label="Back to SRT Cuts" style={{ color: "var(--c-ink)", display: "inline-flex" }}>
+          <ArrowLeft size={22} />
+        </Link>
+        <div style={{ textAlign: "center" }}>
+          <Wordmark />
+        </div>
       </div>
 
-      <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "32px 20px" }}>
-        <div style={{ width: "100%", maxWidth: 380 }}>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", padding: "36px 20px calc(24px + env(safe-area-inset-bottom))" }}>
+        <div style={{ width: "100%", maxWidth: 400, flex: 1, display: "flex", flexDirection: "column" }}>
           <AnimatePresence mode="wait">
             {step === "phone" && (
-              <motion.div key="phone" {...stepAnim}>
-                <p className="cx-eyebrow" style={{ marginBottom: 16 }}>Sign in</p>
-                <h1 className="cx-display cx-display--lg">Claim your <em>chair.</em></h1>
-                <p style={{ margin: "12px 0 30px", fontSize: 15, color: "var(--c-ink-2)" }}>Enter your phone number to get started.</p>
-                <div className="space-y-5">
-                  <div>
-                    <label className="cx-label">Phone number</label>
-                    <input className="cx-field" type="tel" inputMode="numeric" placeholder="(801) 555-0100" value={phone} onChange={(e) => setPhone(formatPhone(e.target.value))} onKeyDown={(e) => e.key === "Enter" && continueFromPhone()} autoFocus />
-                  </div>
-                  {errNode}
-                  <button className="cx-btn cx-btn--accent cx-btn--block" onClick={continueFromPhone} disabled={loading}>{loading ? "Checking…" : "Continue"}</button>
+              <motion.div key="phone" {...stepAnim} style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+                <div style={{ textAlign: "center" }}>
+                  <h1 className="cx-display cx-display--lg">Login or Sign up</h1>
+                  <p style={{ margin: "10px 0 30px", fontSize: 15, color: "var(--c-ink-2)" }}>Enter your mobile number to continue</p>
+                </div>
+                <div className="flex" style={{ gap: 10 }}>
+                  <span
+                    className="cx-num"
+                    style={{ display: "inline-flex", alignItems: "center", gap: 6, flex: "none", padding: "0 16px", borderRadius: "var(--c-r-sm)", background: "var(--n-100)", fontSize: 15, fontWeight: 650 }}
+                  >
+                    🇺🇸 +1
+                  </span>
+                  <input
+                    className="cx-field"
+                    type="tel"
+                    inputMode="numeric"
+                    placeholder="(801) 555-0100"
+                    value={phone}
+                    onChange={(e) => setPhone(formatPhone(e.target.value))}
+                    onKeyDown={(e) => e.key === "Enter" && continueFromPhone()}
+                    autoFocus
+                  />
+                </div>
+                {error && <p style={{ marginTop: 14, fontSize: 14, color: "var(--c-danger)", textAlign: "center" }}>{error}</p>}
+                <div style={{ marginTop: "auto", paddingTop: 30 }}>
+                  <button className="cx-btn cx-btn--accent cx-btn--block" onClick={continueFromPhone} disabled={loading || digits.length < 10}>
+                    {loading ? "Checking…" : "Continue"}
+                  </button>
                 </div>
               </motion.div>
             )}
 
             {step === "password" && (
-              <motion.div key="password" {...stepAnim}>
-                <p className="cx-eyebrow" style={{ marginBottom: 16 }}>Welcome back</p>
-                <h1 className="cx-display cx-display--lg">Enter your password</h1>
-                <p style={{ margin: "12px 0 30px", fontSize: 15, color: "var(--c-ink-2)" }}>Signing in as <span className="cx-num" style={{ color: "var(--c-ink)", fontWeight: 550 }}>{phone}</span></p>
+              <motion.div key="password" {...stepAnim} style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+                <div style={{ textAlign: "center" }}>
+                  <h1 className="cx-display cx-display--lg">Welcome back</h1>
+                  <p style={{ margin: "10px 0 30px", fontSize: 15, color: "var(--c-ink-2)" }}>
+                    Signing in as <span className="cx-num" style={{ color: "var(--c-ink)", fontWeight: 650 }}>{phone}</span>
+                  </p>
+                </div>
                 <div className="space-y-5">
                   <div>
                     <label className="cx-label">Password</label>
@@ -201,17 +234,20 @@ function AuthForm() {
 
             {step === "verify" && (
               <motion.div key="verify" {...stepAnim}>
-                <p className="cx-eyebrow" style={{ marginBottom: 16 }}>Verify</p>
-                <h1 className="cx-display cx-display--lg">{isForgotFlow ? "Confirm it's you" : "Enter the code"}</h1>
+                <div style={{ textAlign: "center" }}>
+                  <h1 className="cx-display cx-display--lg">{isForgotFlow ? "Confirm it's you" : "Enter the code"}</h1>
+                  {verifyMethod === "sms" && (
+                    <p style={{ margin: "10px 0 28px", fontSize: 15, color: "var(--c-ink-2)" }}>
+                      Sent a 6-digit code to <span className="cx-num" style={{ color: "var(--c-ink)", fontWeight: 650 }}>{phone}</span>
+                    </p>
+                  )}
+                </div>
 
-                {verifyMethod === "sms" && (
-                  <p style={{ margin: "12px 0 30px", fontSize: 15, color: "var(--c-ink-2)" }}>Sent a 6-digit code to <span className="cx-num" style={{ color: "var(--c-ink)", fontWeight: 550 }}>{phone}</span></p>
-                )}
                 {verifyMethod === "totp" && (
-                  <div style={{ margin: "12px 0 26px" }} className="space-y-3">
+                  <div style={{ margin: "10px 0 26px" }} className="space-y-3">
                     <p style={{ fontSize: 14.5, color: "var(--c-ink-2)", lineHeight: 1.55 }}>We couldn&apos;t text a code to this number, so use an authenticator app instead (Google Authenticator, Microsoft Authenticator, or your iPhone&apos;s Passwords app).</p>
                     {verifyReason && <p style={{ fontSize: 12.5, color: "var(--c-ink-3)" }}>{verifyReason}</p>}
-                    <div style={{ borderRadius: 12, border: "1px solid var(--c-line)", padding: 14, background: "var(--c-raise)" }}>
+                    <div style={{ borderRadius: 12, border: "1px solid var(--c-line)", padding: 14, background: "var(--c-surface)" }}>
                       <p className="cx-label" style={{ marginBottom: 4 }}>Manual entry key</p>
                       <p className="cx-num" style={{ wordBreak: "break-all", fontSize: 14, color: "var(--c-ink)" }}>{totpSecret}</p>
                     </div>
@@ -249,9 +285,10 @@ function AuthForm() {
 
             {step === "set-password" && (
               <motion.div key="set-password" {...stepAnim}>
-                <p className="cx-eyebrow" style={{ marginBottom: 16 }}>Secure your account</p>
-                <h1 className="cx-display cx-display--lg">{isForgotFlow ? "Set a new password" : "Set a password"}</h1>
-                <p style={{ margin: "12px 0 30px", fontSize: 14.5, color: "var(--c-ink-2)", lineHeight: 1.55 }}>This device will be remembered — you won&apos;t need to verify again here. On a new device, you&apos;ll sign in with this password.</p>
+                <div style={{ textAlign: "center" }}>
+                  <h1 className="cx-display cx-display--lg">{isForgotFlow ? "Set a new password" : "Set a password"}</h1>
+                  <p style={{ margin: "10px 0 28px", fontSize: 14.5, color: "var(--c-ink-2)", lineHeight: 1.55 }}>This device will be remembered — you won&apos;t need to verify again here. On a new device, you&apos;ll sign in with this password.</p>
+                </div>
                 <div className="space-y-5">
                   <div>
                     <label className="cx-label">New password</label>
