@@ -1,9 +1,17 @@
 import { getServiceConfigs, type ServiceConfig } from "./services";
 
+// Where an image should stay anchored when it gets cropped to fit a frame.
+// Percentages from the top-left of the original photo (50/50 = center).
+export interface ImageFocus {
+  x: number;
+  y: number;
+}
+
 export interface GalleryItem {
   title: string;
   imageUrl: string;
   caption: string;
+  focus?: ImageFocus;
 }
 
 export interface Testimonial {
@@ -23,6 +31,9 @@ export interface TaxExpense {
 
 export interface SiteContent {
   heroImageUrl: string;
+  heroFocus?: ImageFocus;
+  barberPhotoFocus?: ImageFocus;
+  aboutImageFocus?: ImageFocus;
   gallery: GalleryItem[];
   testimonials: Testimonial[];
   barberName: string;
@@ -83,8 +94,8 @@ export const DEFAULT_SITE_CONTENT: SiteContent = {
   barberPhotoUrl: "/srt-logo.png",
   aboutImageUrl: "/barber.jpg",
   specialties: ["Fades", "Lineups", "Full service cuts"],
-  address: "Herriman, Utah",
-  mapUrl: "https://maps.google.com/?q=Herriman%2C%20Utah",
+  address: "12097 Window Arch Lane, Herriman, UT",
+  mapUrl: "https://maps.google.com/?q=12097%20Window%20Arch%20Lane%2C%20Herriman%2C%20UT",
   parkingNote: "Exact location and parking details are sent after confirmation.",
   instagramUrl: "",
   tiktokUrl: "",
@@ -115,6 +126,13 @@ export function mergeSiteContent(value: Partial<SiteContent> | null | undefined)
     weeklyAvailability: value?.weeklyAvailability ?? DEFAULT_SITE_CONTENT.weeklyAvailability,
     dateAvailability: value?.dateAvailability ?? DEFAULT_SITE_CONTENT.dateAvailability,
   };
+}
+
+// CSS object-position value for a stored focus point; defaults to center.
+export function focusPosition(focus?: ImageFocus | null): string {
+  if (!focus || !Number.isFinite(focus.x) || !Number.isFinite(focus.y)) return "50% 50%";
+  const clamp = (n: number) => Math.min(100, Math.max(0, Math.round(n)));
+  return `${clamp(focus.x)}% ${clamp(focus.y)}%`;
 }
 
 export function isPlaceholderGalleryItem(item: GalleryItem) {

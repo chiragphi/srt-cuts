@@ -1,8 +1,9 @@
 "use client";
 
-import { type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import Image from "next/image";
-import { Plus, Trash2, Check } from "lucide-react";
+import { Plus, Trash2, Check, Crosshair } from "lucide-react";
+import { focusPosition, type ImageFocus } from "@/lib/site-content";
 
 export function Field({
   label,
@@ -54,43 +55,156 @@ export function ImageField({
   label,
   value,
   onChange,
+  focus,
+  onFocusChange,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
+  focus?: ImageFocus;
+  onFocusChange?: (f: ImageFocus | undefined) => void;
 }) {
   const src = value.trim();
   return (
-    <div
-      style={{ display: "grid", gap: 12, gridTemplateColumns: "1fr 128px", alignItems: "end" }}
-    >
-      <Field label={label} value={value} onChange={onChange} placeholder="https://…" />
+    <div className="space-y-3">
+      <div
+        style={{ display: "grid", gap: 12, gridTemplateColumns: "1fr 128px", alignItems: "end" }}
+      >
+        <Field label={label} value={value} onChange={onChange} placeholder="https://…" />
+        <div
+          style={{
+            overflow: "hidden",
+            borderRadius: "var(--a-r-sm)",
+            border: "1px solid var(--a-line)",
+            aspectRatio: "4 / 3",
+            position: "relative",
+            background: "var(--a-surface-2)",
+          }}
+        >
+          {src ? (
+            <Image
+              src={src}
+              alt={label}
+              fill
+              sizes="128px"
+              style={{ objectFit: "cover", objectPosition: focusPosition(focus) }}
+              unoptimized
+            />
+          ) : (
+            <div
+              style={{
+                height: "100%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: 11,
+                color: "var(--a-text-3)",
+              }}
+            >
+              No image
+            </div>
+          )}
+        </div>
+      </div>
+      {src && onFocusChange && <FocusPicker key={src} src={src} focus={focus} onChange={onFocusChange} />}
+    </div>
+  );
+}
+
+// Tap (or drag) on the photo to pick the spot that stays visible when the
+// storefront crops it. Stored as percentages of the original image.
+function FocusPicker({
+  src,
+  focus,
+  onChange,
+}: {
+  src: string;
+  focus?: ImageFocus;
+  onChange: (f: ImageFocus | undefined) => void;
+}) {
+  const [ratio, setRatio] = useState(4 / 3);
+  const x = focus?.x ?? 50;
+  const y = focus?.y ?? 50;
+
+  function place(e: React.PointerEvent<HTMLDivElement>) {
+    const r = e.currentTarget.getBoundingClientRect();
+    const clamp = (n: number) => Math.min(100, Math.max(0, Math.round(n)));
+    onChange({
+      x: clamp(((e.clientX - r.left) / r.width) * 100),
+      y: clamp(((e.clientY - r.top) / r.height) * 100),
+    });
+  }
+
+  return (
+    <div>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+        <span className="ax-label" style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+          <Crosshair size={13} /> Focus point — tap the part that must stay in view
+        </span>
+        {focus && (
+          <button
+            type="button"
+            className="ax-btn ax-btn--sm"
+            onClick={() => onChange(undefined)}
+          >
+            Reset to center
+          </button>
+        )}
+      </div>
       <div
         style={{
-          overflow: "hidden",
-          borderRadius: "var(--a-r-sm)",
-          border: "1px solid var(--a-line)",
-          aspectRatio: "4 / 3",
           position: "relative",
+          width: "100%",
+          maxWidth: 360,
+          aspectRatio: String(ratio),
+          borderRadius: "var(--a-r-sm)",
+          overflow: "hidden",
+          border: "1px solid var(--a-line)",
           background: "var(--a-surface-2)",
+          cursor: "crosshair",
+          touchAction: "none",
+          marginTop: 8,
+        }}
+        onPointerDown={(e) => {
+          try {
+            e.currentTarget.setPointerCapture(e.pointerId);
+          } catch {
+            // Pointer capture is a nice-to-have for dragging; tapping still works.
+          }
+          place(e);
+        }}
+        onPointerMove={(e) => {
+          if (e.buttons) place(e);
         }}
       >
-        {src ? (
-          <Image src={src} alt={label} fill sizes="128px" style={{ objectFit: "cover" }} unoptimized />
-        ) : (
-          <div
-            style={{
-              height: "100%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 11,
-              color: "var(--a-text-3)",
-            }}
-          >
-            No image
-          </div>
-        )}
+        <Image
+          src={src}
+          alt="Focus point"
+          fill
+          sizes="360px"
+          draggable={false}
+          style={{ objectFit: "cover", pointerEvents: "none" }}
+          onLoad={(e) => {
+            const img = e.currentTarget;
+            if (img.naturalWidth && img.naturalHeight) setRatio(img.naturalWidth / img.naturalHeight);
+          }}
+          unoptimized
+        />
+        <span
+          aria-hidden
+          style={{
+            position: "absolute",
+            left: `${x}%`,
+            top: `${y}%`,
+            transform: "translate(-50%, -50%)",
+            width: 26,
+            height: 26,
+            borderRadius: "50%",
+            border: "2.5px solid #fff",
+            boxShadow: "0 0 0 2px rgba(0,0,0,0.45), inset 0 0 0 2px rgba(0,0,0,0.35)",
+            pointerEvents: "none",
+          }}
+        />
       </div>
     </div>
   );

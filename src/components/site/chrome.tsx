@@ -13,6 +13,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Star } from "lucide-react";
 import { useAuth } from "@/context/auth";
 import { useToast } from "@/components/site/Toast";
+import { focusPosition, type ImageFocus } from "@/lib/site-content";
 
 export function Wordmark({ style }: { style?: React.CSSProperties }) {
   return (
@@ -170,10 +171,27 @@ export function Stars({ count = 5, size = 15 }: { count?: number; size?: number 
   );
 }
 
-export function Avatar({ src, alt, size = 44 }: { src: string; alt: string; size?: number }) {
+export function Avatar({
+  src,
+  alt,
+  size = 44,
+  focus,
+}: {
+  src: string;
+  alt: string;
+  size?: number;
+  focus?: ImageFocus;
+}) {
   return (
     <span className="cx-avatar" style={{ width: size, height: size, display: "inline-block" }}>
-      <Image src={src} alt={alt} fill sizes={`${size}px`} style={{ objectFit: "cover" }} unoptimized />
+      <Image
+        src={src}
+        alt={alt}
+        fill
+        sizes={`${size}px`}
+        style={{ objectFit: "cover", objectPosition: focusPosition(focus) }}
+        unoptimized
+      />
     </span>
   );
 }
@@ -181,6 +199,7 @@ export function Avatar({ src, alt, size = 44 }: { src: string; alt: string; size
 export function StickyBookBar({
   show,
   avatarSrc,
+  avatarFocus,
   name,
   detail,
   cta,
@@ -189,6 +208,7 @@ export function StickyBookBar({
 }: {
   show: boolean;
   avatarSrc: string;
+  avatarFocus?: ImageFocus;
   name: string;
   detail: string;
   cta: string;
@@ -206,7 +226,7 @@ export function StickyBookBar({
           transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
         >
           <div className="cx-stickybar-inner">
-            <Avatar src={avatarSrc} alt={name} size={44} />
+            <Avatar src={avatarSrc} alt={name} size={44} focus={avatarFocus} />
             <div style={{ flex: 1, minWidth: 0 }}>
               <p style={{ fontWeight: 700, fontSize: 15, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{name}</p>
               <p style={{ fontSize: 13, color: "var(--c-ink-2)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{detail}</p>

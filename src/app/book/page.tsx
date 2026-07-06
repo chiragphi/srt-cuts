@@ -254,7 +254,7 @@ function BookPageInner() {
           </button>
 
           <div style={{ textAlign: "center", marginTop: 4, marginBottom: 22 }}>
-            <Avatar src={avatar} alt={content.barberName} size={62} />
+            <Avatar src={avatar} alt={content.barberName} size={62} focus={content.barberPhotoFocus} />
             <h1 style={{ fontFamily: "var(--c-display)", fontSize: "clamp(21px,4vw,26px)", fontWeight: 560, letterSpacing: "-0.02em", marginTop: 10 }}>
               {content.barberName}
             </h1>

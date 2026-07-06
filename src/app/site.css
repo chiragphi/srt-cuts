@@ -404,8 +404,9 @@ body:has(.site) {
   overflow: hidden;
 }
 .site .cx-banner-media {
+  /* Tall enough on phones that a portrait photo keeps its subject in frame. */
   position: relative;
-  height: clamp(210px, 34vw, 300px);
+  height: clamp(250px, 64vw, 310px);
 }
 .site .cx-banner-rating {
   position: absolute;
@@ -527,6 +528,12 @@ body:has(.site) {
   .site .cx-carousel-item {
     width: 220px;
   }
+}
+.site .cx-carousel-item img {
+  transition: transform 0.5s var(--c-ease-out);
+}
+.site .cx-carousel-item:hover img {
+  transform: scale(1.045);
 }
 .site .cx-roundbtn {
   display: inline-flex;

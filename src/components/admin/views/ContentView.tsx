@@ -29,10 +29,28 @@ export function ContentView() {
         />
       </EditorPanel>
 
-      <EditorPanel title="Homepage images" hint="Paste direct image URLs (uploaded links, Supabase Storage, or public image files).">
-        <ImageField label="Hero image" value={content.heroImageUrl} onChange={(heroImageUrl) => setContent({ ...content, heroImageUrl })} />
-        <ImageField label="Barber photo" value={content.barberPhotoUrl} onChange={(barberPhotoUrl) => setContent({ ...content, barberPhotoUrl })} />
-        <ImageField label="About photo" value={content.aboutImageUrl} onChange={(aboutImageUrl) => setContent({ ...content, aboutImageUrl })} />
+      <EditorPanel title="Homepage images" hint="Paste direct image URLs, then tap each photo to set the focus point — the spot that stays in view when the app crops the image.">
+        <ImageField
+          label="Hero image"
+          value={content.heroImageUrl}
+          onChange={(heroImageUrl) => setContent({ ...content, heroImageUrl })}
+          focus={content.heroFocus}
+          onFocusChange={(heroFocus) => setContent({ ...content, heroFocus })}
+        />
+        <ImageField
+          label="Barber photo"
+          value={content.barberPhotoUrl}
+          onChange={(barberPhotoUrl) => setContent({ ...content, barberPhotoUrl })}
+          focus={content.barberPhotoFocus}
+          onFocusChange={(barberPhotoFocus) => setContent({ ...content, barberPhotoFocus })}
+        />
+        <ImageField
+          label="About photo"
+          value={content.aboutImageUrl}
+          onChange={(aboutImageUrl) => setContent({ ...content, aboutImageUrl })}
+          focus={content.aboutImageFocus}
+          onFocusChange={(aboutImageFocus) => setContent({ ...content, aboutImageFocus })}
+        />
       </EditorPanel>
 
       <EditorPanel title="Homepage essentials">
@@ -54,7 +72,13 @@ export function ContentView() {
           render={(item, update) => (
             <>
               <Field label="Title" value={item.title} onChange={(title) => update({ ...item, title })} />
-              <ImageField label="Image" value={item.imageUrl} onChange={(imageUrl) => update({ ...item, imageUrl })} />
+              <ImageField
+                label="Image"
+                value={item.imageUrl}
+                onChange={(imageUrl) => update({ ...item, imageUrl })}
+                focus={item.focus}
+                onFocusChange={(focus) => update({ ...item, focus })}
+              />
               <TextArea label="Caption" value={item.caption} onChange={(caption) => update({ ...item, caption })} rows={2} />
             </>
           )}

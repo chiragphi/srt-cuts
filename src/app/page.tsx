@@ -24,10 +24,13 @@ import {
   clampDiscount,
   type ServiceConfig,
 } from "@/lib/services";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   DEFAULT_SITE_CONTENT,
+  focusPosition,
   isPlaceholderGalleryItem,
   isPlaceholderTestimonial,
+  type GalleryItem,
   type SiteContent,
 } from "@/lib/site-content";
 import { DAYS_OF_WEEK } from "@/lib/schedule";
@@ -43,7 +46,7 @@ export default function HomePage() {
   const [content, setContent] = useState<SiteContent>(DEFAULT_SITE_CONTENT);
   const [selected, setSelected] = useState<string>("");
   const [hoursOpen, setHoursOpen] = useState(false);
-  const [lightbox, setLightbox] = useState<string | null>(null);
+  const [lightbox, setLightbox] = useState<GalleryItem | null>(null);
   const [redirecting, setRedirecting] = useState(false);
   const carouselRef = useRef<HTMLDivElement>(null);
 
@@ -103,25 +106,52 @@ export default function HomePage() {
     <div className="site cx-has-stickybar">
       <SiteHeader />
 
-      {lightbox && (
-        <div
-          style={{ position: "fixed", inset: 0, zIndex: 90, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(20,17,25,0.86)", backdropFilter: "blur(4px)", padding: 16 }}
-          onClick={() => setLightbox(null)}
-        >
-          <button aria-label="Close" onClick={() => setLightbox(null)} style={{ position: "absolute", top: 20, right: 20, color: "#fff", background: "none", border: 0, cursor: "pointer" }}>
-            <X size={26} />
-          </button>
-          <div style={{ position: "relative", aspectRatio: "4/5", width: "100%", maxWidth: 560, overflow: "hidden", borderRadius: 18 }} onClick={(e) => e.stopPropagation()}>
-            <Image src={lightbox} alt="Work" fill sizes="(max-width:768px) 100vw, 560px" style={{ objectFit: "cover" }} unoptimized />
-          </div>
-        </div>
-      )}
+      <AnimatePresence>
+        {lightbox && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.22, ease: "easeOut" }}
+            style={{ position: "fixed", inset: 0, zIndex: 90, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(20,17,25,0.86)", backdropFilter: "blur(4px)", padding: 16 }}
+            onClick={() => setLightbox(null)}
+          >
+            <button aria-label="Close" onClick={() => setLightbox(null)} style={{ position: "absolute", top: 20, right: 20, color: "#fff", background: "none", border: 0, cursor: "pointer" }}>
+              <X size={26} />
+            </button>
+            <motion.div
+              initial={{ scale: 0.94, y: 12 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.96, y: 8 }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              style={{ position: "relative", aspectRatio: "4/5", width: "100%", maxWidth: 560, overflow: "hidden", borderRadius: 18 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Image
+                src={lightbox.imageUrl}
+                alt={lightbox.title || "Work"}
+                fill
+                sizes="(max-width:768px) 100vw, 560px"
+                style={{ objectFit: "cover", objectPosition: focusPosition(lightbox.focus) }}
+                unoptimized
+              />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <main>
         {/* ── Banner ──────────────────────────────────────────────── */}
         <div className="cx-banner">
           <div className="cx-banner-media">
-            <Image src={heroImage} alt={content.barberName} fill priority sizes="100vw" style={{ objectFit: "cover", opacity: 0.92 }} />
+            <Image
+              src={heroImage}
+              alt={content.barberName}
+              fill
+              preload
+              sizes="100vw"
+              style={{ objectFit: "cover", objectPosition: focusPosition(content.heroFocus), opacity: 0.92 }}
+            />
           </div>
           {reviews.length > 0 && (
             <div className="cx-banner-rating">
@@ -135,7 +165,7 @@ export default function HomePage() {
           {/* ── Identity card ──────────────────────────────────────── */}
           <div className="cx-card cx-idcard">
             <div className="flex items-center" style={{ gap: 14 }}>
-              <Avatar src={avatar} alt={content.barberName} size={52} />
+              <Avatar src={avatar} alt={content.barberName} size={52} focus={content.barberPhotoFocus} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <h1 style={{ fontFamily: "var(--c-display)", fontSize: "clamp(20px, 4vw, 25px)", fontWeight: 560, letterSpacing: "-0.02em", lineHeight: 1.1 }}>
                   {content.barberName}
@@ -209,18 +239,28 @@ export default function HomePage() {
                   <ChevronDown size={16} style={{ transform: hoursOpen ? "rotate(180deg)" : "none", transition: "transform 0.2s var(--c-ease-out)" }} />
                 </span>
               </button>
-              {hoursOpen && (
-                <div style={{ paddingLeft: 26, paddingBottom: 8 }}>
-                  {DAYS_OF_WEEK.map((day, i) => (
-                    <div key={day} className="flex items-center justify-between" style={{ padding: "5px 0", fontSize: 13.5 }}>
-                      <span style={{ color: "var(--c-ink-2)" }}>{day}</span>
-                      <span className="cx-num" style={{ color: (content.weeklyAvailability[String(i)] ?? []).length ? "var(--c-ink)" : "var(--c-ink-3)" }}>
-                        {hoursLabel(content.weeklyAvailability[String(i)])}
-                      </span>
+              <AnimatePresence initial={false}>
+                {hoursOpen && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+                    style={{ overflow: "hidden" }}
+                  >
+                    <div style={{ paddingLeft: 26, paddingBottom: 8 }}>
+                      {DAYS_OF_WEEK.map((day, i) => (
+                        <div key={day} className="flex items-center justify-between" style={{ padding: "5px 0", fontSize: 13.5 }}>
+                          <span style={{ color: "var(--c-ink-2)" }}>{day}</span>
+                          <span className="cx-num" style={{ color: (content.weeklyAvailability[String(i)] ?? []).length ? "var(--c-ink)" : "var(--c-ink-3)" }}>
+                            {hoursLabel(content.weeklyAvailability[String(i)])}
+                          </span>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
               {content.parkingNote && (
                 <div className="cx-inforow" style={{ borderTop: "1px solid var(--c-line)" }}>
                   <Info size={16} className="cx-inforow-icon" />
@@ -246,8 +286,15 @@ export default function HomePage() {
               </div>
               <div className="cx-carousel" ref={carouselRef}>
                 {gallery.map((item, i) => (
-                  <button key={`${item.title}-${i}`} className="cx-carousel-item" onClick={() => setLightbox(item.imageUrl)} aria-label={item.title}>
-                    <Image src={item.imageUrl} alt={item.title} fill sizes="240px" style={{ objectFit: "cover" }} unoptimized />
+                  <button key={`${item.title}-${i}`} className="cx-carousel-item" onClick={() => setLightbox(item)} aria-label={item.title}>
+                    <Image
+                      src={item.imageUrl}
+                      alt={item.title}
+                      fill
+                      sizes="240px"
+                      style={{ objectFit: "cover", objectPosition: focusPosition(item.focus) }}
+                      unoptimized
+                    />
                   </button>
                 ))}
               </div>
@@ -265,7 +312,7 @@ export default function HomePage() {
                 referrerPolicy="no-referrer-when-downgrade"
               />
               <div className="cx-mapcard">
-                <Avatar src={avatar} alt={content.barberName} size={44} />
+                <Avatar src={avatar} alt={content.barberName} size={44} focus={content.barberPhotoFocus} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{ fontWeight: 700, fontSize: 14.5 }}>{content.barberName}</p>
                   <p style={{ fontSize: 13, color: "var(--c-ink-2)" }}>{content.address}</p>
@@ -367,6 +414,7 @@ export default function HomePage() {
       <StickyBookBar
         show={!!selectedService}
         avatarSrc={avatar}
+        avatarFocus={content.barberPhotoFocus}
         name={content.barberName}
         detail={selectedService ? `1 service selected · ${formatPrice(effectivePrice(selectedService))}` : ""}
         cta="Book"
