@@ -70,6 +70,9 @@ export default function AdminPage() {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     load();
+    // Landing in admin means we're no longer "just previewing the storefront",
+    // so re-arm the auto-redirect for the next time we visit the customer site.
+    if (typeof window !== "undefined") sessionStorage.removeItem("srtSiteMode");
   }, [load]);
 
   const act = useCallback(
@@ -103,6 +106,20 @@ export default function AdminPage() {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ paymentStatus }),
+      });
+      setActing(null);
+      await load();
+    },
+    [load]
+  );
+
+  const reschedule = useCallback(
+    async (id: string, bookingDate: string, bookingTime: string, notify: boolean) => {
+      setActing(id + "reschedule");
+      await fetch(`/api/admin/bookings/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bookingDate, bookingTime, notify }),
       });
       setActing(null);
       await load();
@@ -173,6 +190,7 @@ export default function AdminPage() {
     act,
     del,
     setPaymentStatus,
+    reschedule,
     goTo,
     openViewAs: () => setViewAsOpen(true),
     impersonate,

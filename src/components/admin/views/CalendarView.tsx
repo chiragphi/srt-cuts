@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight, CalendarClock } from "lucide-react";
+import { ChevronLeft, ChevronRight, CalendarClock, Phone, MessageSquare } from "lucide-react";
 import { TIME_SLOTS } from "@/lib/schedule";
 import { isActive, type Booking } from "@/lib/analytics";
 import { useAdmin } from "../data";
@@ -189,6 +189,22 @@ export function CalendarView() {
                           </div>
                           <div style={{ fontSize: 12, color: "var(--a-text-3)" }}>{b.service}</div>
                         </div>
+                        <a
+                          href={`tel:${b.user_phone.replace(/[^\d+]/g, "")}`}
+                          className="ax-btn ax-btn--sm"
+                          aria-label={`Call ${b.user_name}`}
+                          style={{ padding: 0, width: 32, height: 32, minHeight: 32, flex: "none" }}
+                        >
+                          <Phone size={14} />
+                        </a>
+                        <a
+                          href={`sms:${b.user_phone.replace(/[^\d+]/g, "")}`}
+                          className="ax-btn ax-btn--sm"
+                          aria-label={`Text ${b.user_name}`}
+                          style={{ padding: 0, width: 32, height: 32, minHeight: 32, flex: "none" }}
+                        >
+                          <MessageSquare size={14} />
+                        </a>
                         <StatusBadge status={b.status} />
                       </>
                     ) : (

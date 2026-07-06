@@ -18,6 +18,7 @@ export interface AdminData {
   act: (id: string, status: "accepted" | "denied") => Promise<void>;
   del: (id: string) => Promise<void>;
   setPaymentStatus: (id: string, paymentStatus: "unpaid" | "paid" | "refunded") => Promise<void>;
+  reschedule: (id: string, bookingDate: string, bookingTime: string, notify: boolean) => Promise<void>;
   goTo: (view: ViewId) => void;
   openViewAs: () => void;
   impersonate: (phone: string) => Promise<void>;

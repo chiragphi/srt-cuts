@@ -2,19 +2,24 @@
 
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { Check, X, Trash2, Phone, DollarSign, Inbox } from "lucide-react";
+import { Check, X, Trash2, Phone, MessageSquare, CalendarClock, DollarSign, Inbox } from "lucide-react";
 import { isActive, type Booking } from "@/lib/analytics";
 import { formatPhone } from "@/lib/analytics";
+import { TIME_SLOTS } from "@/lib/schedule";
 import { money } from "../format";
 import { longDate } from "../format";
 import { useAdmin } from "../data";
 import { Avatar, StatusBadge, EmptyState } from "../primitives";
 
+// tel:/sms: want bare digits; the app stores phones already-normalized but we
+// strip just in case a formatted value slips through.
+const dialable = (phone: string) => phone.replace(/[^\d+]/g, "");
+
 const TABS = ["All", "Pending", "Accepted", "Denied", "Cancelled"] as const;
 type Tab = (typeof TABS)[number];
 
 export function BookingsView() {
-  const { bookings, acting, act, del, setPaymentStatus } = useAdmin();
+  const { bookings, acting, act, del, setPaymentStatus, reschedule } = useAdmin();
   const [tab, setTab] = useState<Tab>("Pending");
 
   const counts = useMemo(
@@ -61,10 +66,12 @@ export function BookingsView() {
               <BookingCard
                 key={b.id}
                 b={b}
+                bookings={bookings}
                 acting={acting}
                 act={act}
                 del={del}
                 setPaymentStatus={setPaymentStatus}
+                reschedule={reschedule}
               />
             ))}
           </AnimatePresence>
@@ -76,19 +83,24 @@ export function BookingsView() {
 
 function BookingCard({
   b,
+  bookings,
   acting,
   act,
   del,
   setPaymentStatus,
+  reschedule,
 }: {
   b: Booking;
+  bookings: Booking[];
   acting: string | null;
   act: (id: string, status: "accepted" | "denied") => void;
   del: (id: string) => void;
   setPaymentStatus: (id: string, paymentStatus: "unpaid" | "paid" | "refunded") => void;
+  reschedule: (id: string, bookingDate: string, bookingTime: string, notify: boolean) => void;
 }) {
   const reduce = useReducedMotion();
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [editing, setEditing] = useState(false);
   const isPaid = b.payment_status === "paid";
   const busy = Boolean(acting);
 
@@ -128,14 +140,27 @@ function BookingCard({
                 {b.payment_method === "online" ? "Venmo" : "In store"} · {b.payment_status.replace(/_/g, " ")}
               </span>
             </div>
-            <div style={{ marginTop: 6, display: "flex", gap: 14, flexWrap: "wrap" }}>
+            <div style={{ marginTop: 8, display: "flex", gap: 8, flexWrap: "wrap" }}>
               <a
-                href={`tel:${b.user_phone}`}
-                className="ax-link"
-                style={{ fontSize: 13, display: "inline-flex", alignItems: "center", gap: 5 }}
+                href={`tel:${dialable(b.user_phone)}`}
+                className="ax-btn ax-btn--sm ax-btn--soft"
+                aria-label={`Call ${b.user_name}`}
               >
-                <Phone size={13} /> {formatPhone(b.user_phone)}
+                <Phone size={14} /> Call
               </a>
+              <a
+                href={`sms:${dialable(b.user_phone)}`}
+                className="ax-btn ax-btn--sm ax-btn--soft"
+                aria-label={`Text ${b.user_name}`}
+              >
+                <MessageSquare size={14} /> Text
+              </a>
+              <span
+                className="ax-num"
+                style={{ fontSize: 12.5, color: "var(--a-text-3)", alignSelf: "center" }}
+              >
+                {formatPhone(b.user_phone)}
+              </span>
             </div>
             {b.notes && (
               <p style={{ marginTop: 8, fontSize: 13.5, fontStyle: "italic", color: "var(--a-text-3)" }}>
@@ -188,6 +213,16 @@ function BookingCard({
                   </button>
                 </>
               )}
+              {(b.status === "pending" || b.status === "accepted") && (
+                <button
+                  className="ax-btn ax-btn--sm"
+                  disabled={busy}
+                  onClick={() => setEditing((e) => !e)}
+                  data-active={editing}
+                >
+                  <CalendarClock size={14} /> Change time
+                </button>
+              )}
               <button
                 className="ax-btn ax-btn--sm"
                 aria-label="Delete booking"
@@ -199,6 +234,122 @@ function BookingCard({
               </button>
             </>
           )}
+        </div>
+      </div>
+
+      <AnimatePresence initial={false}>
+        {editing && (
+          <RescheduleEditor
+            b={b}
+            bookings={bookings}
+            acting={acting}
+            reschedule={reschedule}
+            onClose={() => setEditing(false)}
+          />
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+}
+
+function RescheduleEditor({
+  b,
+  bookings,
+  acting,
+  reschedule,
+  onClose,
+}: {
+  b: Booking;
+  bookings: Booking[];
+  acting: string | null;
+  reschedule: (id: string, bookingDate: string, bookingTime: string, notify: boolean) => void;
+  onClose: () => void;
+}) {
+  const reduce = useReducedMotion();
+  const [date, setDate] = useState(b.booking_date);
+  const [time, setTime] = useState(b.booking_time);
+  const busy = acting === b.id + "reschedule";
+  const unchanged = date === b.booking_date && time === b.booking_time;
+
+  // Flag times already taken by other active bookings on the chosen day so the
+  // operator doesn't accidentally stack two clients in one slot.
+  const takenTimes = useMemo(() => {
+    const set = new Set<string>();
+    for (const other of bookings) {
+      if (other.id === b.id) continue;
+      if (other.booking_date !== date) continue;
+      if (other.status === "denied" || other.status === "cancelled") continue;
+      set.add(other.booking_time);
+    }
+    return set;
+  }, [bookings, date, b.id]);
+
+  async function submit(notify: boolean) {
+    await reschedule(b.id, date, time, notify);
+    onClose();
+  }
+
+  return (
+    <motion.div
+      initial={reduce ? undefined : { opacity: 0, height: 0 }}
+      animate={reduce ? undefined : { opacity: 1, height: "auto" }}
+      exit={reduce ? undefined : { opacity: 0, height: 0 }}
+      transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
+      style={{ overflow: "hidden" }}
+    >
+      <div
+        className="ax-card ax-card--quiet"
+        style={{ marginTop: 16, padding: 16, display: "flex", flexDirection: "column", gap: 14 }}
+      >
+        <p className="ax-eyebrow">Move this appointment</p>
+        <div className="flex flex-wrap items-end" style={{ gap: 12 }}>
+          <label style={{ display: "block" }}>
+            <span className="ax-label">Date</span>
+            <input
+              className="ax-field"
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              style={{ width: 180 }}
+            />
+          </label>
+          <label style={{ display: "block" }}>
+            <span className="ax-label">Time</span>
+            <select className="ax-select" value={time} onChange={(e) => setTime(e.target.value)}>
+              {TIME_SLOTS.map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                  {takenTimes.has(t) ? " · booked" : ""}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+
+        {takenTimes.has(time) && time !== b.booking_time && (
+          <p style={{ fontSize: 12.5, color: "var(--s-danger)" }}>
+            Heads up — another booking is already at {time} that day.
+          </p>
+        )}
+
+        <div className="flex flex-wrap" style={{ gap: 8 }}>
+          <button
+            className="ax-btn ax-btn--sm ax-btn--primary"
+            disabled={busy || unchanged}
+            onClick={() => submit(true)}
+          >
+            {busy ? "Saving…" : "Save & text them"}
+          </button>
+          <button
+            className="ax-btn ax-btn--sm"
+            disabled={busy || unchanged}
+            onClick={() => submit(false)}
+          >
+            Save, don&apos;t text
+          </button>
+          <button className="ax-btn ax-btn--sm" disabled={busy} onClick={onClose}>
+            Cancel
+          </button>
         </div>
       </div>
     </motion.div>

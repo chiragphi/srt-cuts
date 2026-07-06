@@ -19,6 +19,11 @@ export const SMS = {
   bookingDenied: (name: string, service: string, date: string, time: string) =>
     `Hi ${name}, we can't accommodate your ${service} on ${date} at ${time}. Please rebook another time — sorry for the inconvenience! — SRT`,
 
+  // Admin moved an existing booking to a new slot. No re-confirm needed — the
+  // shop initiated it, so the new time is already set.
+  bookingMovedCustomer: (name: string, service: string, date: string, time: string) =>
+    `Hi ${name}, your SRT Cuts ${service} has been moved to ${date} at ${time}. See you then! — SRT`,
+
   bookingCancelledAdmin: (name: string, phone: string, service: string, date: string, time: string) =>
     `Booking cancelled.\n${name} (${phone}) cancelled their ${service} on ${date} at ${time}.\nOpen your admin panel to review.`,
 

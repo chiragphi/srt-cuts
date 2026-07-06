@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { ChevronLeft, ChevronRight, SlidersHorizontal } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { ChevronLeft, ChevronRight, SlidersHorizontal, Check, Loader2 } from "lucide-react";
 import { TIME_SLOTS, DAYS_OF_WEEK } from "@/lib/schedule";
+import type { SiteContent } from "@/lib/site-content";
 import { useAdmin } from "../data";
-import { Field, Repeater, SaveBar, EditorPanel, Hint } from "../forms";
+import { Field, Repeater, EditorPanel, Hint } from "../forms";
 import { longDate } from "../format";
 
 const DEFAULT_START = "9:00 AM";
@@ -26,23 +27,59 @@ function isContiguous(slots: string[]): boolean {
 export function ScheduleView() {
   const { content, setContent, saveContent, saving, saveMessage } = useAdmin();
 
+  // Auto-save: the storefront pulls availability straight from what's saved, so
+  // any change here — especially opening a specific day — persists on its own,
+  // debounced so a burst of edits collapses into one write. No "did I hit Save?"
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pending = useRef<SiteContent | null>(null);
+  const saveRef = useRef(saveContent);
+  useEffect(() => {
+    saveRef.current = saveContent;
+  }, [saveContent]);
+  const [dirty, setDirty] = useState(false);
+  const commit = useCallback(
+    (next: SiteContent) => {
+      setContent(next);
+      setDirty(true);
+      pending.current = next;
+      if (timer.current) clearTimeout(timer.current);
+      timer.current = setTimeout(() => {
+        setDirty(false);
+        if (pending.current) {
+          saveRef.current(pending.current);
+          pending.current = null;
+        }
+      }, 600);
+    },
+    [setContent]
+  );
+  // On unmount (e.g. switching admin tabs) flush any pending change instead of
+  // dropping it, so a quick toggle-then-navigate never gets lost.
+  useEffect(
+    () => () => {
+      if (timer.current) clearTimeout(timer.current);
+      if (pending.current) saveRef.current(pending.current);
+    },
+    []
+  );
+
   return (
     <div className="space-y-6">
       <WeeklyEditor
         availability={content.weeklyAvailability}
-        onChange={(weeklyAvailability) => setContent({ ...content, weeklyAvailability })}
+        onChange={(weeklyAvailability) => commit({ ...content, weeklyAvailability })}
       />
       <DateAvailabilityEditor
         dateAvailability={content.dateAvailability}
         weeklyAvailability={content.weeklyAvailability}
-        onChange={(dateAvailability) => setContent({ ...content, dateAvailability })}
+        onChange={(dateAvailability) => commit({ ...content, dateAvailability })}
       />
       <EditorPanel title="Days off" hint="Fully closed dates — holidays, trips, sick days.">
         <Repeater
           items={content.scheduleBlocks}
           empty={{ date: "", reason: "" }}
           addLabel="Add a day off"
-          onChange={(scheduleBlocks) => setContent({ ...content, scheduleBlocks })}
+          onChange={(scheduleBlocks) => commit({ ...content, scheduleBlocks })}
           render={(item, update) => (
             <div style={{ display: "grid", gap: 14, gridTemplateColumns: "180px 1fr" }}>
               <Field label="Date" type="date" value={item.date} onChange={(date) => update({ ...item, date })} />
@@ -52,12 +89,44 @@ export function ScheduleView() {
         />
       </EditorPanel>
       <EditorPanel title="Policies">
-        <TextAreaField label="Payment note" value={content.depositNote} onChange={(depositNote) => setContent({ ...content, depositNote })} />
-        <TextAreaField label="Cancellation / reschedule policy" value={content.cancellationPolicy} onChange={(cancellationPolicy) => setContent({ ...content, cancellationPolicy })} />
-        <TextAreaField label="SMS reminder policy" value={content.reminderPolicy} onChange={(reminderPolicy) => setContent({ ...content, reminderPolicy })} />
-        <TextAreaField label="Google Calendar note" value={content.googleCalendarNote} onChange={(googleCalendarNote) => setContent({ ...content, googleCalendarNote })} />
+        <TextAreaField label="Payment note" value={content.depositNote} onChange={(depositNote) => commit({ ...content, depositNote })} />
+        <TextAreaField label="Cancellation / reschedule policy" value={content.cancellationPolicy} onChange={(cancellationPolicy) => commit({ ...content, cancellationPolicy })} />
+        <TextAreaField label="SMS reminder policy" value={content.reminderPolicy} onChange={(reminderPolicy) => commit({ ...content, reminderPolicy })} />
+        <TextAreaField label="Google Calendar note" value={content.googleCalendarNote} onChange={(googleCalendarNote) => commit({ ...content, googleCalendarNote })} />
       </EditorPanel>
-      <SaveBar saving={saving} saveMessage={saveMessage} onSave={() => saveContent()} />
+      <AutoSaveBar saving={saving || dirty} saveMessage={saveMessage} />
+    </div>
+  );
+}
+
+// Ambient auto-save status — reassures the operator their change stuck without
+// asking them to press anything.
+function AutoSaveBar({ saving, saveMessage }: { saving: boolean; saveMessage: string }) {
+  const failed = Boolean(saveMessage) && saveMessage !== "Saved.";
+  return (
+    <div
+      className="sticky ax-card"
+      style={{
+        bottom: 16,
+        zIndex: "var(--z-sticky)" as unknown as number,
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
+        padding: "12px 16px",
+        background: "color-mix(in srgb, var(--a-surface) 92%, transparent)",
+        backdropFilter: "blur(10px)",
+        boxShadow: "var(--a-shadow-pop)",
+        fontSize: 13.5,
+        fontWeight: 550,
+        color: failed ? "var(--s-danger)" : saving ? "var(--a-text-3)" : "var(--s-ok)",
+      }}
+    >
+      {saving ? (
+        <Loader2 size={15} className="ax-spin" />
+      ) : failed ? null : (
+        <Check size={15} />
+      )}
+      {saving ? "Saving…" : failed ? saveMessage : "All changes saved automatically"}
     </div>
   );
 }

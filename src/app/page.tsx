@@ -9,9 +9,11 @@
  */
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight, X, MapPin } from "lucide-react";
+import { useAuth } from "@/context/auth";
 import SiteNav from "@/components/site/SiteNav";
 import Reveal from "@/components/site/motion";
 import {
@@ -31,8 +33,30 @@ import {
 const MOST_REQUESTED = "Full Service";
 
 export default function HomePage() {
+  const router = useRouter();
+  const { isAdmin, loading } = useAuth();
   const [content, setContent] = useState<SiteContent>(DEFAULT_SITE_CONTENT);
   const [lightbox, setLightbox] = useState<string | null>(null);
+  const [redirecting, setRedirecting] = useState(false);
+
+  // The owner's home base is the cockpit — so when the signed-in admin lands on
+  // the storefront, send them straight to /admin. The one exception is an
+  // explicit "View storefront" hop (?site=1), which we remember for the tab so
+  // browsing the customer site doesn't keep bouncing back. Viewing-as a customer
+  // reads as non-admin here, so previews are unaffected.
+  useEffect(() => {
+    if (loading || !isAdmin || typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("site") === "1") {
+      sessionStorage.setItem("srtSiteMode", "1");
+      window.history.replaceState(null, "", "/");
+      return;
+    }
+    if (sessionStorage.getItem("srtSiteMode") === "1") return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setRedirecting(true);
+    router.replace("/admin");
+  }, [loading, isAdmin, router]);
 
   useEffect(() => {
     fetch("/api/site-content")
@@ -42,6 +66,10 @@ export default function HomePage() {
         if (d?.content) setContent(d.content);
       });
   }, []);
+
+  if (redirecting) {
+    return <div className="site" style={{ minHeight: "100dvh" }} />;
+  }
 
   const gallery = content.gallery.filter((g) => !isPlaceholderGalleryItem(g));
   const testimonials = content.testimonials.filter((t) => !isPlaceholderTestimonial(t));

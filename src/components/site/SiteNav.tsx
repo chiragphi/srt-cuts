@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { CalendarDays, House, LogOut, Scissors, User, ChevronDown } from "lucide-react";
+import { CalendarDays, House, LayoutDashboard, LogOut, Scissors, User, ChevronDown } from "lucide-react";
 import { useAuth } from "@/context/auth";
 import { useToast } from "@/components/site/Toast";
 
@@ -119,6 +119,18 @@ export default function SiteNav() {
               </button>
             )}
 
+            {isAdmin && (
+              <Link
+                href="/admin"
+                className="cx-btn cx-btn--ghost cx-btn--sm"
+                aria-label="Go to admin dashboard"
+                style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
+              >
+                <LayoutDashboard size={15} />
+                <span className="hidden sm:inline">Dashboard</span>
+              </Link>
+            )}
+
             <Link href="/book" className="cx-btn cx-btn--accent cx-btn--sm">
               Reserve
             </Link>
@@ -170,13 +182,19 @@ export default function SiteNav() {
         <Link href="/#about" className="cx-tab" data-active={false}>
           <User size={19} /> <span>About</span>
         </Link>
-        <Link
-          href={user ? "/bookings" : "/auth"}
-          className="cx-tab"
-          data-active={pathname === "/bookings" || pathname === "/auth"}
-        >
-          <User size={19} /> <span>{user ? user.name.split(" ")[0] : "Sign in"}</span>
-        </Link>
+        {isAdmin ? (
+          <Link href="/admin" className="cx-tab" data-active={false}>
+            <LayoutDashboard size={19} /> <span>Admin</span>
+          </Link>
+        ) : (
+          <Link
+            href={user ? "/bookings" : "/auth"}
+            className="cx-tab"
+            data-active={pathname === "/bookings" || pathname === "/auth"}
+          >
+            <User size={19} /> <span>{user ? user.name.split(" ")[0] : "Sign in"}</span>
+          </Link>
+        )}
       </div>
     </>
   );

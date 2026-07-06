@@ -1,6 +1,7 @@
 "use client";
 
-import { Menu, UserRoundCheck, LogOut } from "lucide-react";
+import Link from "next/link";
+import { Menu, UserRoundCheck, Store, LogOut } from "lucide-react";
 
 export function TopBar({
   title,
@@ -54,6 +55,12 @@ export function TopBar({
           )}
         </div>
 
+        {/* Hop out to the live customer site. ?site=1 tells the storefront not to
+            bounce us straight back to admin while we look around. */}
+        <Link href="/?site=1" className="ax-btn ax-btn--sm" aria-label="View storefront">
+          <Store size={16} />
+          <span className="hidden sm:inline">View storefront</span>
+        </Link>
         <button type="button" onClick={onViewAs} className="ax-btn ax-btn--sm">
           <UserRoundCheck size={16} />
           <span className="hidden sm:inline">View as customer</span>
