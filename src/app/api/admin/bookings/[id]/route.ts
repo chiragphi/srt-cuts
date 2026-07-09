@@ -4,6 +4,7 @@ import { supabaseAdmin } from "@/lib/supabase";
 import { notifyPhone } from "@/lib/sms-client";
 import { SMS } from "@/lib/sms-messages";
 import { TIME_SLOTS } from "@/lib/schedule";
+import { mergeSiteContent } from "@/lib/site-content";
 
 const longDate = (iso: string) =>
   new Date(iso + "T00:00:00").toLocaleDateString("en-US", {
@@ -11,6 +12,17 @@ const longDate = (iso: string) =>
     month: "long",
     day: "numeric",
   });
+
+// The street address is kept off the public site; confirmed customers get it
+// by text, so pull it from site content when a confirmation goes out.
+async function siteAddress() {
+  const { data } = await supabaseAdmin
+    .from("site_content")
+    .select("content")
+    .eq("id", "main")
+    .maybeSingle();
+  return mergeSiteContent(data?.content).address;
+}
 
 export async function PATCH(
   req: NextRequest,
@@ -71,7 +83,7 @@ export async function PATCH(
   if (status) {
     const msg =
       status === "accepted"
-        ? SMS.bookingAccepted(booking.user_name, booking.service, longDate(booking.booking_date), booking.booking_time)
+        ? SMS.bookingAccepted(booking.user_name, booking.service, longDate(booking.booking_date), booking.booking_time, await siteAddress())
         : SMS.bookingDenied(booking.user_name, booking.service, longDate(booking.booking_date), booking.booking_time);
     await notifyPhone(booking.user_phone, msg);
   }
@@ -81,7 +93,7 @@ export async function PATCH(
   if (isReschedule && notify) {
     await notifyPhone(
       booking.user_phone,
-      SMS.bookingMovedCustomer(booking.user_name, booking.service, longDate(booking.booking_date), booking.booking_time)
+      SMS.bookingMovedCustomer(booking.user_name, booking.service, longDate(booking.booking_date), booking.booking_time, await siteAddress())
     );
   }
 

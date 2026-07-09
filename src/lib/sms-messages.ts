@@ -13,16 +13,18 @@ export const SMS = {
   bookingCreatedAdmin: (name: string, phone: string, service: string, date: string, time: string) =>
     `New booking request!\n${name} (${phone}) wants ${service} on ${date} at ${time}.\nOpen your admin panel to respond.`,
 
-  bookingAccepted: (name: string, service: string, date: string, time: string) =>
-    `You're confirmed! Your SRT Cuts ${service} is set for ${date} at ${time}. See you then! — SRT`,
+  // The street address is kept off the public site and only shared here,
+  // once a booking is confirmed.
+  bookingAccepted: (name: string, service: string, date: string, time: string, address?: string) =>
+    `You're confirmed! Your SRT Cuts ${service} is set for ${date} at ${time}.${address ? ` Address: ${address}.` : ""} See you then! — SRT`,
 
   bookingDenied: (name: string, service: string, date: string, time: string) =>
     `Hi ${name}, we can't accommodate your ${service} on ${date} at ${time}. Please rebook another time — sorry for the inconvenience! — SRT`,
 
   // Admin moved an existing booking to a new slot. No re-confirm needed — the
   // shop initiated it, so the new time is already set.
-  bookingMovedCustomer: (name: string, service: string, date: string, time: string) =>
-    `Hi ${name}, your SRT Cuts ${service} has been moved to ${date} at ${time}. See you then! — SRT`,
+  bookingMovedCustomer: (name: string, service: string, date: string, time: string, address?: string) =>
+    `Hi ${name}, your SRT Cuts ${service} has been moved to ${date} at ${time}.${address ? ` Address: ${address}.` : ""} See you then! — SRT`,
 
   bookingCancelledAdmin: (name: string, phone: string, service: string, date: string, time: string) =>
     `Booking cancelled.\n${name} (${phone}) cancelled their ${service} on ${date} at ${time}.\nOpen your admin panel to review.`,

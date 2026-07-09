@@ -98,8 +98,16 @@ export function ContentView() {
             </>
           )}
         />
-        <Field label="Address / service area" value={content.address} onChange={(address) => setContent({ ...content, address })} />
-        <Field label="Map URL" value={content.mapUrl} onChange={(mapUrl) => setContent({ ...content, mapUrl })} />
+        <Field
+          label="Street address (private — texted to the customer once their booking is confirmed)"
+          value={content.address}
+          onChange={(address) => setContent({ ...content, address })}
+        />
+        <Field
+          label="Area shown on the site (identity card + map)"
+          value={content.publicArea}
+          onChange={(publicArea) => setContent({ ...content, publicArea })}
+        />
         <TextArea label="Parking note" value={content.parkingNote} onChange={(parkingNote) => setContent({ ...content, parkingNote })} rows={2} />
         <Field label="Instagram URL" value={content.instagramUrl} onChange={(instagramUrl) => setContent({ ...content, instagramUrl })} />
         <Field label="TikTok URL" value={content.tiktokUrl} onChange={(tiktokUrl) => setContent({ ...content, tiktokUrl })} />

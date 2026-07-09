@@ -94,6 +94,7 @@ export default function HomePage() {
   const heroImage = content.heroImageUrl || "/barber.jpg";
   const avatar = content.barberPhotoUrl || "/srt-logo.png";
 
+  const mapLink = `https://maps.google.com/?q=${encodeURIComponent(content.publicArea)}`;
   const onSale = services.filter(hasDiscount);
   const maxDiscount = onSale.reduce((m, s) => Math.max(m, clampDiscount(s.discountPercent)), 0);
   const selectedService = services.find((s) => s.name === selected);
@@ -220,8 +221,8 @@ export default function HomePage() {
             <div style={{ marginTop: 14, borderTop: "1px solid var(--c-line)" }}>
               <div className="cx-inforow">
                 <MapPin size={16} className="cx-inforow-icon" />
-                <span>{content.address}</span>
-                <a href={content.mapUrl} target="_blank" rel="noopener noreferrer" className="cx-inforow-action">
+                <span>{content.publicArea}</span>
+                <a href={mapLink} target="_blank" rel="noopener noreferrer" className="cx-inforow-action">
                   Map
                 </a>
               </div>
@@ -307,7 +308,7 @@ export default function HomePage() {
             <div className="cx-mapwrap">
               <iframe
                 title="Map"
-                src={`https://maps.google.com/maps?q=${encodeURIComponent(content.address)}&z=12&output=embed`}
+                src={`https://maps.google.com/maps?q=${encodeURIComponent(content.publicArea)}&z=12&output=embed`}
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
               />
@@ -315,9 +316,9 @@ export default function HomePage() {
                 <Avatar src={avatar} alt={content.barberName} size={44} focus={content.barberPhotoFocus} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{ fontWeight: 700, fontSize: 14.5 }}>{content.barberName}</p>
-                  <p style={{ fontSize: 13, color: "var(--c-ink-2)" }}>{content.address}</p>
+                  <p style={{ fontSize: 13, color: "var(--c-ink-2)" }}>{content.publicArea}</p>
                 </div>
-                <a href={content.mapUrl} target="_blank" rel="noopener noreferrer" aria-label="Directions" className="cx-roundbtn" style={{ flex: "none" }}>
+                <a href={mapLink} target="_blank" rel="noopener noreferrer" aria-label="Directions" className="cx-roundbtn" style={{ flex: "none" }}>
                   <Navigation size={15} />
                 </a>
               </div>

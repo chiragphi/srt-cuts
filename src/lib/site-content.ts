@@ -41,8 +41,11 @@ export interface SiteContent {
   barberPhotoUrl: string;
   aboutImageUrl: string;
   specialties: string[];
+  // Full street address — never rendered on the public site; it is texted to
+  // the customer once their booking is confirmed.
   address: string;
-  mapUrl: string;
+  // The general area shown publicly (identity card, map embed, map links).
+  publicArea: string;
   parkingNote: string;
   instagramUrl: string;
   tiktokUrl: string;
@@ -95,7 +98,7 @@ export const DEFAULT_SITE_CONTENT: SiteContent = {
   aboutImageUrl: "/barber.jpg",
   specialties: ["Fades", "Lineups", "Full service cuts"],
   address: "12097 Window Arch Lane, Herriman, UT",
-  mapUrl: "https://maps.google.com/?q=12097%20Window%20Arch%20Lane%2C%20Herriman%2C%20UT",
+  publicArea: "Herriman, UT",
   parkingNote: "Exact location and parking details are sent after confirmation.",
   instagramUrl: "",
   tiktokUrl: "",

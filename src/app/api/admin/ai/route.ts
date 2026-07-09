@@ -821,7 +821,7 @@ async function executeTool(
     for (const booking of pendingBookings) {
       await supabaseAdmin.from("bookings").update({ status: "accepted" }).eq("id", booking.id);
       const displayDate = new Date(booking.booking_date + "T00:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
-      await notifyPhone(booking.user_phone, SMS.bookingAccepted(booking.user_name, booking.service, displayDate, booking.booking_time));
+      await notifyPhone(booking.user_phone, SMS.bookingAccepted(booking.user_name, booking.service, displayDate, booking.booking_time, content.address));
       results.push(booking.user_name);
     }
     return { success: true, description: `Accepted ${results.length} booking${results.length !== 1 ? "s" : ""}: ${results.join(", ")}` };
@@ -839,7 +839,7 @@ async function executeTool(
 
     const displayDate = new Date(booking.booking_date + "T00:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
     const msg = status === "accepted"
-      ? SMS.bookingAccepted(booking.user_name, booking.service, displayDate, booking.booking_time)
+      ? SMS.bookingAccepted(booking.user_name, booking.service, displayDate, booking.booking_time, content.address)
       : SMS.bookingDenied(booking.user_name, booking.service, displayDate, booking.booking_time);
     await notifyPhone(booking.user_phone, msg);
 
