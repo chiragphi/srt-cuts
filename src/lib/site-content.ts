@@ -88,7 +88,8 @@ const DEFAULT_TESTIMONIALS: Testimonial[] = [
 ];
 
 export const DEFAULT_SITE_CONTENT: SiteContent = {
-  heroImageUrl: "/barber.jpg",
+  heroImageUrl: "/hero-neon.jpg",
+  heroFocus: { x: 68, y: 31 },
   gallery: DEFAULT_GALLERY,
   testimonials: DEFAULT_TESTIMONIALS,
   barberName: "SRT Cuts",
