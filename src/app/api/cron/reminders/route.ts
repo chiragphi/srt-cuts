@@ -3,6 +3,7 @@ import { supabaseAdmin } from "@/lib/supabase";
 import { notifyPhone } from "@/lib/sms-client";
 import { SMS } from "@/lib/sms-messages";
 import { mergeSiteContent } from "@/lib/site-content";
+import { bookingStartUtcMs, shopToday } from "@/lib/shop-time";
 
 /**
  * 30-minute appointment reminders, invoked by Vercel Cron (see vercel.json).
@@ -18,49 +19,6 @@ import { mergeSiteContent } from "@/lib/site-content";
  */
 
 const REMINDER_WINDOW_MS = 30 * 60 * 1000;
-
-// Booking slots are wall-clock times at the shop (Herriman, UT). Vercel runs
-// in UTC, so "30 minutes from now" must be computed in the shop's zone.
-const SHOP_TZ = process.env.SHOP_TZ?.trim() || "America/Denver";
-
-/** Convert a slot label ("9:00 AM") to 24h "HH:MM:SS". */
-function slotTo24h(time: string): string {
-  const [raw, period] = time.split(" ");
-  const [h, m] = raw.split(":").map(Number);
-  const hours = period === "PM" && h !== 12 ? h + 12 : period === "AM" && h === 12 ? 0 : h;
-  return `${String(hours).padStart(2, "0")}:${String(m).padStart(2, "0")}:00`;
-}
-
-/** What time (UTC ms) is `date` + `time24` on the shop's wall clock? */
-function shopTimeToUtcMs(date: string, time24: string): number {
-  // Parse as if UTC, then subtract the shop zone's offset at that instant.
-  const asUtc = Date.parse(`${date}T${time24}Z`);
-  const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone: SHOP_TZ,
-    hour12: false,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-  }).formatToParts(new Date(asUtc));
-  const get = (type: string) => Number(parts.find((p) => p.type === type)?.value ?? 0);
-  const zonedAsUtc = Date.UTC(
-    get("year"),
-    get("month") - 1,
-    get("day"),
-    get("hour") % 24,
-    get("minute"),
-    get("second"),
-  );
-  return asUtc - (zonedAsUtc - asUtc);
-}
-
-/** Today's date ("YYYY-MM-DD") on the shop's wall clock. */
-function shopToday(): string {
-  return new Intl.DateTimeFormat("en-CA", { timeZone: SHOP_TZ, dateStyle: "short" }).format(new Date());
-}
 
 export async function GET(req: NextRequest) {
   const secret = process.env.CRON_SECRET;
@@ -83,7 +41,7 @@ export async function GET(req: NextRequest) {
 
   const now = Date.now();
   const due = (bookings ?? []).filter((b) => {
-    const msUntilStart = shopTimeToUtcMs(b.booking_date, slotTo24h(b.booking_time)) - now;
+    const msUntilStart = bookingStartUtcMs(b.booking_date, b.booking_time) - now;
     return msUntilStart > 0 && msUntilStart <= REMINDER_WINDOW_MS;
   });
 

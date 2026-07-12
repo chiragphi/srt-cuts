@@ -109,7 +109,7 @@ export const DEFAULT_SITE_CONTENT: SiteContent = {
   depositNote: "No deposits. Pay the full price with Venmo or pay the full price in store.",
   serviceConfigs: getServiceConfigs(null),
   cancellationPolicy: "Please text ahead if you need to cancel or reschedule.",
-  reminderPolicy: "SMS confirmations are active. Reminder texts are planned next.",
+  reminderPolicy: "SMS confirmations are active, and you'll get a reminder text 30 minutes before your appointment.",
   googleCalendarNote: "Calendar sync is planned; confirmed bookings are managed in admin for now.",
   scheduleBlocks: [],
   taxExpenses: [],

@@ -4,21 +4,9 @@ import { supabaseAdmin } from "@/lib/supabase";
 import { notifyPhone } from "@/lib/sms-client";
 import { SMS } from "@/lib/sms-messages";
 import { mergeSiteContent } from "@/lib/site-content";
+import { bookingStartUtcMs } from "@/lib/shop-time";
 
 const CUTOFF_MS = 24 * 60 * 60 * 1000; // no self-service changes within 24h
-
-/** Convert a slot label ("9:00 AM") to 24h "HH:MM:SS". */
-function slotTo24h(time: string): string {
-  const [raw, period] = time.split(" ");
-  const [h, m] = raw.split(":").map(Number);
-  const hours = period === "PM" && h !== 12 ? h + 12 : period === "AM" && h === 12 ? 0 : h;
-  return `${String(hours).padStart(2, "0")}:${String(m).padStart(2, "0")}:00`;
-}
-
-/** Local Date for the start of a booking (date + slot time). */
-function bookingStart(date: string, time: string): Date {
-  return new Date(`${date}T${slotTo24h(time)}`);
-}
 
 function displayDate(date: string): string {
   return new Date(date + "T00:00:00").toLocaleDateString("en-US", {
@@ -53,7 +41,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (booking.status === "cancelled" || booking.status === "denied")
     return NextResponse.json({ error: "This booking can no longer be changed." }, { status: 409 });
 
-  if (bookingStart(booking.booking_date, booking.booking_time).getTime() - Date.now() < CUTOFF_MS)
+  if (bookingStartUtcMs(booking.booking_date, booking.booking_time) - Date.now() < CUTOFF_MS)
     return NextResponse.json(
       { error: "Too close to your appointment — text us for last-minute changes." },
       { status: 409 }
@@ -93,7 +81,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const { date, time } = body as { date?: string; time?: string };
   if (!date || !time) return NextResponse.json({ error: "Pick a new date and time." }, { status: 400 });
 
-  if (bookingStart(date, time).getTime() - Date.now() < CUTOFF_MS)
+  if (bookingStartUtcMs(date, time) - Date.now() < CUTOFF_MS)
     return NextResponse.json(
       { error: "Pick a time at least 24 hours out." },
       { status: 409 }
