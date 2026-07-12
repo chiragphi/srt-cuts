@@ -48,11 +48,11 @@ export function SiteHeader() {
           <Link href="/" aria-label="SRT Cuts home">
             <Wordmark />
           </Link>
-          <div className="flex items-center" style={{ gap: "clamp(14px, 2.6vw, 24px)" }}>
+          <div className="cx-chromenav">
             {user ? (
               <>
                 <Link href="/bookings" className="cx-chromelink">
-                  My bookings
+                  Bookings
                 </Link>
                 {isAdmin && (
                   <Link href="/admin" className="cx-chromelink">
