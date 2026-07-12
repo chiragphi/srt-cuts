@@ -121,3 +121,19 @@ CREATE INDEX IF NOT EXISTS idx_impersonation_log_admin ON impersonation_log(admi
 -- Set by the reminder cron (/api/cron/reminders) when the heads-up text goes
 -- out, so a booking is never reminded twice.
 ALTER TABLE bookings ADD COLUMN IF NOT EXISTS reminder_sent_at TIMESTAMPTZ;
+
+-- SMS abuse protection (2026-07-12)
+-- ip_hash powers the per-IP limit on login-code requests (verify/start).
+-- REQUIRED: without this column, storing login codes fails entirely.
+ALTER TABLE otp_codes ADD COLUMN IF NOT EXISTS ip_hash TEXT;
+CREATE INDEX IF NOT EXISTS otp_codes_ip_hash_created_at ON otp_codes (ip_hash, created_at);
+
+-- Every Textbelt send attempt, counted against app-wide hourly/daily caps
+-- (SMS_HOURLY_CAP / SMS_DAILY_CAP) so credits can never drain all at once.
+CREATE TABLE IF NOT EXISTS sms_log (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  phone TEXT NOT NULL,
+  kind TEXT NOT NULL CHECK (kind IN ('otp', 'notify')),
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_sms_log_created ON sms_log(created_at);

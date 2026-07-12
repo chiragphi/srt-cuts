@@ -12,7 +12,7 @@ import { Spinner } from "../primitives";
 interface MaintenanceData {
   stats: StorageStats;
   activity: ActivityItem[];
-  sms?: { quotaRemaining: number | null; low: boolean; adminAlerts?: boolean };
+  sms?: { quotaRemaining: number | null; low: boolean; adminAlerts?: boolean; sentToday?: number | null; dailyCap?: number };
 }
 
 export function SystemView() {
@@ -83,6 +83,13 @@ export function SystemView() {
           <Stat label="Bookings" value={stats.bookings.total} sub={`${stats.bookings.pending} pending`} />
           <Stat label="Customers" value={stats.users.total} sub="kept forever" />
           <Stat label="Texts left" value={sms?.quotaRemaining ?? "—"} sub={sms?.low ? "low — top up" : "~$0.01 each"} flag={sms?.low} icon={<MessageSquare size={14} />} />
+          <Stat
+            label="Sent today"
+            value={sms?.sentToday ?? "—"}
+            sub={sms?.sentToday == null ? "run sms_log migration" : `daily cap ${sms.dailyCap}`}
+            flag={sms?.sentToday == null || (sms.dailyCap != null && sms.sentToday >= sms.dailyCap)}
+            icon={<MessageSquare size={14} />}
+          />
           <Stat label="Admin alerts" value={sms?.adminAlerts ? "On" : "Off"} sub={sms?.adminAlerts ? "ADMIN_PHONE set" : "set ADMIN_PHONE"} flag={sms?.adminAlerts === false} icon={<Bell size={14} />} />
         </div>
 

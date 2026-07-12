@@ -6,6 +6,7 @@ import {
   TOTP_ISSUER,
   OTP_TTL_MS,
 } from "@/lib/sms-gateway";
+import { smsBudgetExceeded, logSmsAttempt, type SmsKind } from "@/lib/sms-budget";
 
 /**
  * SMS delivery via the Textbelt API (https://textbelt.com).
@@ -38,12 +39,20 @@ interface TextbeltResponse {
 }
 
 /** Send one text through Textbelt. Throws on HTTP/network errors; returns
- * `success: false` (with `error`) when Textbelt rejects the send. */
-async function sendTextbelt(phone: string, message: string): Promise<TextbeltResponse> {
+ * `success: false` (with `error`) when Textbelt rejects the send or the
+ * app-wide send budget is exhausted. Every attempt is logged to sms_log. */
+async function sendTextbelt(phone: string, message: string, kind: SmsKind): Promise<TextbeltResponse> {
   const key = process.env.TEXTBELT_API_KEY;
   if (!key) {
     throw new Error("TEXTBELT_API_KEY is not configured.");
   }
+
+  const blocked = await smsBudgetExceeded();
+  if (blocked) {
+    console.error(`⚠️ SMS to ${phone} blocked: ${blocked}. Raise SMS_HOURLY_CAP/SMS_DAILY_CAP if this is legitimate volume.`);
+    return { success: false, error: blocked };
+  }
+  await logSmsAttempt(phone, kind);
 
   const res = await fetch("https://textbelt.com/text", {
     method: "POST",
@@ -91,7 +100,9 @@ export async function requestPhoneVerification(
 
   let result: TextbeltResponse;
   try {
-    result = await sendTextbelt(number, message);
+    // Over-budget sends return success:false and land in the TOTP fallback
+    // below — login stays possible even mid-attack.
+    result = await sendTextbelt(number, message, "otp");
   } catch (error) {
     return totpFallback(
       `SMS send failed (${error instanceof Error ? error.message : String(error)}).`,
@@ -124,7 +135,7 @@ export async function sendGatewaySms(phone: string, message: string): Promise<No
 
   let result: TextbeltResponse;
   try {
-    result = await sendTextbelt(number, message);
+    result = await sendTextbelt(number, message, "notify");
   } catch (error) {
     return { ok: false, reason: error instanceof Error ? error.message : String(error) };
   }
