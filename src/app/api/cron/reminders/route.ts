@@ -4,6 +4,7 @@ import { notifyPhone } from "@/lib/sms-client";
 import { SMS } from "@/lib/sms-messages";
 import { mergeSiteContent } from "@/lib/site-content";
 import { bookingStartUtcMs, shopToday } from "@/lib/shop-time";
+import { watchQuota } from "@/lib/quota-watch";
 
 /**
  * 30-minute appointment reminders, invoked by Vercel Cron (see vercel.json).
@@ -28,6 +29,13 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  // Piggyback the credit-drain tripwire on this 5-minute tick. Never let a
+  // watch failure break reminders.
+  const watch = await watchQuota().catch((e) => {
+    console.error("Quota watch failed:", e instanceof Error ? e.message : e);
+    return { quota: null, alerted: false };
+  });
+
   const { data: bookings, error } = await supabaseAdmin
     .from("bookings")
     .select("id, user_name, user_phone, service, booking_date, booking_time")
@@ -47,7 +55,7 @@ export async function GET(req: NextRequest) {
     return msUntilStart > 0 && msUntilStart <= REMINDER_WINDOW_MS;
   });
 
-  if (due.length === 0) return NextResponse.json({ ok: true, sent: 0 });
+  if (due.length === 0) return NextResponse.json({ ok: true, sent: 0, quota: watch.quota });
 
   const adminPhone = process.env.ADMIN_PHONE?.trim();
   if (!adminPhone)
@@ -64,7 +72,8 @@ export async function GET(req: NextRequest) {
   const remindAdmin = Boolean(adminPhone) && smsPrefs.adminReminders;
   // Both switched off in admin → leave bookings unclaimed, so flipping a
   // switch back on mid-window still gets that reminder out.
-  if (!remindCustomer && !remindAdmin) return NextResponse.json({ ok: true, sent: 0, disabled: true });
+  if (!remindCustomer && !remindAdmin)
+    return NextResponse.json({ ok: true, sent: 0, disabled: true, quota: watch.quota });
 
   let sent = 0;
   for (const b of due) {
@@ -84,5 +93,5 @@ export async function GET(req: NextRequest) {
     sent++;
   }
 
-  return NextResponse.json({ ok: true, sent });
+  return NextResponse.json({ ok: true, sent, quota: watch.quota });
 }

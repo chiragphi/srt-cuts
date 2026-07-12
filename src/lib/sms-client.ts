@@ -41,16 +41,23 @@ interface TextbeltResponse {
 /** Send one text through Textbelt. Throws on HTTP/network errors; returns
  * `success: false` (with `error`) when Textbelt rejects the send or the
  * app-wide send budget is exhausted. Every attempt is logged to sms_log. */
-async function sendTextbelt(phone: string, message: string, kind: SmsKind): Promise<TextbeltResponse> {
+async function sendTextbelt(
+  phone: string,
+  message: string,
+  kind: SmsKind,
+  opts?: { bypassBudget?: boolean },
+): Promise<TextbeltResponse> {
   const key = process.env.TEXTBELT_API_KEY;
   if (!key) {
     throw new Error("TEXTBELT_API_KEY is not configured.");
   }
 
-  const blocked = await smsBudgetExceeded();
-  if (blocked) {
-    console.error(`⚠️ SMS to ${phone} blocked: ${blocked}. Raise SMS_HOURLY_CAP/SMS_DAILY_CAP if this is legitimate volume.`);
-    return { success: false, error: blocked };
+  if (!opts?.bypassBudget) {
+    const blocked = await smsBudgetExceeded();
+    if (blocked) {
+      console.error(`⚠️ SMS to ${phone} blocked: ${blocked}. Raise SMS_HOURLY_CAP/SMS_DAILY_CAP if this is legitimate volume.`);
+      return { success: false, error: blocked };
+    }
   }
   await logSmsAttempt(phone, kind);
 
@@ -157,6 +164,23 @@ export async function notifyPhone(phone: string, message: string): Promise<void>
     if (!result.ok) console.error(`Notification to ${phone} failed: ${result.reason}`);
   } catch (error) {
     console.error(`Notification to ${phone} failed:`, error instanceof Error ? error.message : error);
+  }
+}
+
+/**
+ * Security-alarm text to the admin (quota-drain alerts). Skips the send
+ * budget on purpose: the alarm must fire precisely when everything else is
+ * being blocked. Rate-limited by its caller (one alert per 6h), still logged.
+ */
+export async function sendAdminAlertSms(phone: string, message: string): Promise<NotificationResult> {
+  const number = normalizePhone(phone);
+  if (number.length !== 10) return { ok: false, reason: "Not a valid 10-digit US number." };
+  try {
+    const result = await sendTextbelt(number, message, "notify", { bypassBudget: true });
+    if (!result.success) return { ok: false, reason: result.error ?? "unknown Textbelt error" };
+    return { ok: true, channel: number, carrier: "textbelt" };
+  } catch (error) {
+    return { ok: false, reason: error instanceof Error ? error.message : String(error) };
   }
 }
 
