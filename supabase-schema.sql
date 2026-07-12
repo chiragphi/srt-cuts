@@ -116,3 +116,8 @@ CREATE TABLE IF NOT EXISTS impersonation_log (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 CREATE INDEX IF NOT EXISTS idx_impersonation_log_admin ON impersonation_log(admin_id);
+
+-- 30-minute reminder texts (2026-07-11)
+-- Set by the reminder cron (/api/cron/reminders) when the heads-up text goes
+-- out, so a booking is never reminded twice.
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS reminder_sent_at TIMESTAMPTZ;

@@ -29,6 +29,13 @@ export const SMS = {
   bookingCancelledAdmin: (name: string, phone: string, service: string, date: string, time: string) =>
     `Booking cancelled.\n${name} (${phone}) cancelled their ${service} on ${date} at ${time}.\nOpen your admin panel to review.`,
 
+  // 30-minute heads-up, sent by the reminder cron to confirmed bookings only.
+  reminderCustomer: (name: string, service: string, time: string, address?: string) =>
+    `Hi ${name}, reminder: your SRT Cuts ${service} is coming up at ${time} — about 30 minutes from now.${address ? ` Address: ${address}.` : ""} See you soon! — SRT`,
+
+  reminderAdmin: (name: string, phone: string, service: string, time: string) =>
+    `Up next in about 30 min: ${name} (${phone}) — ${service} at ${time}.`,
+
   bookingRescheduledAdmin: (
     name: string,
     phone: string,
