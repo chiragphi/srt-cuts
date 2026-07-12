@@ -14,8 +14,10 @@ import { bookingStartUtcMs, shopToday } from "@/lib/shop-time";
  * claimed (conditional update) BEFORE sending, so overlapping cron runs can
  * never double-text anyone.
  *
- * Same auth as the cleanup cron: if CRON_SECRET is set, require it as a
- * Bearer token. The claim column makes replays harmless either way.
+ * Triggered by a GitHub Actions schedule (.github/workflows/reminders.yml),
+ * which sends CRON_SECRET as a Bearer token from a repo Actions secret.
+ * Same auth rule as the cleanup cron: if CRON_SECRET is set, require it.
+ * The claim column makes replays harmless either way.
  */
 
 const REMINDER_WINDOW_MS = 30 * 60 * 1000;

@@ -1,0 +1,40 @@
+# Triggers the 30-minute booking-reminder check. Vercel's Hobby plan can't
+# run sub-daily crons, so this schedule stands in for one. GitHub may lag a
+# scheduled run by a few minutes; that's fine — a reminder stays "due" for a
+# full 30-minute window and the endpoint is idempotent, so any run that lands
+# inside the window catches it.
+name: Booking reminders
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+# actions:write lets the keepalive step below re-enable this workflow.
+permissions:
+  actions: write
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      # Requires a repo Actions secret named CRON_SECRET whose value matches
+      # the CRON_SECRET env var on the Vercel project. Until it's added, runs
+      # fail with 401 — that's the signal it isn't wired up yet.
+      - name: Trigger reminder check
+        run: |
+          code=$(curl -sS -o /tmp/resp -w '%{http_code}' --max-time 30 \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            https://www.srtcuts.hair/api/cron/reminders)
+          cat /tmp/resp; echo
+          test "$code" = "200"
+
+      # GitHub disables schedules after 60 days without repo activity; poking
+      # the "enable workflow" API on each run resets that clock.
+      - name: Keep schedule alive
+        if: always()
+        run: |
+          curl -sS -X PUT \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/workflows/reminders.yml/enable"
