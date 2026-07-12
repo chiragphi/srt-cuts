@@ -12,7 +12,14 @@ import { Spinner } from "../primitives";
 interface MaintenanceData {
   stats: StorageStats;
   activity: ActivityItem[];
-  sms?: { quotaRemaining: number | null; low: boolean; adminAlerts?: boolean; sentToday?: number | null; dailyCap?: number };
+  sms?: {
+    provider?: "textbelt" | "mac";
+    quotaRemaining: number | null;
+    low: boolean;
+    adminAlerts?: boolean;
+    sentToday?: number | null;
+    dailyCap?: number;
+  };
 }
 
 export function SystemView() {
@@ -64,6 +71,7 @@ export function SystemView() {
 
   const { stats, activity, sms } = data;
   const reclaimable = stats.otp.stale + stats.sessions.expired;
+  const usingMacSms = sms?.provider === "mac";
 
   return (
     <div className="space-y-8">
@@ -82,7 +90,13 @@ export function SystemView() {
           <Stat label="Sessions" value={stats.sessions.total} sub={`${stats.sessions.expired} expired`} flag={stats.sessions.expired > 0} />
           <Stat label="Bookings" value={stats.bookings.total} sub={`${stats.bookings.pending} pending`} />
           <Stat label="Customers" value={stats.users.total} sub="kept forever" />
-          <Stat label="Texts left" value={sms?.quotaRemaining ?? "—"} sub={sms?.low ? "low — top up" : "~$0.01 each"} flag={sms?.low} icon={<MessageSquare size={14} />} />
+          <Stat
+            label={usingMacSms ? "Text bridge" : "Texts left"}
+            value={usingMacSms ? "Mac" : (sms?.quotaRemaining ?? "—")}
+            sub={usingMacSms ? "Messages app + caffeinate" : sms?.low ? "low — top up" : "~$0.01 each"}
+            flag={sms?.low}
+            icon={<MessageSquare size={14} />}
+          />
           <Stat
             label="Sent today"
             value={sms?.sentToday ?? "—"}

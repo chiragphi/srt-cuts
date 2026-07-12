@@ -6,6 +6,8 @@ import { SMS } from "@/lib/sms-messages";
 import { mergeSiteContent } from "@/lib/site-content";
 import { bookingStartUtcMs } from "@/lib/shop-time";
 
+export const runtime = "nodejs";
+
 const CUTOFF_MS = 24 * 60 * 60 * 1000; // no self-service changes within 24h
 
 function displayDate(date: string): string {

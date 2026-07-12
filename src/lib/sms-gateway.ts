@@ -3,7 +3,7 @@ import crypto from "node:crypto";
 /**
  * Phone-verification primitives: code generation + TOTP fallback.
  *
- * SMS delivery itself lives in `sms-client.ts` (Textbelt API). This module
+ * SMS delivery itself lives in `sms-client.ts`. This module
  * keeps the delivery-agnostic pieces: 6-digit code generation and an
  * RFC 6238 TOTP implementation used when SMS can't be delivered.
  *

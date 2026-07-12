@@ -3,7 +3,7 @@ import { supabaseAdmin } from "@/lib/supabase";
 /**
  * Global SMS send budget — the circuit breaker that guarantees credits can
  * never drain all at once through the app, no matter which endpoint is
- * abused. Every Textbelt attempt (OTP, booking texts, reminders) is logged
+ * abused. Every SMS attempt (OTP, booking texts, reminders) is logged
  * to sms_log and counted against hourly/daily caps before sending.
  *
  * This is the app-wide backstop; per-IP and per-phone limits on the OTP
@@ -52,7 +52,7 @@ export async function smsBudgetExceeded(): Promise<string | null> {
   return null;
 }
 
-/** Record a send attempt (called BEFORE the Textbelt request, so even a
+/** Record a send attempt (called BEFORE the provider request, so even a
  * crashed send counts — a retry storm can't slip under the cap). */
 export async function logSmsAttempt(phone: string, kind: SmsKind): Promise<void> {
   const { error } = await supabaseAdmin.from("sms_log").insert({ phone, kind });

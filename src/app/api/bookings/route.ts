@@ -6,6 +6,8 @@ import { SMS } from "@/lib/sms-messages";
 import { mergeSiteContent } from "@/lib/site-content";
 import { effectivePrice } from "@/lib/services";
 
+export const runtime = "nodejs";
+
 export async function GET() {
   const user = await getSession();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

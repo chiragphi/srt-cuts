@@ -4,6 +4,8 @@ import { supabaseAdmin } from "@/lib/supabase";
 import { normalizePhone } from "@/lib/auth-bypass";
 import { requestPhoneVerification } from "@/lib/sms-client";
 
+export const runtime = "nodejs";
+
 function hashCode(code: string): string {
   return crypto.createHash("sha256").update(code).digest("hex");
 }

@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import { getSession, isAdmin } from "@/lib/session";
 import { getStorageStats, getRecentActivity, runCleanup } from "@/lib/maintenance";
-import { getSmsQuota, LOW_QUOTA_THRESHOLD } from "@/lib/sms-client";
+import { getSmsProvider, getSmsQuota, LOW_QUOTA_THRESHOLD } from "@/lib/sms-client";
 import { smsSentToday, SMS_DAILY_CAP } from "@/lib/sms-budget";
+
+export const runtime = "nodejs";
 
 async function requireAdmin() {
   const user = await getSession();
@@ -24,6 +26,7 @@ export async function GET() {
     stats,
     activity,
     sms: {
+      provider: getSmsProvider(),
       quotaRemaining,
       low: quotaRemaining !== null && quotaRemaining <= LOW_QUOTA_THRESHOLD,
       sentToday,

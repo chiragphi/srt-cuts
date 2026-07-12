@@ -6,6 +6,8 @@ import { SMS } from "@/lib/sms-messages";
 import { TIME_SLOTS } from "@/lib/schedule";
 import { mergeSiteContent } from "@/lib/site-content";
 
+export const runtime = "nodejs";
+
 const longDate = (iso: string) =>
   new Date(iso + "T00:00:00").toLocaleDateString("en-US", {
     weekday: "long",

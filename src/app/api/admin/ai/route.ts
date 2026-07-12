@@ -7,6 +7,8 @@ import { SMS } from "@/lib/sms-messages";
 import { TIME_SLOTS, DAYS_OF_WEEK } from "@/lib/schedule";
 import { clampDiscount, effectivePrice } from "@/lib/services";
 
+export const runtime = "nodejs";
+
 const MODEL = "llama-3.3-70b-versatile";
 
 type SiteContentState = ReturnType<typeof mergeSiteContent>;

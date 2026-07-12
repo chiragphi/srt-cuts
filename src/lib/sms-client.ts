@@ -1,3 +1,5 @@
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
 import {
   normalizePhone,
   generateCode,
@@ -9,14 +11,15 @@ import {
 import { smsBudgetExceeded, logSmsAttempt, type SmsKind } from "@/lib/sms-budget";
 
 /**
- * SMS delivery via the Textbelt API (https://textbelt.com).
+ * SMS delivery.
  *
- * Textbelt takes a phone number + message over plain HTTPS — no carrier
- * lookup, no number provisioning, no 10DLC registration. Credits are
- * prepaid (~US$0.01/text); when they run out sends fail with
- * "Out of quota", verification degrades to TOTP, and we log loudly.
+ * Default provider is Textbelt. For the temporary local-Mac bridge, set:
+ *   SMS_PROVIDER=mac
  *
- * Needs one env var: TEXTBELT_API_KEY.
+ * Mac mode uses the local Messages app through AppleScript, so the server
+ * must run on the Mac that is signed in to Messages with SMS forwarding
+ * enabled. It also starts caffeinate so the Mac stays awake while this Node
+ * process is alive.
  */
 
 // Warn well before credits actually run out (~a week of headroom at
@@ -38,28 +41,61 @@ interface TextbeltResponse {
   quotaRemaining?: number;
 }
 
-/** Send one text through Textbelt. Throws on HTTP/network errors; returns
- * `success: false` (with `error`) when Textbelt rejects the send or the
- * app-wide send budget is exhausted. Every attempt is logged to sms_log. */
-async function sendTextbelt(
-  phone: string,
-  message: string,
-  kind: SmsKind,
-  opts?: { bypassBudget?: boolean },
-): Promise<TextbeltResponse> {
+type SmsProvider = "textbelt" | "mac";
+type SendSmsResponse = TextbeltResponse & { carrier: SmsProvider };
+
+const execFileAsync = promisify(execFile);
+
+declare global {
+  var __srtCaffeinateStarted: boolean | undefined;
+}
+
+export function getSmsProvider(): SmsProvider {
+  return process.env.SMS_PROVIDER?.toLowerCase() === "mac" ? "mac" : "textbelt";
+}
+
+function keepMacAwake(): void {
+  if (getSmsProvider() !== "mac") return;
+  if (process.env.MAC_SMS_KEEP_AWAKE === "false") return;
+  if (globalThis.__srtCaffeinateStarted) return;
+
+  const child = execFile("caffeinate", ["-dimsu", "-w", String(process.pid)], (error) => {
+    if (error) console.error(`Mac keep-awake stopped: ${error.message}`);
+    globalThis.__srtCaffeinateStarted = false;
+  });
+  child.unref();
+  globalThis.__srtCaffeinateStarted = true;
+}
+
+async function sendMacSms(phone: string, message: string): Promise<TextbeltResponse> {
+  keepMacAwake();
+
+  const script = `
+on run argv
+  set targetPhone to item 1 of argv
+  set targetMessage to item 2 of argv
+  tell application "Messages"
+    set targetService to first service whose service type = iMessage
+    set targetBuddy to buddy targetPhone of targetService
+    send targetMessage to targetBuddy
+  end tell
+end run
+`;
+
+  try {
+    await execFileAsync("osascript", ["-e", script, phone, message], { timeout: 20_000 });
+    return { success: true };
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : String(error);
+    return { success: false, error: `Mac Messages send failed: ${reason}` };
+  }
+}
+
+async function sendTextbelt(phone: string, message: string): Promise<TextbeltResponse> {
   const key = process.env.TEXTBELT_API_KEY;
   if (!key) {
     throw new Error("TEXTBELT_API_KEY is not configured.");
   }
-
-  if (!opts?.bypassBudget) {
-    const blocked = await smsBudgetExceeded();
-    if (blocked) {
-      console.error(`⚠️ SMS to ${phone} blocked: ${blocked}. Raise SMS_HOURLY_CAP/SMS_DAILY_CAP if this is legitimate volume.`);
-      return { success: false, error: blocked };
-    }
-  }
-  await logSmsAttempt(phone, kind);
 
   const res = await fetch("https://textbelt.com/text", {
     method: "POST",
@@ -83,12 +119,35 @@ async function sendTextbelt(
   return data;
 }
 
+/** Send one text through the configured provider. Throws on HTTP/network
+ * errors; returns `success: false` when the provider rejects the send or the
+ * app-wide send budget is exhausted. Every attempt is logged to sms_log. */
+async function sendSms(
+  phone: string,
+  message: string,
+  kind: SmsKind,
+  opts?: { bypassBudget?: boolean },
+): Promise<SendSmsResponse> {
+  const provider = getSmsProvider();
+  if (!opts?.bypassBudget) {
+    const blocked = await smsBudgetExceeded();
+    if (blocked) {
+      console.error(`⚠️ SMS to ${phone} blocked: ${blocked}. Raise SMS_HOURLY_CAP/SMS_DAILY_CAP if this is legitimate volume.`);
+      return { success: false, error: blocked, carrier: provider };
+    }
+  }
+  await logSmsAttempt(phone, kind);
+
+  const result = provider === "mac" ? await sendMacSms(phone, message) : await sendTextbelt(phone, message);
+  return { ...result, carrier: provider };
+}
+
 /**
  * Send a verification code to a phone number.
  *
- * Texts the code via Textbelt; if the send fails for any reason (bad key,
- * out of quota, undeliverable number, network error) falls back to a TOTP
- * secret so an SMS outage can never lock users out of login.
+ * Texts the code via the configured provider; if the send fails for any
+ * reason (bad key, out of quota, undeliverable number, network error) falls
+ * back to a TOTP secret so an SMS outage can never lock users out of login.
  *
  * @param phone   the user's phone number
  * @param account stable user id (email/username) used to label a TOTP entry
@@ -105,11 +164,11 @@ export async function requestPhoneVerification(
   const code = generateCode();
   const message = `Your ${TOTP_ISSUER} verification code is ${code}. It expires in 10 minutes.`;
 
-  let result: TextbeltResponse;
+  let result: SendSmsResponse;
   try {
     // Over-budget sends return success:false and land in the TOTP fallback
     // below — login stays possible even mid-attack.
-    result = await sendTextbelt(number, message, "otp");
+    result = await sendSms(number, message, "otp");
   } catch (error) {
     return totpFallback(
       `SMS send failed (${error instanceof Error ? error.message : String(error)}).`,
@@ -117,13 +176,13 @@ export async function requestPhoneVerification(
     );
   }
   if (!result.success) {
-    return totpFallback(`SMS send failed (${result.error ?? "unknown Textbelt error"}).`, account);
+    return totpFallback(`SMS send failed (${result.error ?? "unknown SMS provider error"}).`, account);
   }
 
   return {
     method: "sms",
     channel: number,
-    carrier: "textbelt",
+    carrier: result.carrier,
     code,
     expiresAt: Date.now() + OTP_TTL_MS,
   };
@@ -140,17 +199,17 @@ export async function sendGatewaySms(phone: string, message: string): Promise<No
     return { ok: false, reason: "Not a valid 10-digit US number." };
   }
 
-  let result: TextbeltResponse;
+  let result: SendSmsResponse;
   try {
-    result = await sendTextbelt(number, message, "notify");
+    result = await sendSms(number, message, "notify");
   } catch (error) {
     return { ok: false, reason: error instanceof Error ? error.message : String(error) };
   }
   if (!result.success) {
-    return { ok: false, reason: result.error ?? "unknown Textbelt error" };
+    return { ok: false, reason: result.error ?? "unknown SMS provider error" };
   }
 
-  return { ok: true, channel: number, carrier: "textbelt" };
+  return { ok: true, channel: number, carrier: result.carrier };
 }
 
 /**
@@ -176,9 +235,9 @@ export async function sendAdminAlertSms(phone: string, message: string): Promise
   const number = normalizePhone(phone);
   if (number.length !== 10) return { ok: false, reason: "Not a valid 10-digit US number." };
   try {
-    const result = await sendTextbelt(number, message, "notify", { bypassBudget: true });
-    if (!result.success) return { ok: false, reason: result.error ?? "unknown Textbelt error" };
-    return { ok: true, channel: number, carrier: "textbelt" };
+    const result = await sendSms(number, message, "notify", { bypassBudget: true });
+    if (!result.success) return { ok: false, reason: result.error ?? "unknown SMS provider error" };
+    return { ok: true, channel: number, carrier: result.carrier };
   } catch (error) {
     return { ok: false, reason: error instanceof Error ? error.message : String(error) };
   }
@@ -190,6 +249,8 @@ export async function sendAdminAlertSms(phone: string, message: string): Promise
  * treat that as "unknown", not zero.
  */
 export async function getSmsQuota(): Promise<number | null> {
+  if (getSmsProvider() !== "textbelt") return null;
+
   const key = process.env.TEXTBELT_API_KEY;
   if (!key) return null;
 

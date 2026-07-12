@@ -1,5 +1,5 @@
 import { supabaseAdmin } from "@/lib/supabase";
-import { getSmsQuota, sendAdminAlertSms } from "@/lib/sms-client";
+import { getSmsProvider, getSmsQuota, sendAdminAlertSms } from "@/lib/sms-client";
 
 /**
  * Credit-drain tripwire, run on every reminder-cron tick (~5 min).
@@ -28,6 +28,8 @@ interface WatchState {
 }
 
 export async function watchQuota(): Promise<{ quota: number | null; alerted: boolean }> {
+  if (getSmsProvider() !== "textbelt") return { quota: null, alerted: false };
+
   const quota = await getSmsQuota();
   if (quota === null) return { quota, alerted: false }; // key missing or Textbelt down
 

@@ -6,6 +6,8 @@ import { mergeSiteContent } from "@/lib/site-content";
 import { bookingStartUtcMs, shopToday } from "@/lib/shop-time";
 import { watchQuota } from "@/lib/quota-watch";
 
+export const runtime = "nodejs";
+
 /**
  * 30-minute appointment reminders, invoked by Vercel Cron (see vercel.json).
  *
