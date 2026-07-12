@@ -51,6 +51,14 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (!adminPhone)
     console.error("ADMIN_PHONE not set — skipping admin alert for booking change. Set it in the deployment env and redeploy.");
 
+  const { data: siteContent } = await supabaseAdmin
+    .from("site_content")
+    .select("content")
+    .eq("id", "main")
+    .maybeSingle();
+  const content = mergeSiteContent(siteContent?.content);
+  const alertAdmin = Boolean(adminPhone) && content.smsPrefs.adminBookingAlerts;
+
   // ── Cancel ────────────────────────────────────────────────────────
   if (action === "cancel") {
     const { data: updated, error } = await supabaseAdmin
@@ -62,9 +70,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (error || !updated)
       return NextResponse.json({ error: "Failed to cancel booking" }, { status: 500 });
 
-    if (adminPhone)
+    if (alertAdmin)
       await notifyPhone(
-        adminPhone,
+        adminPhone!,
         SMS.bookingCancelledAdmin(
           booking.user_name,
           booking.user_phone,
@@ -86,13 +94,6 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       { error: "Pick a time at least 24 hours out." },
       { status: 409 }
     );
-
-  const { data: siteContent } = await supabaseAdmin
-    .from("site_content")
-    .select("content")
-    .eq("id", "main")
-    .maybeSingle();
-  const content = mergeSiteContent(siteContent?.content);
 
   if (content.scheduleBlocks.some((b) => b.date === date))
     return NextResponse.json({ error: "That day is unavailable." }, { status: 409 });
@@ -123,9 +124,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (error || !updated)
     return NextResponse.json({ error: "Failed to reschedule booking" }, { status: 500 });
 
-  if (adminPhone)
+  if (alertAdmin)
     await notifyPhone(
-      adminPhone,
+      adminPhone!,
       SMS.bookingRescheduledAdmin(
         booking.user_name,
         booking.user_phone,

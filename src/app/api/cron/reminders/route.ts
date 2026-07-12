@@ -58,7 +58,13 @@ export async function GET(req: NextRequest) {
     .select("content")
     .eq("id", "main")
     .maybeSingle();
-  const address = mergeSiteContent(siteRow?.content).address;
+  const { address, smsPrefs } = mergeSiteContent(siteRow?.content);
+
+  const remindCustomer = smsPrefs.customerReminders;
+  const remindAdmin = Boolean(adminPhone) && smsPrefs.adminReminders;
+  // Both switched off in admin → leave bookings unclaimed, so flipping a
+  // switch back on mid-window still gets that reminder out.
+  if (!remindCustomer && !remindAdmin) return NextResponse.json({ ok: true, sent: 0, disabled: true });
 
   let sent = 0;
   for (const b of due) {
@@ -71,9 +77,10 @@ export async function GET(req: NextRequest) {
       .select("id");
     if (!claimed?.length) continue;
 
-    await notifyPhone(b.user_phone, SMS.reminderCustomer(b.user_name, b.service, b.booking_time, address));
-    if (adminPhone)
-      await notifyPhone(adminPhone, SMS.reminderAdmin(b.user_name, b.user_phone, b.service, b.booking_time));
+    if (remindCustomer)
+      await notifyPhone(b.user_phone, SMS.reminderCustomer(b.user_name, b.service, b.booking_time, address));
+    if (remindAdmin)
+      await notifyPhone(adminPhone!, SMS.reminderAdmin(b.user_name, b.user_phone, b.service, b.booking_time));
     sent++;
   }
 

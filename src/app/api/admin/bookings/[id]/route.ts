@@ -13,15 +13,15 @@ const longDate = (iso: string) =>
     day: "numeric",
   });
 
-// The street address is kept off the public site; confirmed customers get it
-// by text, so pull it from site content when a confirmation goes out.
-async function siteAddress() {
+// Pulled when a text may go out: the street address (kept off the public
+// site, shared with confirmed customers) and the admin's SMS switches.
+async function siteContent() {
   const { data } = await supabaseAdmin
     .from("site_content")
     .select("content")
     .eq("id", "main")
     .maybeSingle();
-  return mergeSiteContent(data?.content).address;
+  return mergeSiteContent(data?.content);
 }
 
 export async function PATCH(
@@ -80,20 +80,22 @@ export async function PATCH(
   if (!booking)
     return NextResponse.json({ error: "Booking not found" }, { status: 404 });
 
-  if (status) {
+  const content = await siteContent();
+
+  if (status && content.smsPrefs.customerBookingTexts) {
     const msg =
       status === "accepted"
-        ? SMS.bookingAccepted(booking.user_name, booking.service, longDate(booking.booking_date), booking.booking_time, await siteAddress())
+        ? SMS.bookingAccepted(booking.user_name, booking.service, longDate(booking.booking_date), booking.booking_time, content.address)
         : SMS.bookingDenied(booking.user_name, booking.service, longDate(booking.booking_date), booking.booking_time);
     await notifyPhone(booking.user_phone, msg);
   }
 
   // Only text about a move when the admin asked us to (they may have told the
   // client in person already).
-  if (isReschedule && notify) {
+  if (isReschedule && notify && content.smsPrefs.customerBookingTexts) {
     await notifyPhone(
       booking.user_phone,
-      SMS.bookingMovedCustomer(booking.user_name, booking.service, longDate(booking.booking_date), booking.booking_time, await siteAddress())
+      SMS.bookingMovedCustomer(booking.user_name, booking.service, longDate(booking.booking_date), booking.booking_time, content.address)
     );
   }
 

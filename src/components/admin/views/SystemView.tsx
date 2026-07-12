@@ -1,8 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Database, Trash2, MessageSquare, Bell } from "lucide-react";
+import { Database, Trash2, MessageSquare, Bell, Loader2 } from "lucide-react";
 import type { StorageStats, ActivityItem, CleanupResult } from "@/lib/maintenance";
+import type { SmsPrefs } from "@/lib/site-content";
+import { useAdmin } from "../data";
+import { Hint } from "../forms";
 import { Card, SectionHeading, EmptyState, StatusBadge } from "../primitives";
 import { Spinner } from "../primitives";
 
@@ -108,6 +111,8 @@ export function SystemView() {
         </div>
       </Card>
 
+      <SmsSettingsCard />
+
       <Card>
         <SectionHeading eyebrow="Recent" title="Activity" />
         {activity.length === 0 ? (
@@ -142,6 +147,66 @@ export function SystemView() {
         )}
       </Card>
     </div>
+  );
+}
+
+const SMS_SETTINGS: { key: keyof SmsPrefs; label: string; sub: string }[] = [
+  { key: "customerBookingTexts", label: "Customer booking texts", sub: "Request received, confirmed, denied, and moved-appointment texts." },
+  { key: "customerReminders", label: "Customer reminders", sub: "The heads-up text customers get shortly before their appointment." },
+  { key: "adminBookingAlerts", label: "Your booking alerts", sub: "Texts you when someone books, cancels, or reschedules." },
+  { key: "adminReminders", label: "Your up-next reminders", sub: "Texts you shortly before each appointment starts." },
+];
+
+function SmsSettingsCard() {
+  const { content, setContent, saveContent, saving } = useAdmin();
+
+  function flip(key: keyof SmsPrefs) {
+    const next = { ...content, smsPrefs: { ...content.smsPrefs, [key]: !content.smsPrefs[key] } };
+    setContent(next);
+    saveContent(next);
+  }
+
+  return (
+    <Card>
+      <SectionHeading
+        eyebrow="Notifications"
+        title="Text messages"
+        action={
+          saving ? (
+            <span className="flex items-center gap-1.5" style={{ fontSize: 13, color: "var(--a-text-3)" }}>
+              <Loader2 size={14} className="ax-spin" /> Saving…
+            </span>
+          ) : undefined
+        }
+      />
+      <div className="space-y-2">
+        {SMS_SETTINGS.map(({ key, label, sub }) => {
+          const on = content.smsPrefs[key];
+          return (
+            <div
+              key={key}
+              className="flex items-center justify-between gap-4"
+              style={{ padding: "14px 16px", borderRadius: "var(--a-r-sm)", background: "var(--a-surface-2)" }}
+            >
+              <div className="min-w-0">
+                <div style={{ fontSize: 14.5, fontWeight: 570 }}>{label}</div>
+                <p style={{ fontSize: 12.5, color: "var(--a-text-3)", marginTop: 2 }}>{sub}</p>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={on}
+                aria-label={label}
+                className="ax-switch"
+                data-on={on}
+                onClick={() => flip(key)}
+              />
+            </div>
+          );
+        })}
+      </div>
+      <Hint>Saves automatically. Login-code texts always send — customers can&apos;t sign in without them.</Hint>
+    </Card>
   );
 }
 

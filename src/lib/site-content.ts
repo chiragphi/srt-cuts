@@ -29,6 +29,22 @@ export interface TaxExpense {
   amount: number;
 }
 
+// Admin-controlled switches for every notification text the app sends.
+// Login codes are NOT covered — customers can't sign in without them.
+export interface SmsPrefs {
+  customerBookingTexts: boolean; // request received / confirmed / denied / moved
+  customerReminders: boolean; // heads-up shortly before the appointment
+  adminBookingAlerts: boolean; // new request / customer cancelled / rescheduled
+  adminReminders: boolean; // "up next" heads-up before each appointment
+}
+
+export const DEFAULT_SMS_PREFS: SmsPrefs = {
+  customerBookingTexts: true,
+  customerReminders: true,
+  adminBookingAlerts: true,
+  adminReminders: true,
+};
+
 export interface SiteContent {
   heroImageUrl: string;
   heroFocus?: ImageFocus;
@@ -61,6 +77,7 @@ export interface SiteContent {
   taxExpenses: TaxExpense[];
   weeklyAvailability: Record<string, string[]>; // key "0"–"6" = Sun–Sat, value = available time strings
   dateAvailability: Record<string, string[]>; // key "YYYY-MM-DD", overrides weekly for that specific date
+  smsPrefs: SmsPrefs;
 }
 
 const DEFAULT_GALLERY: GalleryItem[] = [
@@ -115,6 +132,7 @@ export const DEFAULT_SITE_CONTENT: SiteContent = {
   taxExpenses: [],
   weeklyAvailability: { "0": [], "1": [], "2": [], "3": [], "4": [], "5": [], "6": [] },
   dateAvailability: {},
+  smsPrefs: DEFAULT_SMS_PREFS,
 };
 
 export function mergeSiteContent(value: Partial<SiteContent> | null | undefined): SiteContent {
@@ -129,6 +147,8 @@ export function mergeSiteContent(value: Partial<SiteContent> | null | undefined)
     taxExpenses: value?.taxExpenses ?? DEFAULT_SITE_CONTENT.taxExpenses,
     weeklyAvailability: value?.weeklyAvailability ?? DEFAULT_SITE_CONTENT.weeklyAvailability,
     dateAvailability: value?.dateAvailability ?? DEFAULT_SITE_CONTENT.dateAvailability,
+    // Spread over defaults so switches added later default to ON for old rows.
+    smsPrefs: { ...DEFAULT_SMS_PREFS, ...(value?.smsPrefs ?? {}) },
   };
 }
 
