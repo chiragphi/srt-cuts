@@ -37,6 +37,9 @@ export default function ComingSoon() {
   useEffect(() => {
     const el = tiltRef.current;
     if (!el || prefersReducedMotion()) return;
+    // Touch devices have no hover position to follow, and the listener would
+    // only burn frames during scrolls.
+    if (!window.matchMedia("(pointer: fine)").matches) return;
 
     let tx = 0;
     let ty = 0;
@@ -70,6 +73,10 @@ export default function ComingSoon() {
   const onPointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
     const el = tiltRef.current;
     if (!el || prefersReducedMotion()) return;
+    // Never fire on the button. The shake transforms the stage the link sits
+    // in, which is enough to move it out from under a finger and swallow the
+    // tap before it becomes a click.
+    if ((e.target as HTMLElement).closest("a, button")) return;
 
     const box = el.getBoundingClientRect();
     const ox = box.left + box.width / 2;
