@@ -68,6 +68,12 @@ function keepMacAwake(): void {
 }
 
 async function sendMacSms(phone: string, message: string): Promise<TextbeltResponse> {
+  if (process.platform !== "darwin") {
+    return {
+      success: false,
+      error: "SMS_PROVIDER=mac requires macOS (uses Messages.app via AppleScript) — not available on this platform. Use the default Textbelt provider instead.",
+    };
+  }
   keepMacAwake();
 
   const script = `

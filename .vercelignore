@@ -1,0 +1,9 @@
+*.jpeg
+*.jpg
+*.png
+!public/**
+.env*
+handoff.md
+projectfile.md
+docs/
+.playwright-mcp/
